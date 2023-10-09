@@ -1,5 +1,5 @@
 ---
-title: "About"
+title: "About the author"
 image: profile.jpg
 about:
   template: jolla
@@ -16,4 +16,4 @@ about:
 
 ---
 
-About the author: mathematician and data sciensist based in London and Luxembourg.
+I am mathematician & data sciensist based in London and Luxembourg.
