@@ -16,4 +16,4 @@ about:
 
 ---
 
-About this blog
+About the author: mathematician and data sciensist based in London and Luxembourg.
