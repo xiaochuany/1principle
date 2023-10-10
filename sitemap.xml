@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://xiaochuany.github.io/1principle/posts/welcome/index.html</loc>
-    <lastmod>2023-10-10T19:33:16.728Z</lastmod>
-  </url>
-  <url>
-    <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/index.html</loc>
-    <lastmod>2023-10-10T19:33:16.065Z</lastmod>
+    <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/saws.html</loc>
+    <lastmod>2023-10-10T20:32:55.370Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/about.html</loc>
-    <lastmod>2023-10-10T19:33:14.008Z</lastmod>
+    <lastmod>2023-10-10T20:32:53.002Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/index.html</loc>
-    <lastmod>2023-10-10T19:33:14.572Z</lastmod>
-  </url>
-  <url>
-    <loc>https://xiaochuany.github.io/1principle/posts/gist/demo.html</loc>
-    <lastmod>2023-10-10T19:33:16.408Z</lastmod>
+    <lastmod>2023-10-10T20:32:53.566Z</lastmod>
   </url>
 </urlset>

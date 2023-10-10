@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiaochuan Yang">
-<meta name="dcterms.date" content="2023-10-08">
+<meta name="dcterms.date" content="2023-10-10">
 
 <title>first-ish principle - Secret ‘SAWS’ of deep learning, feature backprop</title>
 <style>
@@ -165,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 8, 2023</p>
+        <p class="date">October 10, 2023</p>
       </div>
     </div>
     
@@ -183,6 +183,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in the backpropagation algorithm. I share the full story here to demonstrate how good notation reinforces memorisation and lead to understanding.</p>
+</div>
+</div>
 <!-- \usepackage{minted} -->
 <p>Everyone knows that a neural network is a universal function approximator that can be used to learn complex relationships between inputs and outputs. It is a learning machine that mimics biological neural networks in the human brain. Mathematically, given an input <span class="math inline">\(x\in\mathbb{R}^{n_x}\)</span>, a neural nerwork computes an ouput <span class="math inline">\(\hat y\in\mathbb{R}^{n_y}\)</span> as follows, <span class="math display">\[\begin{align*}
 a^{[1]} &amp;= \sigma(W^{[1]\top} x + b^{[1]}) \\
@@ -252,25 +265,69 @@ S^{[l]} = A^{[l]} W^{[l+1]} S^{[l+1]}
 <p>Here is a python implementation of the training with min-batch SGD, 1 hidden layer, sigmoid activation in the hidden and output layers, and squared loss.</p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">11</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>g.chisquare(<span class="dv">3</span>,(<span class="dv">5</span>,))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="1">
-<pre><code>array([2.40798032, 6.10497521, 1.74702188, 3.79315713, 4.34725571])</code></pre>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sig(x):</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="dv">1</span><span class="op">+</span>np.exp(<span class="op">-</span>x))<span class="op">**-</span><span class="dv">1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">1123</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>d,m <span class="op">=</span> <span class="dv">20</span>, <span class="dv">1000</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>d_out <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>d_hid <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>batch_size <span class="op">=</span> <span class="dv">8</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>n_epoch <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>lr <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>X_train <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(d,m))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>Y_train <span class="op">=</span> g.uniform(size<span class="op">=</span>(d_out,m))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>W1 <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(d,d_hid))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>W2 <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(d_hid,d_out))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>b1 <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(d_hid,<span class="dv">1</span>))<span class="op">*</span><span class="fl">0.01</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>b2 <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(d_out,<span class="dv">1</span>))<span class="op">*</span><span class="fl">0.01</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>errors<span class="op">=</span>[]</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(n_epoch):</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># permute the data</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    perm_idx <span class="op">=</span> g.permutation(m)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    X_train <span class="op">=</span> X_train[:,perm_idx]</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    Y_train <span class="op">=</span> Y_train[:,perm_idx]</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> bat <span class="kw">in</span> <span class="bu">range</span>(m<span class="op">//</span>batch_size):</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        x_batch <span class="op">=</span> X_train[:,bat<span class="op">*</span>batch_size:(<span class="dv">1</span><span class="op">+</span>bat)<span class="op">*</span>batch_size]</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        y_batch <span class="op">=</span> Y_train[:,bat<span class="op">*</span>batch_size:(<span class="dv">1</span><span class="op">+</span>bat)<span class="op">*</span>batch_size]</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># forward pass</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        z1 <span class="op">=</span> np.matmul(W1.T,x_batch) <span class="op">+</span> b1</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        a1 <span class="op">=</span> sig(z1)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        z2 <span class="op">=</span> np.matmul(W2.T,a1) <span class="op">+</span> b2</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        a2 <span class="op">=</span> sig(z2)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        <span class="co"># backward pass</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        e <span class="op">=</span> y_batch <span class="op">-</span> a2</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        A2 <span class="op">=</span> sig(z2)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>sig(z2))</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        S2 <span class="op">=</span> <span class="op">-</span> A2<span class="op">*</span>e</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        A1 <span class="op">=</span> sig(z1)<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>sig(z1))</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        S1 <span class="op">=</span> A1<span class="op">*</span>np.matmul(W2,S2)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="co"># gradient descent</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>        dW2 <span class="op">=</span> np.matmul(a1,S2.T)</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        db2 <span class="op">=</span> np.<span class="bu">sum</span>(S2, axis <span class="op">=</span> <span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        dW1 <span class="op">=</span> np.matmul(x_batch,S1.T)</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>        db1 <span class="op">=</span> np.<span class="bu">sum</span>(S1, axis <span class="op">=</span> <span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>        W2 <span class="op">-=</span> lr <span class="op">*</span> dW2</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        b2 <span class="op">-=</span> lr <span class="op">*</span> db2</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        W1 <span class="op">-=</span> lr <span class="op">*</span> dW1</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        b1 <span class="op">-=</span> lr <span class="op">*</span> db1</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        <span class="co"># compute the error </span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        error <span class="op">+=</span> <span class="fl">0.5</span><span class="op">*</span>np.<span class="bu">sum</span>(e<span class="op">*</span>e)</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="co"># report error of the current epoch</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Epoch:"</span>, epoch, <span class="st">"SE:"</span>, error)</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>    errors.append(error)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch: 0 SE: 1084.095701311093
+Epoch: 1 SE: 931.4561396806077</code></pre>
 </div>
 </div>
 <p><strong>Exercise</strong>: implement the training with XE loss, more hidden layers, and the tricks we will mention in the next section.</p>
-
-<!-- 
-\section{Tricks}
-
-Training neural networks is hard. The backpropagation is the most fundamental technique but we need more tricks to make the training fast and stable. Deep learning researchers  have invented many tricks for this purpose, although some  of them are rather heuristic and hard to justify mathematically. 
- 
-
-\paragraph{Scale the initialisation} 
-For wide neural works, using unscaled weight matrix with iid standard normal or symmetric uniform can lead to saturation of nodes of the next layer activation i.e. becoming close or equal to 1 (sigmoid activation function is used in this discussion). To fix this, one can simply scale the weight matrices by a factor of $1/\sqrt{n}$ where $n$ is the number of nodes in the current layer so as to make the variance of the nodes in the next layer pre-activation of order 1. 
-
-\paragraph{Activation function}
-ReLU activation, defined by $x\mapsto x\1(x>0)$, due to its simplicity and efficiency (e.g. its derivative is the indicator of positive half line), becomes popular over the last decade. One of the relatives of ReLU called GeLU given by $x\mapsto x\PP[N<x]$ where $N$ is a standard Gaussian is commonly used now in training large models  such as GPT and Bert.  -->
 
 
 </section>
