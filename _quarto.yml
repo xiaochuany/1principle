@@ -7,9 +7,9 @@ website:
     right:
       - about.qmd
       - icon: github
-        href: https://github.com/
-      - icon: twitter
-        href: https://twitter.com
+        href: https://github.com/xiaochuany
+      # - icon: twitter
+      #   href: https://twitter.com
 format:
   html:
     theme: litera
