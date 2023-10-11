@@ -7,8 +7,9 @@ image: "image.jpg"
 ---
 
 ::: {.callout-note}
-My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in the backpropagation algorithm.
-I share the full story here to demonstrate how good notation reinforces memorisation and lead to understanding.
+My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a second year undergraduate course in deep learning.
+I found this a perfect example of "good notation helps memorisation" which hopefully reinforces understanding.
+Here's how we get to this recursion and a python implementation.
 :::
 
 <!-- \usepackage{minted} -->
