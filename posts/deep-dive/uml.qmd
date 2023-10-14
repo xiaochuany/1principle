@@ -1,5 +1,5 @@
 ---
-title: " 'Understanding Machine Learning' video series"
+title: " Understanding Machine Learning: a series of 20 videos"
 author: "Xiaochuan Yang"
 date: "2023-10-14"
 categories: [machine learning]
