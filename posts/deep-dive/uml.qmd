@@ -1,0 +1,30 @@
+---
+title: " 'Understanding Machine Learning' video series"
+author: "Xiaochuan Yang"
+date: "2023-10-14"
+categories: [machine learning]
+---
+
+::: {.callout-note}
+As preparation for teaching a machine learning course to a partner university in China, I created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com from October 2022 to February 2023. I closely followed the excellent textbook written by Shalev-Shwartz and Ben-David, which is freely available on the [authors' webpage](https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/index.html).
+::: 
+
+
+Topics covered include 
+
+- Probably Approximately Correct (PAC) learning model
+- VC dimension
+- no free lunch theorem
+- linear predictors: logistic regression, linear regression, perceptron
+- convex learning problems
+- regularisation
+- stochastic gradient descent
+- support vector machine
+- kernel methods
+- decision trees
+- boosting: AdaBoost
+- clustering: k-means, spectral clustering, linkage-based clustering
+- dimenionality reduction: PCA, compressed sensing
+- generative models: naive Bayes, LDA, EM algorithms
+
+[Playlist in my YouTube channel](https://www.youtube.com/playlist?list=PLRUGJ8qKWnox5Jn2URD_0OQwvnl_uv3IU)
