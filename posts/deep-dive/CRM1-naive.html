@@ -9,7 +9,7 @@
 <meta name="author" content="Xiaochuan Yang">
 <meta name="dcterms.date" content="2023-10-15">
 
-<title>first-ish principle - Fast intro to credit risk models 1 - naive model</title>
+<title>first-ish principle - Intro to credit risk models Ep 1 naive model</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -142,7 +142,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Fast intro to credit risk models 1 - naive model</h1>
+      <h1 class="title">Intro to credit risk models Ep 1 naive model</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">credit risk modelling</div>
                 <div class="quarto-category">applied probability</div>
@@ -196,8 +196,10 @@ Note
 <p>This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions for the sake of simplicity and tractability. Despite its simplicity, this model serves as an excellent starting point for understanding the fundamental concepts of credit risk. It lays the foundation for more complex models that will be explored later in this series. The mathematical concepts introduced in this post are commonly found in any first-year probability textbook</p>
 </div>
 </div>
+<section id="pd-lgd-ead-approach" class="level2">
+<h2 class="anchored" data-anchor-id="pd-lgd-ead-approach">PD-LGD-EAD approach</h2>
 <p>Credit risk models are mathematical representations of the potential losses within a portfolio of financial instruments. Each instrument carries a probability of default, leading to either a complete loss or a partial loss. Modeling credit risk is crucial as it offers valuable insights to stakeholders, enabling them to take proactive measures to mitigate these losses. Consequently, it plays a pivotal role in the financial sector.</p>
-<p>Let’s introduce some notation. Consider a portfolio containing <span class="math inline">\(d\)</span> instruments. The event of default for the <span class="math inline">\(i\)</span>-th instrument is denoted as <span class="math inline">\(D_i\)</span>. Here, <span class="math inline">\(\mu_i\)</span> represents the potential exposure of the <span class="math inline">\(i\)</span>-th instrument, and <span class="math inline">\(S_i \in [0,1]\)</span> signifies severity, indicating the actual exposure relative to the potential exposure. We define <span class="math inline">\(I_i := I_{D_i}\)</span> as the indicator of the event <span class="math inline">\(D_i\)</span>, which follows a Bernoulli distribution with parameter <span class="math inline">\(p_i := \mathbb{P}[D_i]\)</span>. The total loss of the portfolio is expressed as the sum: <span id="eq-loss"><span class="math display">\[
+<p>Let’s introduce some notation. Consider a portfolio containing <span class="math inline">\(d\)</span> instruments. The event of default for the <span class="math inline">\(i\)</span>-th instrument is denoted as <span class="math inline">\(D_i\)</span>. Here, <span class="math inline">\(\mu_i\)</span> represents the exposure at default (EAD) of the <span class="math inline">\(i\)</span>-th instrument, and <span class="math inline">\(S_i \in [0,1]\)</span> the loss given default (LGD) where <span class="math inline">\(S\)</span> signifies severity, indicating the actual loss relative to the exposure. We define <span class="math inline">\(I_i := I_{D_i}\)</span> as the indicator of the event <span class="math inline">\(D_i\)</span>, which follows a Bernoulli distribution with parameter <span class="math inline">\(p_i := \mathbb{P}[D_i]\)</span>. The total loss of the portfolio is expressed as the sum: <span id="eq-loss"><span class="math display">\[
 L = \sum_{i=1}^d \mu_i S_i I_i
 \tag{1}\]</span></span> From the perspective of risk managers, the values of <span class="math inline">\(\mu_i\)</span> are known. However, the uncertainly lies in whether an instrument will default and the corresponding severity, making the total loss <span class="math inline">\(L\)</span> a random variable. Our interest lies in understanding the probability distribution of <span class="math inline">\(L\)</span>.</p>
 <p>In this post we make the following naive assumptions.</p>
@@ -218,6 +220,14 @@ Important
 </ul>
 </div>
 </div>
+<p>Under this assumption, it is clear that <span class="math display">\[
+\mathbb{E}[L] = \sum_{i=1}^d \mu_i \mathbb{E}[S_i] p_i
+\]</span> <span class="math display">\[
+\mathrm{Var}[L] = \sum_{i=1}^d \mu_i^2 (\mathbb{E}[S_i^2] p_i  - \mathbb{E}[S]^2 p_i^2)
+\]</span> The expected loss (EL) is an important quantity in the <a href="https://www.eba.europa.eu/regulation-and-policy/single-rulebook/interactive-single-rulebook/1586">Basel III guidelines</a>.</p>
+</section>
+<section id="var-and-expected-shortfalls" class="level2">
+<h2 class="anchored" data-anchor-id="var-and-expected-shortfalls">VaR and expected shortfalls</h2>
 <p>In a stable economy, default events are infrequent, making credit risk modeling primarily focused on rare occurrences. Obtaining a precise measure of the credit risk of a portfolio is not achieved by merely calculating the average; instead, it’s crucial to comprehend the quantiles. In the realm of credit risk, these quantiles are referred to as the Value at Risk (VaR).<br>
 <span class="math display">\[
 \mathrm{VaR}_\alpha(L) = \inf\{t\in\mathbb{R}: \mathbb{P}[L\ge t]\le \alpha \}.
@@ -232,8 +242,11 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 </ol>
 <p>The calibration process demands substantial effort and is specific to the chosen model. We will delve into this topic in a future post. For the remainder of this discussion, let’s assume that we have already established a set of parameters and focus on the last two steps.</p>
 <p>It’s important to emphasize that deriving the exact distribution of <span class="math inline">\(L\)</span> can be tedious, if not infeasible. In practice, risk analysts resort to simulations and numerical computations to determine VaR and shortfalls. This pragmatic approach is the one we adopt here.</p>
+</section>
+<section id="monte-carlo-simulation-for-estimating-var-and-shortfalls" class="level2">
+<h2 class="anchored" data-anchor-id="monte-carlo-simulation-for-estimating-var-and-shortfalls">Monte Carlo simulation for estimating VaR and shortfalls</h2>
 <p><strong>Step 1</strong></p>
-<p>We first specify the parameters <span class="math inline">\(p_i, \mu_i\)</span> and parameters for the distribution of <span class="math inline">\(S_i\)</span>. These parameters are generated at random with arbitrary choice of distributions.</p>
+<p>We first specify the parameters <span class="math inline">\(p_i, \mu_i\)</span> and parameters for the distribution of <span class="math inline">\(S_i\)</span>. These parameters are generated at random with arbitrary choice of distributions, following the book by <a href="https://link.springer.com/book/10.1007/978-3-319-94688-7">David Jamieson Bolder - Credit-Risk Modelling (2018)</a></p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -296,7 +309,7 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 <div class="cell-output cell-output-display">
 <p><img src="CRM1-naive_files/figure-html/cell-4-output-1.png" width="592" height="411"></p>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="39">
+<div class="cell-output cell-output-display" data-execution_count="27">
 <div>
 
 
@@ -336,9 +349,9 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 </div>
 </div>
 <p>We’ve completed tasks 2 and 3! Next time, we’ll delve into methods of parameter estimation, still within the naive setting. This will bring us full circle and complete the lifecycle of a single model.</p>
-<p>Reference: <a href="https://link.springer.com/book/10.1007/978-3-319-94688-7">David Jamieson Bolder - Credit-Risk Modelling (2018)</a></p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
