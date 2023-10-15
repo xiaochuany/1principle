@@ -16,4 +16,4 @@ about:
 
 ---
 
-XY is passionate about probabilitic machine learning and quantitative finance. He's based in London and Luxembourg.
+Xiaochuan is passionate about probabilitic machine learning and quantitative finance. He's based in London and Luxembourg. His list of publications can be found in this [webpage](http://xiaochuanyang.com/)
