@@ -16,4 +16,9 @@ about:
 
 ---
 
-Xiaochuan is passionate about probabilitic machine learning and quantitative finance. He's based in London and Luxembourg. His list of publications can be found in this [webpage](http://xiaochuanyang.com/)
+<!-- Xiaochuan is passionate about probabilitic machine learning and quantitative finance. He's based in London and Luxembourg. His list of publications can be found in this [webpage](http://xiaochuanyang.com/) -->
+
+
+Passionate about probabilistic machine learning and quantitative finance, Xiaochuan explores the intricate intersection of mathematics and real-world applications. 
+
+Curious about Xiaochuan's research? Dive into his world through his **[webpage](http://xiaochuanyang.com/)**. 
