@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/deep-dive/CRM1-naive.html",
       "/posts/deep-dive/uml.html",
       "/posts/deep-dive/saws.html"
     ]
