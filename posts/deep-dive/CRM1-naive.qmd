@@ -1,5 +1,5 @@
 ---
-title: "Intro to credit risk models Ep 1 naive model"
+title: "Intro to credit risk models Ep 1 fundamentals"
 author: "Xiaochuan Yang"
 date: "2023-10-15"
 # format:
