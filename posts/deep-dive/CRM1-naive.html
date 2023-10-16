@@ -238,7 +238,7 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 <ol type="1">
 <li><strong>Model Calibration:</strong> This involves determining the model’s parameters using available data.</li>
 <li><strong>Distribution Computation:</strong> Compute the distribution of <span class="math inline">\(L\)</span> either analytically or through Monte Carlo simulation, based on the calibrated parameters.</li>
-<li><strong>Quantile Computation:</strong> Utilize the obtained distribution to compute VaR, shortfall, or other relevant metrics either analytically or numerically.</li>
+<li><strong>Metrics Computation:</strong> Utilize the obtained distribution to compute VaR, shortfall, or other relevant metrics either analytically or numerically.</li>
 </ol>
 <p>The calibration process demands substantial effort and is specific to the chosen model. We will delve into this topic in a future post. For the remainder of this discussion, let’s assume that we have already established a set of parameters and focus on the last two steps.</p>
 <p>It’s important to emphasize that deriving the exact distribution of <span class="math inline">\(L\)</span> can be tedious, if not infeasible. In practice, risk analysts resort to simulations and numerical computations to determine VaR and shortfalls. This pragmatic approach is the one we adopt here.</p>
@@ -309,7 +309,7 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 <div class="cell-output cell-output-display">
 <p><img src="CRM1-naive_files/figure-html/cell-4-output-1.png" width="592" height="411"></p>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="12">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
