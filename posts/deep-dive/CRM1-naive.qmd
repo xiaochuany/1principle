@@ -69,7 +69,7 @@ It's crucial to acknowledge that the joint distribution of $(I_i, S_i)$ is **unk
 
 1. **Model Calibration:** This involves determining the model's parameters using available data.
 2. **Distribution Computation:** Compute the distribution of $L$ either analytically or through Monte Carlo simulation, based on the calibrated parameters.
-3. **Quantile Computation:** Utilize the obtained distribution to compute VaR, shortfall, or other relevant metrics either analytically or numerically.
+3. **Metrics Computation:** Utilize the obtained distribution to compute VaR, shortfall, or other relevant metrics either analytically or numerically.
 
 The calibration process demands substantial effort and is specific to the chosen model. We will delve into this topic in a future post. For the remainder of this discussion, let's assume that we have already established a set of parameters and focus on the last two steps.
 
