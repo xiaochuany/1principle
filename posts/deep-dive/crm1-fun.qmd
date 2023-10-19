@@ -6,6 +6,9 @@ date: "2023-10-15"
 #   html: 
 #     code-fold: true
 categories: [credit risk modelling, applied probability, code]
+toc: true
+number-sections: false
+bibliography: ../assets/blog.bib
 ---
 
 <!-- latex stuff -->
@@ -14,9 +17,8 @@ categories: [credit risk modelling, applied probability, code]
 \def\RR{\mathbb{R}}
 \def\EE{\mathbb{E}}
 
-::: {.callout-note}
-This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions for the sake of simplicity and tractability. Despite its simplicity, this model serves as an excellent starting point for understanding the fundamental concepts of credit risk. It lays the foundation for more complex models that will be explored later in this series. The mathematical concepts introduced in this post are commonly found in any first-year probability textbook
-:::
+
+>This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions for the sake of simplicity and tractability. Despite its simplicity, this model serves as an excellent starting point for understanding the fundamental concepts of credit risk. It lays the foundation for more complex models that will be explored later in this series. The mathematical concepts introduced in this post are commonly found in any first-year probability textbook
 
 
 ## PD-LGD-EAD approach
@@ -79,7 +81,8 @@ It's important to emphasize that deriving the exact distribution of $L$ can be t
 
 **Step 1**
 
-We first specify the parameters $p_i, \mu_i$ and parameters for the distribution of $S_i$. These parameters are generated at random with arbitrary choice of distributions, following the book by [David Jamieson Bolder - Credit-Risk Modelling (2018)](https://link.springer.com/book/10.1007/978-3-319-94688-7)
+We first specify the parameters $p_i, \mu_i$ and parameters for the distribution of $S_i$. These parameters are generated at random with arbitrary choice of distributions, following  
+@bolder2018credit
 
 ```{python}
 import numpy as np
@@ -150,3 +153,5 @@ pd.DataFrame({'alphas': alphas, 'VaR': vars, 'Shortfalls': shortfalls}).set_inde
 
 
 We've completed tasks 2 and 3! Next time, we'll delve into methods of parameter estimation, still within the naive setting. This will bring us full circle and complete the lifecycle of a single model.
+
+## References

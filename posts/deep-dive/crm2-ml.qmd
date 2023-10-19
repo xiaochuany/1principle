@@ -4,11 +4,18 @@ author: "Xiaochuan Yang"
 date: "2023-10-16"
 # format:
 #   html: 
-#     code-fold: true
+#     include-in-header: ../assets/macro.qmd
 categories: [credit risk modelling, applied probability, code, machine learning]
 draft: true
 ---
 
+\newcommand{\EE}{\mathbb{E}}
+
+In a [previous post](crm1-fun.qmd), we've modelled the loss of a portfolio of instruments by $L = \sum_{i=1}^d \mu_i S_i I_i$, incorporating the event of default $I_i$, exposure at default $\mu_i$ and loss given default $S_i$.
 
 
+Our goal now is to estimate the underlying parameters of this model. For the Bernoulli random variable $I_i$, the only parameter is $p_i=\EE[I_i]$ and for $S_i$, we make an assumption that it is Beta distributed, so there are two parameters. 
 
+:::{.callout-important}
+Assume that $S_i$ is Beta distributed with parameters $a,b$
+:::

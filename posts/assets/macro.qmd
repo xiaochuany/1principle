@@ -1,0 +1,5 @@
+---
+title: "macros"
+---
+
+\newcommand{\EE}{\mathbb{E}}

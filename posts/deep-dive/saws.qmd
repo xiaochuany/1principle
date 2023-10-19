@@ -4,13 +4,9 @@ author: "Xiaochuan Yang"
 date: "2023-10-10"
 categories: [deep learning, code]
 image: "image.jpg"
+toc: true
 ---
 
-::: {.callout-note}
-My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a second year undergraduate course in deep learning.
-I found this a perfect example of "good notation helps memorisation" which hopefully reinforces understanding.
-Here's how we get to this recursion and a python implementation.
-:::
 
 <!-- \usepackage{minted} -->
 \usepackage{amsmath,amsfonts,amssymb,amsthm,mathrsfs,mathtools,bbm}
@@ -26,6 +22,15 @@ Here's how we get to this recursion and a python implementation.
 \def\Corr{\mathbb{C}\mathrm{orr}}
 \def\Ent{\mathbb{E}\mathrm{nt}}
 \def\1{\mathbbm{1}}
+
+
+> My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 
+>  module on deep learning.
+> I found this a perfect example of "good notation helps memorisation" which hopefully reinforces understanding.
+> In this post, I will explain how we get to this recursion and end the post with a python implementation.
+
+
+## Multi-Layer Perceptron
 
 Everyone knows that a neural network is a universal function approximator that can be used to learn complex relationships between inputs and outputs. It is a learning machine that mimics biological neural networks in the human brain.  Mathematically, given an input $x\in\RR^{n_x}$, a neural nerwork computes an ouput $\hat y\in\RR^{n_y}$ as follows,
 \begin{align*}
@@ -43,7 +48,7 @@ From the definition we see that $\hat y$ is not only a function of $x$, but also
 
 
 
-## Training{#sec-training}
+## Training
 
 
 How to train a neural network to make good predictions? Well, we first need to specify a computable objective. To achieve this we introduce a loss function that measures how good or bad a predictor is compared to the ground truth. This is called supervised learning. A commonly used loss is the squared loss 
@@ -136,8 +141,7 @@ All we have to do is to change the computation of $S^{[L+1]}$, namely the gradie
 \end{align*}
 where $e$ was defined earlier in the squared loss case.  
 
-
-## Implementation
+## Python Implementation
 
 Here is a python implementation of the training with min-batch SGD, 1 hidden layer, sigmoid activation in the hidden and output layers, and squared loss.
  
@@ -202,4 +206,4 @@ for epoch in range(n_epoch):
     errors.append(error)
 ```
 
-**Exercise**: implement the training with XE loss, more hidden layers, and the tricks we will mention in the next section.  
+**Exercise**: implement the training with XE loss and more hidden layers.  
