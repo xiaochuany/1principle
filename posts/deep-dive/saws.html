@@ -102,7 +102,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -171,27 +171,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#multi-layer-perceptron" id="toc-multi-layer-perceptron" class="nav-link active" data-scroll-target="#multi-layer-perceptron">Multi-Layer Perceptron</a></li>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">Training</a>
+  <ul class="collapse">
+  <li><a href="#squared-loss" id="toc-squared-loss" class="nav-link" data-scroll-target="#squared-loss">Squared loss</a></li>
+  <li><a href="#cross-entropy-loss" id="toc-cross-entropy-loss" class="nav-link" data-scroll-target="#cross-entropy-loss">Cross entropy loss</a></li>
+  </ul></li>
+  <li><a href="#python-implementation" id="toc-python-implementation" class="nav-link" data-scroll-target="#python-implementation">Python Implementation</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a second year undergraduate course in deep learning. I found this a perfect example of “good notation helps memorisation” which hopefully reinforces understanding. Here’s how we get to this recursion and a python implementation.</p>
-</div>
-</div>
 <!-- \usepackage{minted} -->
+<blockquote class="blockquote">
+<p>My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 module on deep learning. I found this a perfect example of “good notation helps memorisation” which hopefully reinforces understanding. In this post, I will explain how we get to this recursion and end the post with a python implementation.</p>
+</blockquote>
+<section id="multi-layer-perceptron" class="level2">
+<h2 class="anchored" data-anchor-id="multi-layer-perceptron">Multi-Layer Perceptron</h2>
 <p>Everyone knows that a neural network is a universal function approximator that can be used to learn complex relationships between inputs and outputs. It is a learning machine that mimics biological neural networks in the human brain. Mathematically, given an input <span class="math inline">\(x\in\mathbb{R}^{n_x}\)</span>, a neural nerwork computes an ouput <span class="math inline">\(\hat y\in\mathbb{R}^{n_y}\)</span> as follows, <span class="math display">\[\begin{align*}
 a^{[1]} &amp;= \sigma(W^{[1]\top} x + b^{[1]}) \\
 a^{[2]} &amp;= \sigma(W^{[2]\top} a^{[1]} + b^{[2]}) \\
@@ -201,8 +207,9 @@ a^{[L]} &amp;= \sigma(W^{[L]\top} a^{[L-1]} + b^{[L]}) \\
 \end{align*}\]</span></p>
 <p>Here <span class="math inline">\(\sigma:\mathbb{R}\to\mathbb{R}\)</span> is any nonlinear differentiable function (or sufficiently close to be such), <span class="math inline">\(L\)</span> is the number of hidden layers, <span class="math inline">\(W\)</span> and <span class="math inline">\(b\)</span> are weight matrices and bias vectors. We use <span class="math inline">\(n_l\)</span> to denote the number of hidden nodes in the <span class="math inline">\(l\)</span>-th layer. The pre-activation vector at layer <span class="math inline">\(l\)</span> is denoted by <span class="math inline">\(z^{[l]}\)</span>.</p>
 <p>From the definition we see that <span class="math inline">\(\hat y\)</span> is not only a function of <span class="math inline">\(x\)</span>, but also a function of <span class="math inline">\(z^{[1]}, z^{[2]}\)</span> and so forth using sub-networks. This may seem like stating the obvious, but it’s a useful fact to keep in mind when we derive the algorithm for training these networks.</p>
-<section id="sec-training" class="level2">
-<h2 class="anchored" data-anchor-id="sec-training">Training</h2>
+</section>
+<section id="training" class="level2">
+<h2 class="anchored" data-anchor-id="training">Training</h2>
 <p>How to train a neural network to make good predictions? Well, we first need to specify a computable objective. To achieve this we introduce a loss function that measures how good or bad a predictor is compared to the ground truth. This is called supervised learning. A commonly used loss is the squared loss <span class="math display">\[\begin{align*}
     \ell(u,v) =  \frac{1}{2} \|u-v\|^2
 \end{align*}\]</span> where <span class="math inline">\(\|\cdot\|\)</span> is the Euclidean norm. Then our goal is to minimize <span class="math inline">\(J=\ell(y,\hat y)\)</span>.</p>
@@ -255,8 +262,8 @@ S^{[l]} = A^{[l]} W^{[l+1]} S^{[l+1]}
 \end{align*}\]</span> where <span class="math inline">\(e\)</span> was defined earlier in the squared loss case.</p>
 </section>
 </section>
-<section id="implementation" class="level2">
-<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
+<section id="python-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="python-implementation">Python Implementation</h2>
 <p>Here is a python implementation of the training with min-batch SGD, 1 hidden layer, sigmoid activation in the hidden and output layers, and squared loss.</p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -322,7 +329,7 @@ S^{[l]} = A^{[l]} W^{[l+1]} S^{[l+1]}
 Epoch: 1 SE: 931.4561396806077</code></pre>
 </div>
 </div>
-<p><strong>Exercise</strong>: implement the training with XE loss, more hidden layers, and the tricks we will mention in the next section.</p>
+<p><strong>Exercise</strong>: implement the training with XE loss and more hidden layers.</p>
 
 
 </section>

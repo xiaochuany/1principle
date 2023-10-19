@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>first-ish principle – credit-risk-naive</title>
+<title>first-ish principle - macros</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -94,8 +60,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -134,7 +98,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">macros</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     
@@ -143,35 +123,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This is the first of a series of posts on credit risk models. The model we consider in this post is rather naive because many unrealistic assumptions have been made for the sake of simplicity and tractability of the model. Still, it provides a good starting point for understanding the basics of credit risk and lay out a foundation for more complicated models. Mathematical concepts we use in this post can be found in any first year probability text.</p>
-</div>
-</div>
-<p>Credit risk models are mathematical description of the loss of a portfolio of instruments. Each instrument may lead to default with some probability, resulting in a loss of investment either in totality or a proportion.</p>
-<p>In this post we consider the following naive model. Given a portfolio of <span class="math inline">\(d\)</span> instruments, we denote the event of default of <span class="math inline">\(i\)</span>-th instrument by <span class="math inline">\(D_i\)</span>. Let <span class="math inline">\(\mu_n\)</span> denote the potential exposure of <span class="math inline">\(i\)</span>-th instrument and <span class="math inline">\(S_i\)</span> the relative exposure i.e.&nbsp;actual exposure/potential exposure (the letter S refers to severity). As such the total loss of the porfolio will be <span id="eq-loss"><span class="math display">\[
-L = \sum_{i=1}^d \mu_i S_i I_{D_i}
-\tag{1}\]</span></span> Here <span class="math inline">\(I_{D_i}\)</span> is the indicator of the event <span class="math inline">\(D_i\)</span> which is Bernoulli distributed. Set <span class="math inline">\(\mathbb{P}[D_i]=p_i\)</span>.</p>
-<p>We assume that default events for the instruments in the portfolio are independent, or event identically distributed. The relative loss (aka exposure) as a result of the default evenet is a non-negative random variable, also assumed to be independent across all instruments.</p>
-<p>To describe the loss, we need iid Bernoulli random variable <span class="math inline">\(I_1,...,I_d\)</span> with <span class="math inline">\(I_i = 1\)</span> if instrument <span class="math inline">\(i\)</span> is default, <span class="math inline">\(0\)</span> otherwise. We also need iid random variable <span class="math inline">\(\xi_1,...,\xi_d\)</span>. Then</p>
-<p>For the sake of simplicity, assume that <span class="math inline">\(\xi_i \equiv c\)</span> for some <span class="math inline">\(c&gt;0\)</span>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">1123</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> <span class="dv">5000</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">100</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>bers <span class="op">=</span> g.binomial(<span class="dv">1</span>,<span class="fl">0.01</span>, (m,d))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+
 
 
 

@@ -56,7 +56,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -105,7 +124,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="../../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -175,7 +194,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#pd-lgd-ead-approach" id="toc-pd-lgd-ead-approach" class="nav-link active" data-scroll-target="#pd-lgd-ead-approach">PD-LGD-EAD approach</a></li>
+  <li><a href="#var-and-expected-shortfalls" id="toc-var-and-expected-shortfalls" class="nav-link" data-scroll-target="#var-and-expected-shortfalls">VaR and expected shortfalls</a></li>
+  <li><a href="#monte-carlo-simulation-for-estimating-var-and-shortfalls" id="toc-monte-carlo-simulation-for-estimating-var-and-shortfalls" class="nav-link" data-scroll-target="#monte-carlo-simulation-for-estimating-var-and-shortfalls">Monte Carlo simulation for estimating VaR and shortfalls</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
 
@@ -183,19 +213,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <!-- latex stuff -->
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
+<blockquote class="blockquote">
 <p>This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions for the sake of simplicity and tractability. Despite its simplicity, this model serves as an excellent starting point for understanding the fundamental concepts of credit risk. It lays the foundation for more complex models that will be explored later in this series. The mathematical concepts introduced in this post are commonly found in any first-year probability textbook</p>
-</div>
-</div>
+</blockquote>
 <section id="pd-lgd-ead-approach" class="level2">
 <h2 class="anchored" data-anchor-id="pd-lgd-ead-approach">PD-LGD-EAD approach</h2>
 <p>Credit risk models are mathematical representations of the potential losses within a portfolio of financial instruments. Each instrument carries a probability of default, leading to either a complete loss or a partial loss. Modeling credit risk is crucial as it offers valuable insights to stakeholders, enabling them to take proactive measures to mitigate these losses. Consequently, it plays a pivotal role in the financial sector.</p>
@@ -246,7 +266,8 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 <section id="monte-carlo-simulation-for-estimating-var-and-shortfalls" class="level2">
 <h2 class="anchored" data-anchor-id="monte-carlo-simulation-for-estimating-var-and-shortfalls">Monte Carlo simulation for estimating VaR and shortfalls</h2>
 <p><strong>Step 1</strong></p>
-<p>We first specify the parameters <span class="math inline">\(p_i, \mu_i\)</span> and parameters for the distribution of <span class="math inline">\(S_i\)</span>. These parameters are generated at random with arbitrary choice of distributions, following the book by <a href="https://link.springer.com/book/10.1007/978-3-319-94688-7">David Jamieson Bolder - Credit-Risk Modelling (2018)</a></p>
+<p>We first specify the parameters <span class="math inline">\(p_i, \mu_i\)</span> and parameters for the distribution of <span class="math inline">\(S_i\)</span>. These parameters are generated at random with arbitrary choice of distributions, following<br>
+<span class="citation" data-cites="bolder2018credit">Bolder (<a href="#ref-bolder2018credit" role="doc-biblioref">2018</a>)</span></p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -307,9 +328,9 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'display.precision'</span>, <span class="dv">4</span>)</span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>pd.DataFrame({<span class="st">'alphas'</span>: alphas, <span class="st">'VaR'</span>: <span class="bu">vars</span>, <span class="st">'Shortfalls'</span>: shortfalls}).set_index(<span class="st">'alphas'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<p><img src="CRM1-naive_files/figure-html/cell-4-output-1.png" width="592" height="411"></p>
+<p><img src="crm1-fun_files/figure-html/cell-4-output-1.png" width="592" height="411"></p>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="12">
 <div>
 
 
@@ -349,11 +370,19 @@ E_\alpha(L) = \mathbb{E}[L|L\ge\mathrm{VaR}_\alpha].
 </div>
 </div>
 <p>We’ve completed tasks 2 and 3! Next time, we’ll delve into methods of parameter estimation, still within the naive setting. This will bring us full circle and complete the lifecycle of a single model.</p>
+</section>
+<section id="references" class="level2">
+
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-bolder2018credit" class="csl-entry" role="listitem">
+Bolder, David Jamieson. 2018. <em>Credit-Risk Modelling</em>. Springer.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
