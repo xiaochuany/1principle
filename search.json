@@ -7,18 +7,18 @@
     "text": "Since October 2022, I have created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com, closely following the excellent textbook written by Shalev-Shwartz and Ben-David, which is freely available on the authors’ webpage.\n\nPlaylist in my YouTube channel\nTopics covered include\n\nProbably Approximately Correct (PAC) learning model\nVC dimension\nno free lunch theorem\nlinear predictors: logistic regression, linear regression, perceptron\nconvex learning problems\nregularisation\nstochastic gradient descent\nsupport vector machine\nkernel methods\ndecision trees\nboosting: AdaBoost\nclustering: k-means, spectral clustering, linkage-based clustering\ndimenionality reduction: PCA, compressed sensing\ngenerative models: naive Bayes, LDA, EM algorithms"
   },
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Mathematics in the real world",
+    "section": "",
+    "text": "Credit Risk Models Ep 1 Fundamentals\n\n\n\n\n\n\n\ncredit risk modelling\n\n\napplied probability\n\n\ncode\n\n\n\n\n\n\n\n\n\n\n\nOct 15, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\n  \n\n\n\n\nUnderstanding Machine Learning: a series of 20 videos\n\n\n\n\n\n\n\nmachine learning\n\n\n\n\n\n\n\n\n\n\n\nOct 14, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\n  \n\n\n\n\nSecret ‘SAWS’ of deep learning, feature backprop\n\n\n\n\n\n\n\ndeep learning\n\n\ncode\n\n\n\n\n\n\n\n\n\n\n\nOct 10, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\nNo matching items"
+  },
+  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
     "section": "",
     "text": "Passionate about probabilistic machine learning and quantitative finance, Xiaochuan explores the intricate intersection of mathematics and real-world applications.\nCurious about Xiaochuan’s research? Dive into his world through his webpage."
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Mathematics in the real world",
-    "section": "",
-    "text": "macros\n\n\n\n\n\n\n\n\n\n\n \n\n\n\n\n  \n\n\n\n\nCredit Risk Models Ep 1 Fundamentals\n\n\n\n\n\n\n\ncredit risk modelling\n\n\napplied probability\n\n\ncode\n\n\n\n\n\n\n\n\n\n\n\nOct 15, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\n  \n\n\n\n\nUnderstanding Machine Learning: a series of 20 videos\n\n\n\n\n\n\n\nmachine learning\n\n\n\n\n\n\n\n\n\n\n\nOct 14, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\n  \n\n\n\n\nSecret ‘SAWS’ of deep learning, feature backprop\n\n\n\n\n\n\n\ndeep learning\n\n\ncode\n\n\n\n\n\n\n\n\n\n\n\nOct 10, 2023\n\n\nXiaochuan Yang\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/deep-dive/crm1-fun.html",

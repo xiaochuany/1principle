@@ -2,7 +2,6 @@
   {
     "listing": "/index.html",
     "items": [
-      "/posts/assets/macro.html",
       "/posts/deep-dive/crm1-fun.html",
       "/posts/deep-dive/uml.html",
       "/posts/deep-dive/saws.html"
