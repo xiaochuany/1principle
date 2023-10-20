@@ -1,21 +1,145 @@
 ---
 title: "Credit Risk Models Ep 2 machine learning methods for parameter tuning"
 author: "Xiaochuan Yang"
-date: "2023-10-16"
+date: "2023-10-20"
 # format:
 #   html: 
 #     include-in-header: ../assets/macro.qmd
-categories: [credit risk modelling, applied probability, code, machine learning]
-draft: true
+categories: [credit risk modelling, code, machine learning]
+draft: false
+toc: true
+number-sections: false
 ---
 
 \newcommand{\EE}{\mathbb{E}}
+\newcommand{\RR}{\mathbb{R}}
 
-In a [previous post](crm1-fun.qmd), we've modelled the loss of a portfolio of instruments by $L = \sum_{i=1}^d \mu_i S_i I_i$, incorporating the event of default $I_i$, exposure at default $\mu_i$ and loss given default $S_i$.
+>In a [previous post](crm1-fun.qmd), we've modelled the loss of a portfolio of $d$ instruments as follows
+$$L = \sum_{i=1}^d \mu_i S_i I_i,
+$$ 
+where $L$ represents the total loss, $\mu_i$ is the exposure at default, $S_i$ is the loss given default, and $I_i$ is the event of default for the $i$-th instrument.
+To compute expected loss, VaR, and other relevant metrics in risk management, it is crucial to estimate these underlying parameters accurately.
+In this post, our focus is on estimating $p_i=\mathbb{E}[I_i]$, which is formulated as a machine learning problem
+
+## Estimating probaiblity of default (PD)
 
 
-Our goal now is to estimate the underlying parameters of this model. For the Bernoulli random variable $I_i$, the only parameter is $p_i=\EE[I_i]$ and for $S_i$, we make an assumption that it is Beta distributed, so there are two parameters. 
+Consider the real-world example of a bank approving loans for applicants based on their profiles. In this scenario, every applicant must fill out a comprehensive application form, including details such as their profession, age, amount of debts, monthly salary, and so on. The bank maintains records and, in retrospect, knows who has defaulted on their loans.
 
-:::{.callout-important}
-Assume that $S_i$ is Beta distributed with parameters $a,b$
-:::
+To formalize this process, each applicant corresponds to a vector in $\RR^k$, known as the feature vector, which incorporates all the information from the form (possibly encoded for categorical values, e.g., converting 'profession' into dummy variables). The output we aim to predict is whether the applicant is in default (1) or not (0).
+
+This constitutes a binary classification problem. With a substantial number of input-output pairs (features and default status) available, supervised learning algorithms can be employed to learn a relationship that can subsequently be used for predictions.
+
+Many supervised learning algorithms for binary prediction actually output probabilities (specifically, the probability of the label being 1). This is suitable for our goal, as we precisely seek to estimate probabilities.
+
+For illustration, let's consider a credit default risk dataset from this [Kaggle competition](https://www.kaggle.com/competitions/home-credit-default-risk). The dataset we are working with contains 308k rows and 121 input features. 
+
+While there are numerous aspects to discuss regarding this dataset, for the sake of brevity, I will address two significant points here:
+
+
+### Missing values
+
+
+There are many missing values in this dataset. To be more precise, 41 columns actually have half of their values missing.
+
+This is a critical issue that needs to be addressed because many off-the-shelf machine learning models in scikit-learn, such as logistic regression, random forest, and support vector machines, cannot handle missing values represented as `np.nan`. There are two possible options to handle this:
+
+1. **Impute the missing values** before feeding the data into these models. Imputation can be done using "rule-based" methods such as scikit-learn's SimpleImputer or "learning-based" methods such as scikit-learn's IterativeImputer.
+
+2. **Use a different model that supports missing values natively.** For instance, many gradient boosting implementations like HistGradientBoosting, XGBoost, LightGBM, and CatBoost handle missing values natively.
+
+For the sake of providing a quick benchmark, we have opted for the second option and are using scikit-learn's gradient boosting implementation, HistGradientBoostingClassifier. Explaining the detailed workings of gradient boosting is a vast topic that we might delve into in a future post.
+
+
+### Unbalanced data
+
+Roughly 8% of the obligors goes into default in this dataset, making it unbalanced. From the perspective of risk management, it is important to predict defaults (label 1) accurately. Therefore, when it comes to evaluate model performance,  accuracy is not an appropriate metric. Simply predicting non-default for all obligors would result in a correct prediction 92% of the time, but it's never correct for the defaults. 
+
+Applying a machine learning model directly to an unbalanced dataset can lead to sub-optimal results. We'll demonstrate this point in the next section. A simple mitigation strategy is to sub-sample the majority class to match the size of the minority class,  creating a balanced dataset. In this example, the minority class comprises roughly 25k rows, so we can train a model using this strategy as the balanced data is not too small to be useful. 
+
+Obviously, the downside of this strategy is that we have thrown away lots of valuable data, but let's not worry about it at this stage of obtaining a quick benchmark. 
+
+## Implementation
+
+First we feed the whole unbalanced dataset into HistGradientBoostingClassifier. 
+
+
+```{python}
+import os
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import make_column_transformer, make_column_selector
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.metrics import classification_report
+
+PATH = '../../../LearnFromTabularData/data/raw'
+df = pd.read_csv(os.path.join(PATH,'application_train.csv'))
+
+y = df.pop('TARGET')
+X = df
+
+X_tr, X_dev, y_tr, y_dev = train_test_split(X,y,test_size=0.2, random_state=1123)
+
+ohe = OneHotEncoder(drop='if_binary')
+scaler = StandardScaler()
+model = HistGradientBoostingClassifier()
+
+ct = make_column_transformer(
+    (ohe, make_column_selector(dtype_exclude=np.number)),
+    (scaler, make_column_selector(dtype_include=np.number)),
+    remainder='drop',
+)
+
+pipe = make_pipeline(
+    ct,model
+)
+
+pipe.fit(X_tr,y_tr)
+y_pred = pipe.predict(X_dev)
+print(classification_report(y_pred,y_dev))
+```
+
+
+
+As we can see, the precision for class 1 is only 0.02, indicating that only 2% of the predicted defaults are true defaults.
+Does this mean that the model we chose is rubbish?
+Not necessarily. Let's use the exact same model but now with a balanced dataset created using the sub-sampling strategy
+
+
+```{python}
+df = pd.read_csv(os.path.join(PATH,'application_train.csv'))
+mask = (df['TARGET']==1)
+m = mask.sum()
+df_balance = pd.concat([df[~mask].sample(m,random_state=119),df[mask]], axis=0)
+
+y = df_balance.pop("TARGET")
+X = df_balance
+
+X_tr, X_dev, y_tr, y_dev = train_test_split(X,y,test_size=0.2, random_state=112)
+
+ohe = OneHotEncoder(drop='if_binary')
+scaler = StandardScaler()
+model = HistGradientBoostingClassifier()
+
+ct = make_column_transformer(
+    (ohe, make_column_selector(dtype_exclude=np.number)),
+    (scaler, make_column_selector(dtype_include=np.number)),
+    remainder='drop',
+)
+
+pipe = make_pipeline(
+    ct,model
+)
+
+pipe.fit(X_tr,y_tr)
+y_pred = pipe.predict(X_dev)
+print(classification_report(y_pred,y_dev))
+```
+
+
+Much better! All the metrics look roughly the same, hovering around 69%. While this is far from being deployable in the real world, as a baseline, it's far more reasonable than our previous attempt.
+
+We'll conclude the post here. To further enhance the overall performance, it's necessary to meticulously explore the features, engage in more feature engineering, employ clever methods of data imputation, and conduct thorough hyperparameter tuning. Give it a go!
