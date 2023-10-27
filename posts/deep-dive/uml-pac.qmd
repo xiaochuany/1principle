@@ -1,5 +1,5 @@
 ---
-title: "understanding machine learning"
+title: "Machine Learning Recaps 1"
 author: "Xiaochuan Yang"
 date: "2023-10-27"
 # format:
@@ -11,22 +11,82 @@ toc: true
 number-sections: false
 ---
 
+\def\PP{\mathbb{P}}
+\def\VAR{\mathrm{VaR}}
+\def\RR{\mathbb{R}}
+\def\EE{\mathbb{E}}
 
 
-## Setting 
+## Setting up the scene  
 
 In a supervised learning, we specify 
--  the example space $\mathcal X$
--  the label space $\mathcal Y$
--  the sample $S = \{(x_i,y_i)\}$ where $x_i\in \mathcal X, y_i\in \mathcal Y$
--  an hypothese class $\mathcal H$, known as the inductive bias
--  a loss function $\ell: \mathcal H \times \mathcal X \times \mathcal Y \to \RR_+$
 
-Making the assumption that the sample is iid, from the sample $S$,  we aim at finding a $h\in\mathcal H$ which minimises the true risk
+- an example space $\mathcal X$  
+- a label space $\mathcal Y$
+-  a collection of hypotheses $h: \mathcal X \to \mathcal Y$, making up the hypothesis class  (inductive bias), from which we want to pick a predictor
+-  a loss function $\ell: \mathcal Y \times \mathcal Y \to \RR_+$, quantifying how good or bad a prediction $\hat y$ is compared to the ground truth label $y$
+
+
+:::{.callout-important}
+We are given an independent and identically distributed input-output pairs 
+$S = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y$ with distribution $D$. 
+:::
+
+Our goal is to pick the "best" predictor in the sense of minimising the true loss  
 $$
-L_D(h) = \EE[\ell(h)]  
+L_D(h) = \EE_{(x,y)\sim D}[\ell(h(x),y))]  
 $$
+where $D$ is the *true* distribution of $(x,y)$.
+
+Obviously *a priori* the distribution $D$ of the samples is unkonwn. However by law of large numbers we know that 
+$$
+L_S(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
+$$
+is a consistent estimator of $L_D(h)$ (when $m\to\infty$ under mild condition on the distribution of $\ell(h(x),y)$). This motivates the empirical risk minimisation (ERM) approach i.e. we look for 
+$$
+h_S \in \mathrm{argmin}_{h\in\mathcal H} L_S(h)
+$$
+Hence, instead of minimising the true risk, we minimise the empirical risk, which is close to the true risk when $m$ is large, for a fixed $h$. Whether such approximation is valid uniformly for all the hypothesis in $\mathcal H$ is at the centre of the so-called learning theory . 
 
 
-The name of the game is from sample $S$ learn a hypothesis $h_S\in \mathcal H$ which minimises the risk
-$L_D()$
+## Let's be concrete  
+
+From a practical point of view, we may not want to get into the learning theory bounds despite its elegance, what we do is to  split the sample $S$ into two parts $S_1, S_2$, where $S_1$ is used to find an ERM which we denote by $h_1$, another for testing whether the found ERM achieves small $L_D(h_1)$. The rationale is simple, since we make iid assumption, $S_2$ is independent of $S_1$, hence $L_{S_2}(h_1) \approx L_D(h_1)$ when $|S_2|$ is not too small. Therefore, the smallness of $L_{S_2}(h_1)$ indicates good quality (small true risk) of our predictor $h_1$. 
+
+The split method for arrays is implemented in `sklearn.model_selection`
+
+```{python}
+from sklearn.model_selection import train_test_split
+import numpy as np
+g = np.random.default_rng(12)
+x = g.normal(0,1,(20,))
+x_tr, x_te = train_test_split(x,test_size=0.2,random_state=12)
+```
+
+Typically, examples are vectors in $\RR^d, d\ge 1$. In $k$-way ($k\ge 2$) classification problems, labels are one-hot encodings $e_1,..., e_k$ where $e_i$ is the unit vector in $\RR^k$ with one on the $i$ th coordinate and zero elsewhere. If $k=2$, we can drop the second coordinate and simply denote the two classes by $\{1, -1\}$ or $\{0,1\}$. In regression problems, the labels are in the continuum $\RR^k, k\ge 1$. 
+
+Now consider $\mathcal H$. For classification problems, instead of predicting discrete class labels directly, it is often beneficial to predict a probability mass function over the $k$ classes. From this a label can be obtained by taking argmax. In other words, the range of $h\in\mathcal H$ is assumed to be $\{y\in\RR^k: y_i\ge 0, y_1+...+y_k=1\}$. For regression problems there are no such constraints and the range can be the whole $\RR^k$. 
+
+The choie of the loss function may vary, depending on what goal we are trying to achiecve. Researchers can design new losses suitable for their use case. Here we mention a few popular ones. For classification problems, if we use hypothesis predicting pmf, the cross entropy loss is often a good choice
+$$
+XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
+$$
+For regression problems, the squared loss is often a good choice
+$$SE(y,\hat y)= \|y-\hat y\|^2_2$$
+where $\|.\|$ is Euclidean norm. 
+
+There are many losses already implemented in `sklearn.metrics`. The XE is named `log_loss` and the squared loss is named `mean_sqquared_error`
+
+```{python}
+import sklearn.metrics as metrics
+for m in dir(metrics):
+    if not m.startswith('_'): print(m)
+```
+
+These are not difficult to implement, e.g. see below for log loss (in the case of binary classification), but it comes in handy that `sklearn` has them already defined. 
+
+```{python}
+def log_loss(yt,yp):
+    yt[yt==0]= 1-yp[yt==0]
+    return -np.log(y).mean()
+```
