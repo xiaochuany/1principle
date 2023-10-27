@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/uml.html</loc>
-    <lastmod>2023-10-21T16:34:38.265Z</lastmod>
+    <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/uml-recap1.html</loc>
+    <lastmod>2023-10-27T23:19:08.426Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/crm2-ml.html</loc>
-    <lastmod>2023-10-21T16:34:37.075Z</lastmod>
+    <lastmod>2023-10-27T23:19:06.476Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/index.html</loc>
-    <lastmod>2023-10-21T16:34:35.296Z</lastmod>
+    <lastmod>2023-10-27T23:19:03.879Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/about.html</loc>
-    <lastmod>2023-10-21T16:34:34.030Z</lastmod>
+    <lastmod>2023-10-27T23:19:02.990Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/crm1-fun.html</loc>
-    <lastmod>2023-10-21T16:34:36.254Z</lastmod>
+    <lastmod>2023-10-27T23:19:05.525Z</lastmod>
   </url>
   <url>
     <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/saws.html</loc>
-    <lastmod>2023-10-21T16:34:37.835Z</lastmod>
+    <lastmod>2023-10-27T23:19:07.559Z</lastmod>
+  </url>
+  <url>
+    <loc>https://xiaochuany.github.io/1principle/posts/deep-dive/uml.html</loc>
+    <lastmod>2023-10-27T23:19:08.831Z</lastmod>
   </url>
 </urlset>
