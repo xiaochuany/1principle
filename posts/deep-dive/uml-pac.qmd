@@ -1,0 +1,32 @@
+---
+title: "understanding machine learning"
+author: "Xiaochuan Yang"
+date: "2023-10-27"
+# format:
+#   html: 
+#     include-in-header: ../assets/macro.qmd
+categories: [code, machine learning]
+draft: false
+toc: true
+number-sections: false
+---
+
+
+
+## Setting 
+
+In a supervised learning, we specify 
+-  the example space $\mathcal X$
+-  the label space $\mathcal Y$
+-  the sample $S = \{(x_i,y_i)\}$ where $x_i\in \mathcal X, y_i\in \mathcal Y$
+-  an hypothese class $\mathcal H$, known as the inductive bias
+-  a loss function $\ell: \mathcal H \times \mathcal X \times \mathcal Y \to \RR_+$
+
+Making the assumption that the sample is iid, from the sample $S$,  we aim at finding a $h\in\mathcal H$ which minimises the true risk
+$$
+L_D(h) = \EE[\ell(h)]  
+$$
+
+
+The name of the game is from sample $S$ learn a hypothesis $h_S\in \mathcal H$ which minimises the risk
+$L_D()$
