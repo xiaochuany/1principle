@@ -1,0 +1,67 @@
+---
+title: "Machine Learning Recap 2"
+author: "Xiaochuan Yang"
+date: "2023-10-28"
+# format:
+#   html: 
+#     include-in-header: ../assets/macro.qmd
+categories: [code, machine learning]
+draft: true
+toc: true
+number-sections: false
+---
+
+\def\PP{\mathbb{P}}
+\def\VAR{\mathrm{VaR}}
+\def\RR{\mathbb{R}}
+\def\EE{\mathbb{E}}
+
+
+In this post, we focus on ML algorithms for classification, a common task in many real-life applications. For instance, in the series of [credit risk modelling](crm2-ml.qmd), we demonstrated how estimating the probability of default can be casted as a  a classification problmem, i.e. whether a loan borrower will go into default.
+
+[Recalling](uml-recap1.qmd) some notation, we have  
+
+- an example space $\mathcal X$  
+- a label space $\mathcal Y$
+-  a collection of hypotheses $h: \mathcal X \to \mathcal Y$, making up the hypothesis class  (inductive bias), from which we want to pick a predictor
+-  a loss function $\ell: \mathcal Y \times \mathcal Y \to \RR_+$, quantifying how good or bad a prediction $\hat y$ is compared to the ground truth label $y$
+
+:::{.callout-important}
+We are given an independent and identically distributed input-output pairs 
+$S^0 = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y$ with distribution $D$. 
+:::
+
+
+We adopt a validation approach, where we minimise the empirical risk (ERM) with data in the train split $S$, and evaluate the true loss with data in the validation split $V$. 
+
+
+$$
+h_{S} \in \mathrm{argmin}_{h\in\mathcal H} L_{S}(h), \quad L_{S}(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
+$$
+
+
+
+Now consider $\mathcal H$. It is sometimes beneficial to predict a probability mass function (pmf) over the $k$ classes. From the pmf, a label can be obtained by taking argmax. In other words, the range of $h\in\mathcal H$ is assumed to be $\{y\in\RR^k: y_i\ge 0, y_1+...+y_k=1\}$. In this scenario, the cross entropy loss is often a good choice
+$$
+XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
+$$
+
+Why don't we use the 0-1 loss? This seems quite natural if the prediction accuracy is what we care the most.
+$$
+\ell_{0-1}(y,\hat y) = \mathbb{I}(y\neq \hat y)
+$$
+The principle reason is that this loss is non-convex and discrete, making it difficult to optimise (rememeber that we are looking for an ERM on the train split). 
+
+Next we consider some popular classification algorithms
+
+- linear classifiers
+- decision trees
+- boosting: adaboost, gradient boost
+- bagging: random forest
+- support vector machines (with kernel)
+- nearest neighbors
+- neural networks
+
+We review the time complexity for training and deploying these models.
+
+## Linear predictors
