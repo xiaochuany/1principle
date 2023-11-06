@@ -1,10 +1,7 @@
 ---
-title: "Machine Learning Recap 2"
+title: "Machine Learning Recap 2 Gradient Boosters and Random Forests"
 author: "Xiaochuan Yang"
-date: "2023-10-28"
-# format:
-#   html: 
-#     include-in-header: ../assets/macro.qmd
+date: "2023-11-?"
 categories: [code, machine learning]
 draft: true
 toc: true
@@ -52,16 +49,13 @@ $$
 $$
 The principle reason is that this loss is non-convex and discrete, making it difficult to optimise (rememeber that we are looking for an ERM on the train split). 
 
-Next we consider some popular classification algorithms
+Next we consider tree algorithms. We review the time and space complexity for training and deploying these models.
 
-- linear classifiers
-- decision trees
-- boosting: adaboost, gradient boost
-- bagging: random forest
-- support vector machines (with kernel)
-- nearest neighbors
-- neural networks
+## Decision Trees
 
-We review the time complexity for training and deploying these models.
+The idea of decision is simple.  
 
-## Linear predictors
+
+## Gradient Boosting Decision Trees
+
+## Random Forest

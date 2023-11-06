@@ -1,0 +1,20 @@
+---
+title: "Machine Learning Recap 4 Clustering and Dimensionality Reduction"
+author: "Xiaochuan Yang"
+date: "2023-11-?"
+categories: [code, machine learning]
+draft: true
+toc: true
+number-sections: false
+---
+
+\def\PP{\mathbb{P}}
+\def\VAR{\mathrm{VaR}}
+\def\RR{\mathbb{R}}
+\def\EE{\mathbb{E}}
+
+
+Next we consider some popular  algorithms
+
+- k-means
+- PCA

@@ -1,0 +1,21 @@
+---
+title: "Machine Learning Recap 3 SVM and Neural Nets"
+author: "Xiaochuan Yang"
+date: "2023-11-?"
+categories: [code, machine learning]
+draft: true
+toc: true
+number-sections: false
+---
+
+\def\PP{\mathbb{P}}
+\def\VAR{\mathrm{VaR}}
+\def\RR{\mathbb{R}}
+\def\EE{\mathbb{E}}
+
+
+Next we consider some popular  algorithms
+
+- linear classifiers
+- support vector machines
+- neural networks
