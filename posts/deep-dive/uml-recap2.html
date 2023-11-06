@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.466">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiaochuan Yang">
-<meta name="dcterms.date" content="2023-10-27">
+<meta name="dcterms.date" content="2023-11-01">
 
-<title>first-ish principle - Machine Learning Recaps 1</title>
+<title>first-ish principle - Machine Learning Recap 2 Gradient Boosters and Random Forests</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -81,7 +47,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -106,9 +78,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">first-ish principle</span>
     </a>
@@ -120,18 +92,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html" rel="" target="">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/xiaochuany" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/xiaochuany"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -139,7 +111,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Machine Learning Recaps 1</h1>
+      <h1 class="title">Machine Learning Recap 2 Gradient Boosters and Random Forests</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">code</div>
                 <div class="quarto-category">machine learning</div>
@@ -160,7 +132,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 27, 2023</p>
+        <p class="date">November 1, 2023</p>
       </div>
     </div>
     
@@ -176,8 +148,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#setting-up-the-scene" id="toc-setting-up-the-scene" class="nav-link active" data-scroll-target="#setting-up-the-scene">Setting up the scene</a></li>
-  <li><a href="#lets-be-concrete" id="toc-lets-be-concrete" class="nav-link" data-scroll-target="#lets-be-concrete">Let’s be concrete</a></li>
+  <li><a href="#decision-trees" id="toc-decision-trees" class="nav-link active" data-scroll-target="#decision-trees">Decision Trees</a></li>
+  <li><a href="#gradient-boosting-decision-trees" id="toc-gradient-boosting-decision-trees" class="nav-link" data-scroll-target="#gradient-boosting-decision-trees">Gradient Boosting Decision Trees</a></li>
+  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest">Random Forest</a></li>
   </ul>
 </nav>
     </div>
@@ -187,9 +160,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="setting-up-the-scene" class="level2">
-<h2 class="anchored" data-anchor-id="setting-up-the-scene">Setting up the scene</h2>
-<p>In a supervised learning, we specify</p>
+
+<p>In this post, we focus on ML algorithms for classification, a common task in many real-life applications. For instance, in the series of <a href="../../posts/deep-dive/crm2-ml.html">credit risk modelling</a>, we demonstrated how estimating the probability of default can be casted as a a classification problmem, i.e.&nbsp;whether a loan borrower will go into default.</p>
+<p><a href="../../posts/deep-dive/uml-recap1.html">Recalling</a> some notation, we have</p>
 <ul>
 <li>an example space <span class="math inline">\(\mathcal X\)</span><br>
 </li>
@@ -207,130 +180,29 @@ Important
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>We are given an independent and identically distributed input-output pairs <span class="math inline">\(S = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y\)</span> with distribution <span class="math inline">\(D\)</span>.</p>
+<p>We are given an independent and identically distributed input-output pairs <span class="math inline">\(S^0 = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y\)</span> with distribution <span class="math inline">\(D\)</span>.</p>
 </div>
 </div>
-<p>Our goal is to pick the “best” predictor in the sense of minimising the true loss<br>
-<span class="math display">\[
-L_D(h) = \mathbb{E}_{(x,y)\sim D}[\ell(h(x),y))]  
-\]</span> where <span class="math inline">\(D\)</span> is the <em>true</em> distribution of <span class="math inline">\((x,y)\)</span>.</p>
-<p>Obviously <em>a priori</em> the distribution <span class="math inline">\(D\)</span> of the samples is unkonwn. However by law of large numbers we know that <span class="math display">\[
-L_S(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
-\]</span> is a consistent estimator of <span class="math inline">\(L_D(h)\)</span> (when <span class="math inline">\(m\to\infty\)</span> under mild condition on the distribution of <span class="math inline">\(\ell(h(x),y)\)</span>). This motivates the empirical risk minimisation (ERM) approach i.e.&nbsp;we look for <span class="math display">\[
-h_S \in \mathrm{argmin}_{h\in\mathcal H} L_S(h)
-\]</span> Hence, instead of minimising the true risk, we minimise the empirical risk, which is close to the true risk when <span class="math inline">\(m\)</span> is large, for a fixed <span class="math inline">\(h\)</span>. Whether such approximation is valid uniformly for all the hypothesis in <span class="math inline">\(\mathcal H\)</span> is at the centre of the so-called learning theory .</p>
-</section>
-<section id="lets-be-concrete" class="level2">
-<h2 class="anchored" data-anchor-id="lets-be-concrete">Let’s be concrete</h2>
-<p>From a practical point of view, we may not want to get into the learning theory bounds despite its elegance, what we do is to split the sample <span class="math inline">\(S\)</span> into two parts <span class="math inline">\(S_1, S_2\)</span>, where <span class="math inline">\(S_1\)</span> is used to find an ERM which we denote by <span class="math inline">\(h_1\)</span>, another for testing whether the found ERM achieves small <span class="math inline">\(L_D(h_1)\)</span>. The rationale is simple, since we make iid assumption, <span class="math inline">\(S_2\)</span> is independent of <span class="math inline">\(S_1\)</span>, hence <span class="math inline">\(L_{S_2}(h_1) \approx L_D(h_1)\)</span> when <span class="math inline">\(|S_2|\)</span> is not too small. Therefore, the smallness of <span class="math inline">\(L_{S_2}(h_1)\)</span> indicates good quality (small true risk) of our predictor <span class="math inline">\(h_1\)</span>.</p>
-<p>The split method for arrays is implemented in <code>sklearn.model_selection</code></p>
-<div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">12</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(<span class="dv">20</span>,))</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>x_tr, x_te <span class="op">=</span> train_test_split(x,test_size<span class="op">=</span><span class="fl">0.2</span>,random_state<span class="op">=</span><span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Typically, examples are vectors in <span class="math inline">\(\mathbb{R}^d, d\ge 1\)</span>. In <span class="math inline">\(k\)</span>-way (<span class="math inline">\(k\ge 2\)</span>) classification problems, labels are one-hot encodings <span class="math inline">\(e_1,..., e_k\)</span> where <span class="math inline">\(e_i\)</span> is the unit vector in <span class="math inline">\(\mathbb{R}^k\)</span> with one on the <span class="math inline">\(i\)</span> th coordinate and zero elsewhere. If <span class="math inline">\(k=2\)</span>, we can drop the second coordinate and simply denote the two classes by <span class="math inline">\(\{1, -1\}\)</span> or <span class="math inline">\(\{0,1\}\)</span>. In regression problems, the labels are in the continuum <span class="math inline">\(\mathbb{R}^k, k\ge 1\)</span>.</p>
-<p>Now consider <span class="math inline">\(\mathcal H\)</span>. For classification problems, instead of predicting discrete class labels directly, it is often beneficial to predict a probability mass function over the <span class="math inline">\(k\)</span> classes. From this a label can be obtained by taking argmax. In other words, the range of <span class="math inline">\(h\in\mathcal H\)</span> is assumed to be <span class="math inline">\(\{y\in\mathbb{R}^k: y_i\ge 0, y_1+...+y_k=1\}\)</span>. For regression problems there are no such constraints and the range can be the whole <span class="math inline">\(\mathbb{R}^k\)</span>.</p>
-<p>The choie of the loss function may vary, depending on what goal we are trying to achiecve. Researchers can design new losses suitable for their use case. Here we mention a few popular ones. For classification problems, if we use hypothesis predicting pmf, the cross entropy loss is often a good choice <span class="math display">\[
+<p>We adopt a validation approach, where we minimise the empirical risk (ERM) with data in the train split <span class="math inline">\(S\)</span>, and evaluate the true loss with data in the validation split <span class="math inline">\(V\)</span>.</p>
+<p><span class="math display">\[
+h_{S} \in \mathrm{argmin}_{h\in\mathcal H} L_{S}(h), \quad L_{S}(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
+\]</span></p>
+<p>Now consider <span class="math inline">\(\mathcal H\)</span>. It is sometimes beneficial to predict a probability mass function (pmf) over the <span class="math inline">\(k\)</span> classes. From the pmf, a label can be obtained by taking argmax. In other words, the range of <span class="math inline">\(h\in\mathcal H\)</span> is assumed to be <span class="math inline">\(\{y\in\mathbb{R}^k: y_i\ge 0, y_1+...+y_k=1\}\)</span>. In this scenario, the cross entropy loss is often a good choice <span class="math display">\[
 XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
-\]</span> For regression problems, the squared loss is often a good choice <span class="math display">\[SE(y,\hat y)= \|y-\hat y\|^2_2\]</span> where <span class="math inline">\(\|.\|\)</span> is Euclidean norm.</p>
-<p>There are many losses already implemented in <code>sklearn.metrics</code>. The XE is named <code>log_loss</code> and the squared loss is named <code>mean_sqquared_error</code></p>
-<div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.metrics <span class="im">as</span> metrics</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> <span class="bu">dir</span>(metrics):</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> m.startswith(<span class="st">'_'</span>): <span class="bu">print</span>(m)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>ConfusionMatrixDisplay
-DetCurveDisplay
-DistanceMetric
-PrecisionRecallDisplay
-PredictionErrorDisplay
-RocCurveDisplay
-accuracy_score
-adjusted_mutual_info_score
-adjusted_rand_score
-auc
-average_precision_score
-balanced_accuracy_score
-brier_score_loss
-calinski_harabasz_score
-check_scoring
-class_likelihood_ratios
-classification_report
-cluster
-cohen_kappa_score
-completeness_score
-confusion_matrix
-consensus_score
-coverage_error
-d2_absolute_error_score
-d2_pinball_score
-d2_tweedie_score
-davies_bouldin_score
-dcg_score
-det_curve
-euclidean_distances
-explained_variance_score
-f1_score
-fbeta_score
-fowlkes_mallows_score
-get_scorer
-get_scorer_names
-hamming_loss
-hinge_loss
-homogeneity_completeness_v_measure
-homogeneity_score
-jaccard_score
-label_ranking_average_precision_score
-label_ranking_loss
-log_loss
-make_scorer
-matthews_corrcoef
-max_error
-mean_absolute_error
-mean_absolute_percentage_error
-mean_gamma_deviance
-mean_pinball_loss
-mean_poisson_deviance
-mean_squared_error
-mean_squared_log_error
-mean_tweedie_deviance
-median_absolute_error
-multilabel_confusion_matrix
-mutual_info_score
-nan_euclidean_distances
-ndcg_score
-normalized_mutual_info_score
-pair_confusion_matrix
-pairwise
-pairwise_distances
-pairwise_distances_argmin
-pairwise_distances_argmin_min
-pairwise_distances_chunked
-pairwise_kernels
-precision_recall_curve
-precision_recall_fscore_support
-precision_score
-r2_score
-rand_score
-recall_score
-roc_auc_score
-roc_curve
-silhouette_samples
-silhouette_score
-top_k_accuracy_score
-v_measure_score
-zero_one_loss</code></pre>
-</div>
-</div>
-<p>These are not difficult to implement, e.g.&nbsp;see below for log loss (in the case of binary classification), but it comes in handy that <code>sklearn</code> has them already defined.</p>
-<div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_loss(yt,yp):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    yt[yt<span class="op">==</span><span class="dv">0</span>]<span class="op">=</span> <span class="dv">1</span><span class="op">-</span>yp[yt<span class="op">==</span><span class="dv">0</span>]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>np.log(y).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+\]</span></p>
+<p>Why don’t we use the 0-1 loss? This seems quite natural if the prediction accuracy is what we care the most. <span class="math display">\[
+\ell_{0-1}(y,\hat y) = \mathbb{I}(y\neq \hat y)
+\]</span> The principle reason is that this loss is non-convex and discrete, making it difficult to optimise (rememeber that we are looking for an ERM on the train split).</p>
+<p>Next we consider tree algorithms. We review the time and space complexity for training and deploying these models.</p>
+<section id="decision-trees" class="level2">
+<h2 class="anchored" data-anchor-id="decision-trees">Decision Trees</h2>
+<p>The idea of decision is simple.</p>
+</section>
+<section id="gradient-boosting-decision-trees" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-boosting-decision-trees">Gradient Boosting Decision Trees</h2>
+</section>
+<section id="random-forest" class="level2">
+<h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
 
 
 </section>
@@ -415,10 +287,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -428,8 +299,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -442,6 +322,128 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    const typesetMath = (el) => {
+      if (window.MathJax) {
+        // MathJax Typeset
+        window.MathJax.typeset([el]);
+      } else if (window.katex) {
+        // KaTeX Render
+        var mathElements = el.getElementsByClassName("math");
+        var macros = [];
+        for (var i = 0; i < mathElements.length; i++) {
+          var texText = mathElements[i].firstChild;
+          if (mathElements[i].tagName == "SPAN") {
+            window.katex.render(texText.data, mathElements[i], {
+              displayMode: mathElements[i].classList.contains('display'),
+              throwOnError: false,
+              macros: macros,
+              fleqn: false
+            });
+          }
+        }
+      }
+    }
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        for (let i = 0; i < 2; i++) {
+          container.appendChild(note.children[i].cloneNode(true));
+        }
+        typesetMath(container);
+        return container.innerHTML
+      } else {
+        typesetMath(note);
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      typesetMath(note);
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -485,6 +487,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -510,6 +513,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -570,6 +599,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

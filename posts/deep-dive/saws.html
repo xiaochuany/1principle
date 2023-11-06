@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.466">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -24,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -81,7 +81,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -106,9 +112,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">first-ish principle</span>
     </a>
@@ -120,18 +126,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html" rel="" target="">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/xiaochuany" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/xiaochuany"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -192,6 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+
 <!-- \usepackage{minted} -->
 <blockquote class="blockquote">
 <p>My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 module on deep learning. I found this a perfect example of “good notation helps memorisation” which hopefully reinforces understanding. In this post, I will explain how we get to this recursion and end the post with a python implementation.</p>
@@ -236,20 +243,20 @@ Following the same recipe, we can compute the gradients with respect to weights 
 \tag{2}\]</span></span></p>
 <p><span id="eq-recursion"><span class="math display">\[\frac{\partial J}{\partial z^{[l]}} = \sum_i \frac{\partial J}{\partial z^{[l+1]}_i} \frac{\partial z^{[l+1]}_i}{\partial z^{[l]}}
 \tag{3}\]</span></span></p>
-<p>Let <span class="math inline">\(S^{[l]} = \frac{\partial J}{\partial z^{[l]}}\)</span>. We use equations <a href="#eq-gradW">Equation&nbsp;1</a> and <a href="#eq-gradb">Equation&nbsp;2</a>, along with <span class="math inline">\(S^{[L+1]}\)</span> (easy to compute), to find the required gradients for updating <span class="math inline">\(W^{[L+1]}\)</span> and <span class="math inline">\(b^{[L+1]}\)</span>. Then we use equation <a href="#eq-recursion">Equation&nbsp;3</a> to find <span class="math inline">\(S^{[L]}\)</span>, which can be plugged back into equations <a href="#eq-gradW">Equation&nbsp;1</a> and <a href="#eq-gradb">Equation&nbsp;2</a> to get the required gradient for updating <span class="math inline">\(W^{[L]}\)</span> and <span class="math inline">\(b^{[L]}\)</span>, and so on.</p>
+<p>Let <span class="math inline">\(S^{[l]} = \frac{\partial J}{\partial z^{[l]}}\)</span>. We use equations <a href="#eq-gradW" class="quarto-xref">Equation&nbsp;1</a> and <a href="#eq-gradb" class="quarto-xref">Equation&nbsp;2</a>, along with <span class="math inline">\(S^{[L+1]}\)</span> (easy to compute), to find the required gradients for updating <span class="math inline">\(W^{[L+1]}\)</span> and <span class="math inline">\(b^{[L+1]}\)</span>. Then we use equation <a href="#eq-recursion" class="quarto-xref">Equation&nbsp;3</a> to find <span class="math inline">\(S^{[L]}\)</span>, which can be plugged back into equations <a href="#eq-gradW" class="quarto-xref">Equation&nbsp;1</a> and <a href="#eq-gradb" class="quarto-xref">Equation&nbsp;2</a> to get the required gradient for updating <span class="math inline">\(W^{[L]}\)</span> and <span class="math inline">\(b^{[L]}\)</span>, and so on.</p>
 <p>What we just described is the famous backpropagation. The advantage of this approach is that we compute each basic computation (itemized above) only once for each gradient descent iteration.</p>
-<p>From layer to layer, the computation is done sequentially, because output of <span class="math inline">\(l+1\)</span>-th layer is requiredd as the input for computing gradients of <span class="math inline">\(l\)</span>-th layer. For each fixed <span class="math inline">\(l\)</span>, however, it is better to parallelise the computation and write <a href="#eq-gradW">Equation&nbsp;1</a> -<a href="#eq-recursion">Equation&nbsp;3</a> in matrix forms. Here is how we do it:</p>
+<p>From layer to layer, the computation is done sequentially, because output of <span class="math inline">\(l+1\)</span>-th layer is requiredd as the input for computing gradients of <span class="math inline">\(l\)</span>-th layer. For each fixed <span class="math inline">\(l\)</span>, however, it is better to parallelise the computation and write <a href="#eq-gradW" class="quarto-xref">Equation&nbsp;1</a> -<a href="#eq-recursion" class="quarto-xref">Equation&nbsp;3</a> in matrix forms. Here is how we do it:</p>
 <section id="squared-loss" class="level3">
 <h3 class="anchored" data-anchor-id="squared-loss">Squared loss</h3>
 <p>Set <span class="math inline">\(A^{[l]}=\mathrm{diag}(\sigma'(z^{[l]}))\)</span> and <span class="math inline">\(e = y - \hat y\)</span>. It is easy to see that <span class="math display">\[\begin{align*}
     S^{[L+1]} = - A^{[L+1]} e
-\end{align*}\]</span> Equation <a href="#eq-recursion">Equation&nbsp;3</a> can be written in matrix form as well <span id="eq-saws"><span class="math display">\[
+\end{align*}\]</span> Equation <a href="#eq-recursion" class="quarto-xref">Equation&nbsp;3</a> can be written in matrix form as well <span id="eq-saws"><span class="math display">\[
 S^{[l]} = A^{[l]} W^{[l+1]} S^{[l+1]}
 \tag{4}\]</span></span> Now the gradients <span class="math display">\[\begin{align*}
     dW^{[l]} &amp;= a^{[l-1]} S^{[l]\top} \\
     db^{[l]} &amp;= S^{[l]}
 \end{align*}\]</span></p>
-<p><a href="#eq-saws">Equation&nbsp;4</a> is what I meant by secret “SAWS” of deep learning!</p>
+<p><a href="#eq-saws" class="quarto-xref">Equation&nbsp;4</a> is what I meant by secret “SAWS” of deep learning!</p>
 </section>
 <section id="cross-entropy-loss" class="level3">
 <h3 class="anchored" data-anchor-id="cross-entropy-loss">Cross entropy loss</h3>
@@ -414,10 +421,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -427,8 +433,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -441,6 +456,128 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    const typesetMath = (el) => {
+      if (window.MathJax) {
+        // MathJax Typeset
+        window.MathJax.typeset([el]);
+      } else if (window.katex) {
+        // KaTeX Render
+        var mathElements = el.getElementsByClassName("math");
+        var macros = [];
+        for (var i = 0; i < mathElements.length; i++) {
+          var texText = mathElements[i].firstChild;
+          if (mathElements[i].tagName == "SPAN") {
+            window.katex.render(texText.data, mathElements[i], {
+              displayMode: mathElements[i].classList.contains('display'),
+              throwOnError: false,
+              macros: macros,
+              fleqn: false
+            });
+          }
+        }
+      }
+    }
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        for (let i = 0; i < 2; i++) {
+          container.appendChild(note.children[i].cloneNode(true));
+        }
+        typesetMath(container);
+        return container.innerHTML
+      } else {
+        typesetMath(note);
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      typesetMath(note);
+      return note.innerHTML;
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -484,6 +621,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -509,6 +647,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -569,6 +733,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
