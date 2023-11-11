@@ -53,7 +53,47 @@ Next we consider tree algorithms. We review the time and space complexity for tr
 
 ## Decision Trees
 
-The idea of decision is simple.  
+The precedure of decision tree is simple and humane.
+
+```{python}
+class Node:
+    def __init__(self, feature=None, threshold=None, left=None, right=None,*, value=None):
+        self.feature = feature
+        self.threshold = threshold
+        self.left = left
+        self.right = right
+        self.value=value
+
+class DecisionTree:
+    def __init__(self): self.root = None
+
+    def fit(self,X,y): self.root = self._build_tree(X,y)
+
+    def _best_split(self,X,y):
+    # return best split feature, threshold, idx of left samples 
+        pass
+    def is_pure(y): pass
+
+    def _build_tree(self, X, y):
+        if is_pure(y): return Node(value=y[0])
+        j, theta, idx = self._best_split(X,y)
+        root = Node(j,theta)
+        root.left = self._build_tree(X[idx],y[idx])
+        root.right = self._build_tree(X[~idx],y[~idx])
+        return root
+
+    def predict(self, X): 
+        head = self.root
+        ys=[]
+        for x in X:
+            while head.left or head.right:
+                if x[head.feature]<head.threshold: head = head.left
+                else: head=head.right
+            ys.append(head.value)
+        return ys
+            
+
+```
 
 
 ## Gradient Boosting Decision Trees
