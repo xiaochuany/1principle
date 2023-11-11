@@ -1,0 +1,165 @@
+---
+title: "Walkthroughs by Jeremy Howard"
+author: "Xiaochuan Yang"
+date: "2023-11-11"
+categories: [hacks]
+draft: false
+toc: true
+number-sections: false
+---
+
+
+## Live coding 1  
+- intall WSL if on Windows (all commands below are typed in linux terminal in WSL)
+- `alt + enter` for full screen
+- `pwd` print working directory
+- `which` shows where a file is
+- `mkdir` makes a directory
+- `ls` list stuffs `-lah` long format all files human readable
+- `df -h` disk free
+- `du -sh *` disk usage `-s` summary of all subdirectories in `.`
+- `du -sh .` disk usage of `.`  
+- [conda-forge  distribution](https://github.com/conda-forge/miniforge) as of september 2023,  mambaforge/miniforge3 are the same. `-c conda-forge` is the default
+- `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh` to download the distribution
+- `bash Miniforge3-Linux-x86_64.sh -b` to install, where `-b` for less intervention
+- install pytorch [here](https://pytorch.org/get-started/locally/)
+- `mamba install jupyter ipywidgets`
+- `alias jl="jupyter lab"` add this command to the end of `.bashrc` to save alias for good
+- `mamba install -c fastai fastai`
+
+
+:::{.callout-tip}
+Jeremy automated setup of conda in this [file](https://raw.githubusercontent.com/fastai/fastsetup/master/setup-conda.sh).  To run it, one needs to add executable permission to user `chmod u+x setup-conda.sh`
+:::
+
+## Live coding 2  
+
+
+#### bash  
+- `cd -` back to most recent directory
+- `pushd ~` push current directory to a stack and change directory to `~`
+- `popd` pop what's in the stack
+- `ctrl+d` exit for most program
+- `ctrl+u` `ctrl+w` `ctrl+a` `ctrl+e` move cursor faster
+
+
+#### tmux  
+- `tmux`
+- `ctrl+b` start of a tmux command, then
+- `"` split top-bottom
+- `%` split left-right
+- `z` zoom in/out
+- `d` detach, back to bash
+- `tmux a` attach stuffs running in tmux from bash (everything remains until restart computer)
+
+
+#### git (with ssh)
+- `ssh-keygen` generates public/private rsa key pair (prompt where to save the file, by default it's in `~/.ssh`)
+- login to github.com and upload public key  `cat ~/.ssh/id_rsa.pub`
+- `git clone git@github.com:fastai/fastbook.git`
+- `git status` 
+- `git commit -am 'MESSAGE'`
+- `git push`
+
+
+## Live coding 3  
+
+#### bash  
+- `ln -s ONE` simlink ONE to here
+- `$PATH` paths that bash knows to run program
+
+#### paperspace
+- `pip install --user PACKAGE` will install PACKAGE to `~/.local/lib/python3.*/site-packages`  which gets wiped after shutdown
+- `mv ~/.local /storage/.local` then 
+- `ln -s /storage/.local ~/` to make it persistent (`/storage` is persistent across notebook instances)
+
+#### jupyter lab  
+- `ctrl + shift + [` change tab
+- `ctrl + b` hide side column
+- `%%debug` exit with `q`
+- `shift + tab` or `METHOD?` shows signature
+- `METHOD??` shows source code
+
+## Live coding 4
+
+:::{.callout-tip}
+Jeremy teaches how to write your first bash script. The job done via these scripts is to set up paperspace for persistent storage and configs across instances. The repo is [here](https://github.com/fastai/paperspace-setup/tree/master).
+:::
+
+
+### first script `pre-run.sh`
+
+```{bash}
+#!/usr/bin/env bash
+
+pushd ~
+
+mkdir -p /storage/cfg
+
+if [ ! -e /storage/cfg/.conda ]; then
+        mamba create -yp /storage/cfg/.conda
+fi
+
+for p in .local .ssh .config .ipython .fastai .jupyter .conda .kaggle
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                mkdir /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+chmod 700 /storage/cfg/.ssh
+
+for p in .git-credentials .gitconfig .bash_history
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                touch /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+popd
+```
+
+### second script `setup.sh`
+
+```{bash}
+#!/usr/bin/env bash
+
+mkdir /storage/cfg
+cp pre-run.sh /storage/
+cp .bash.local /storage/
+echo install complete. please start a new instance
+```
+
+
+
+## Live coding 5
+
+
+#### bash
+- `cat FILE` display file
+- `cat f1 f2 > combined` concat
+- `cat f1 >> f2` append
+
+
+#### vim  
+- `i` insert mode
+- `esc` back to command mode
+- in command mode try `:q` to quit `:wq` to write and quit 
+- tutorial [https://vim-adventures.com/](https://vim-adventures.com/)
+
+alternatively,  type `code .` then edit/create file with VS code 
+
+
+## Live coding 6
+
+
+- `du -sh * | grep 'G'`  search ouput of `du -sh *` that contains `G` to identify directories larger than GB
+- `conda install universal-ctags`
+- copy/create files to/in Paperspace:
+  -  ssh keys 
+  -  kaggle config 
+  -  ohter config files? 
