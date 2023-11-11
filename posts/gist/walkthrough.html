@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiaochuan Yang">
-<meta name="dcterms.date" content="2023-11-01">
+<meta name="dcterms.date" content="2023-11-11">
 
-<title>first-ish principle - Machine Learning Recap 2 Gradient Boosters and Random Forests</title>
+<title>first-ish principle - Walkthroughs by Jeremy Howard</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -102,8 +68,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -145,10 +109,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Machine Learning Recap 2 Gradient Boosters and Random Forests</h1>
+      <h1 class="title">Walkthroughs by Jeremy Howard</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">code</div>
-                <div class="quarto-category">machine learning</div>
+                <div class="quarto-category">hacks</div>
               </div>
                   </div>
   </div>
@@ -166,7 +129,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 1, 2023</p>
+        <p class="date">November 11, 2023</p>
       </div>
     </div>
     
@@ -182,9 +145,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#decision-trees" id="toc-decision-trees" class="nav-link active" data-scroll-target="#decision-trees">Decision Trees</a></li>
-  <li><a href="#gradient-boosting-decision-trees" id="toc-gradient-boosting-decision-trees" class="nav-link" data-scroll-target="#gradient-boosting-decision-trees">Gradient Boosting Decision Trees</a></li>
-  <li><a href="#random-forest" id="toc-random-forest" class="nav-link" data-scroll-target="#random-forest">Random Forest</a></li>
+  <li><a href="#live-coding-1" id="toc-live-coding-1" class="nav-link active" data-scroll-target="#live-coding-1">Live coding 1</a></li>
+  <li><a href="#live-coding-2" id="toc-live-coding-2" class="nav-link" data-scroll-target="#live-coding-2">Live coding 2</a></li>
+  <li><a href="#live-coding-3" id="toc-live-coding-3" class="nav-link" data-scroll-target="#live-coding-3">Live coding 3</a></li>
+  <li><a href="#live-coding-4" id="toc-live-coding-4" class="nav-link" data-scroll-target="#live-coding-4">Live coding 4</a>
+  <ul class="collapse">
+  <li><a href="#first-script-pre-run.sh" id="toc-first-script-pre-run.sh" class="nav-link" data-scroll-target="#first-script-pre-run.sh">first script <code>pre-run.sh</code></a></li>
+  <li><a href="#second-script-setup.sh" id="toc-second-script-setup.sh" class="nav-link" data-scroll-target="#second-script-setup.sh">second script <code>setup.sh</code></a></li>
+  </ul></li>
+  <li><a href="#live-coding-5" id="toc-live-coding-5" class="nav-link" data-scroll-target="#live-coding-5">Live coding 5</a></li>
+  <li><a href="#live-coding-6" id="toc-live-coding-6" class="nav-link" data-scroll-target="#live-coding-6">Live coding 6</a></li>
   </ul>
 </nav>
     </div>
@@ -195,85 +165,197 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p>In this post, we focus on ML algorithms for classification, a common task in many real-life applications. For instance, in the series of <a href="../../posts/deep-dive/crm2-ml.html">credit risk modelling</a>, we demonstrated how estimating the probability of default can be casted as a a classification problmem, i.e.&nbsp;whether a loan borrower will go into default.</p>
-<p><a href="../../posts/deep-dive/uml-recap1.html">Recalling</a> some notation, we have</p>
+<section id="live-coding-1" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-1">Live coding 1</h2>
 <ul>
-<li>an example space <span class="math inline">\(\mathcal X\)</span><br>
+<li>intall WSL if on Windows (all commands below are typed in linux terminal in WSL)</li>
+<li><code>alt + enter</code> for full screen</li>
+<li><code>pwd</code> print working directory</li>
+<li><code>which</code> shows where a file is</li>
+<li><code>mkdir</code> makes a directory</li>
+<li><code>ls</code> list stuffs <code>-lah</code> long format all files human readable</li>
+<li><code>df -h</code> disk free</li>
+<li><code>du -sh *</code> disk usage <code>-s</code> summary of all subdirectories in <code>.</code></li>
+<li><code>du -sh .</code> disk usage of <code>.</code><br>
 </li>
-<li>a label space <span class="math inline">\(\mathcal Y\)</span></li>
-<li>a collection of hypotheses <span class="math inline">\(h: \mathcal X \to \mathcal Y\)</span>, making up the hypothesis class (inductive bias), from which we want to pick a predictor</li>
-<li>a loss function <span class="math inline">\(\ell: \mathcal Y \times \mathcal Y \to \mathbb{R}_+\)</span>, quantifying how good or bad a prediction <span class="math inline">\(\hat y\)</span> is compared to the ground truth label <span class="math inline">\(y\)</span></li>
+<li><a href="https://github.com/conda-forge/miniforge">conda-forge distribution</a> as of september 2023, mambaforge/miniforge3 are the same. <code>-c conda-forge</code> is the default</li>
+<li><code>wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh</code> to download the distribution</li>
+<li><code>bash Miniforge3-Linux-x86_64.sh -b</code> to install, where <code>-b</code> for less intervention</li>
+<li>install pytorch <a href="https://pytorch.org/get-started/locally/">here</a></li>
+<li><code>mamba install jupyter ipywidgets</code></li>
+<li><code>alias jl="jupyter lab"</code> add this command to the end of <code>.bashrc</code> to save alias for good</li>
+<li><code>mamba install -c fastai fastai</code></li>
 </ul>
-<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Important
+Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>We are given an independent and identically distributed input-output pairs <span class="math inline">\(S^0 = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y\)</span> with distribution <span class="math inline">\(D\)</span>.</p>
+<p>Jeremy automated setup of conda in this <a href="https://raw.githubusercontent.com/fastai/fastsetup/master/setup-conda.sh">file</a>. To run it, one needs to add executable permission to user <code>chmod u+x setup-conda.sh</code></p>
 </div>
-</div>
-<p>We adopt a validation approach, where we minimise the empirical risk (ERM) with data in the train split <span class="math inline">\(S\)</span>, and evaluate the true loss with data in the validation split <span class="math inline">\(V\)</span>.</p>
-<p><span class="math display">\[
-h_{S} \in \mathrm{argmin}_{h\in\mathcal H} L_{S}(h), \quad L_{S}(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
-\]</span></p>
-<p>Now consider <span class="math inline">\(\mathcal H\)</span>. It is sometimes beneficial to predict a probability mass function (pmf) over the <span class="math inline">\(k\)</span> classes. From the pmf, a label can be obtained by taking argmax. In other words, the range of <span class="math inline">\(h\in\mathcal H\)</span> is assumed to be <span class="math inline">\(\{y\in\mathbb{R}^k: y_i\ge 0, y_1+...+y_k=1\}\)</span>. In this scenario, the cross entropy loss is often a good choice <span class="math display">\[
-XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
-\]</span></p>
-<p>Why don’t we use the 0-1 loss? This seems quite natural if the prediction accuracy is what we care the most. <span class="math display">\[
-\ell_{0-1}(y,\hat y) = \mathbb{I}(y\neq \hat y)
-\]</span> The principle reason is that this loss is non-convex and discrete, making it difficult to optimise (rememeber that we are looking for an ERM on the train split).</p>
-<p>Next we consider tree algorithms. We review the time and space complexity for training and deploying these models.</p>
-<section id="decision-trees" class="level2">
-<h2 class="anchored" data-anchor-id="decision-trees">Decision Trees</h2>
-<p>The precedure of decision tree is simple and humane.</p>
-<div id="9a675949" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Node:</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, feature<span class="op">=</span><span class="va">None</span>, threshold<span class="op">=</span><span class="va">None</span>, left<span class="op">=</span><span class="va">None</span>, right<span class="op">=</span><span class="va">None</span>,<span class="op">*</span>, value<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.feature <span class="op">=</span> feature</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.threshold <span class="op">=</span> threshold</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.left <span class="op">=</span> left</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.right <span class="op">=</span> right</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.value<span class="op">=</span>value</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DecisionTree:</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>): <span class="va">self</span>.root <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> fit(<span class="va">self</span>,X,y): <span class="va">self</span>.root <span class="op">=</span> <span class="va">self</span>._build_tree(X,y)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _best_split(<span class="va">self</span>,X,y):</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return best split feature, threshold, idx of left samples </span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> is_pure(y): <span class="cf">pass</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _build_tree(<span class="va">self</span>, X, y):</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> is_pure(y): <span class="cf">return</span> Node(value<span class="op">=</span>y[<span class="dv">0</span>])</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        j, theta, idx <span class="op">=</span> <span class="va">self</span>._best_split(X,y)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        root <span class="op">=</span> Node(j,theta)</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        root.left <span class="op">=</span> <span class="va">self</span>._build_tree(X[idx],y[idx])</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        root.right <span class="op">=</span> <span class="va">self</span>._build_tree(X[<span class="op">~</span>idx],y[<span class="op">~</span>idx])</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> root</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> predict(<span class="va">self</span>, X): </span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        head <span class="op">=</span> <span class="va">self</span>.root</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        ys<span class="op">=</span>[]</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x <span class="kw">in</span> X:</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            <span class="cf">while</span> head.left <span class="kw">or</span> head.right:</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> x[head.feature]<span class="op">&lt;</span>head.threshold: head <span class="op">=</span> head.left</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                <span class="cf">else</span>: head<span class="op">=</span>head.right</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>            ys.append(head.value)</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="gradient-boosting-decision-trees" class="level2">
-<h2 class="anchored" data-anchor-id="gradient-boosting-decision-trees">Gradient Boosting Decision Trees</h2>
+<section id="live-coding-2" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-2">Live coding 2</h2>
+<section id="bash" class="level4">
+<h4 class="anchored" data-anchor-id="bash">bash</h4>
+<ul>
+<li><code>cd -</code> back to most recent directory</li>
+<li><code>pushd ~</code> push current directory to a stack and change directory to <code>~</code></li>
+<li><code>popd</code> pop what’s in the stack</li>
+<li><code>ctrl+d</code> exit for most program</li>
+<li><code>ctrl+u</code> <code>ctrl+w</code> <code>ctrl+a</code> <code>ctrl+e</code> move cursor faster</li>
+</ul>
 </section>
-<section id="random-forest" class="level2">
-<h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
+<section id="tmux" class="level4">
+<h4 class="anchored" data-anchor-id="tmux">tmux</h4>
+<ul>
+<li><code>tmux</code></li>
+<li><code>ctrl+b</code> start of a tmux command, then</li>
+<li><code>"</code> split top-bottom</li>
+<li><code>%</code> split left-right</li>
+<li><code>z</code> zoom in/out</li>
+<li><code>d</code> detach, back to bash</li>
+<li><code>tmux a</code> attach stuffs running in tmux from bash (everything remains until restart computer)</li>
+</ul>
+</section>
+<section id="git-with-ssh" class="level4">
+<h4 class="anchored" data-anchor-id="git-with-ssh">git (with ssh)</h4>
+<ul>
+<li><code>ssh-keygen</code> generates public/private rsa key pair (prompt where to save the file, by default it’s in <code>~/.ssh</code>)</li>
+<li>login to github.com and upload public key <code>cat ~/.ssh/id_rsa.pub</code></li>
+<li><code>git clone git@github.com:fastai/fastbook.git</code></li>
+<li><code>git status</code></li>
+<li><code>git commit -am 'MESSAGE'</code></li>
+<li><code>git push</code></li>
+</ul>
+</section>
+</section>
+<section id="live-coding-3" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-3">Live coding 3</h2>
+<section id="bash-1" class="level4">
+<h4 class="anchored" data-anchor-id="bash-1">bash</h4>
+<ul>
+<li><code>ln -s ONE</code> simlink ONE to here</li>
+<li><code>$PATH</code> paths that bash knows to run program</li>
+</ul>
+</section>
+<section id="paperspace" class="level4">
+<h4 class="anchored" data-anchor-id="paperspace">paperspace</h4>
+<ul>
+<li><code>pip install --user PACKAGE</code> will install PACKAGE to <code>~/.local/lib/python3.*/site-packages</code> which gets wiped after shutdown</li>
+<li><code>mv ~/.local /storage/.local</code> then</li>
+<li><code>ln -s /storage/.local ~/</code> to make it persistent (<code>/storage</code> is persistent across notebook instances)</li>
+</ul>
+</section>
+<section id="jupyter-lab" class="level4">
+<h4 class="anchored" data-anchor-id="jupyter-lab">jupyter lab</h4>
+<ul>
+<li><code>ctrl + shift + [</code> change tab</li>
+<li><code>ctrl + b</code> hide side column</li>
+<li><code>%%debug</code> exit with <code>q</code></li>
+<li><code>shift + tab</code> or <code>METHOD?</code> shows signature</li>
+<li><code>METHOD??</code> shows source code</li>
+</ul>
+</section>
+</section>
+<section id="live-coding-4" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-4">Live coding 4</h2>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Jeremy teaches how to write your first bash script. The job done via these scripts is to set up paperspace for persistent storage and configs across instances. The repo is <a href="https://github.com/fastai/paperspace-setup/tree/master">here</a>.</p>
+</div>
+</div>
+<section id="first-script-pre-run.sh" class="level3">
+<h3 class="anchored" data-anchor-id="first-script-pre-run.sh">first script <code>pre-run.sh</code></h3>
+<pre class="{bash}"><code>#!/usr/bin/env bash
+
+pushd ~
+
+mkdir -p /storage/cfg
+
+if [ ! -e /storage/cfg/.conda ]; then
+        mamba create -yp /storage/cfg/.conda
+fi
+
+for p in .local .ssh .config .ipython .fastai .jupyter .conda .kaggle
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                mkdir /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+chmod 700 /storage/cfg/.ssh
+
+for p in .git-credentials .gitconfig .bash_history
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                touch /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+popd</code></pre>
+</section>
+<section id="second-script-setup.sh" class="level3">
+<h3 class="anchored" data-anchor-id="second-script-setup.sh">second script <code>setup.sh</code></h3>
+<pre class="{bash}"><code>#!/usr/bin/env bash
+
+mkdir /storage/cfg
+cp pre-run.sh /storage/
+cp .bash.local /storage/
+echo install complete. please start a new instance</code></pre>
+</section>
+</section>
+<section id="live-coding-5" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-5">Live coding 5</h2>
+<section id="bash-2" class="level4">
+<h4 class="anchored" data-anchor-id="bash-2">bash</h4>
+<ul>
+<li><code>cat FILE</code> display file</li>
+<li><code>cat f1 f2 &gt; combined</code> concat</li>
+<li><code>cat f1 &gt;&gt; f2</code> append</li>
+</ul>
+</section>
+<section id="vim" class="level4">
+<h4 class="anchored" data-anchor-id="vim">vim</h4>
+<ul>
+<li><code>i</code> insert mode</li>
+<li><code>esc</code> back to command mode</li>
+<li>in command mode try <code>:q</code> to quit <code>:wq</code> to write and quit</li>
+<li>tutorial <a href="https://vim-adventures.com/">https://vim-adventures.com/</a></li>
+</ul>
+<p>alternatively, type <code>code .</code> then edit/create file with VS code</p>
+</section>
+</section>
+<section id="live-coding-6" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-6">Live coding 6</h2>
+<ul>
+<li><code>du -sh * | grep 'G'</code> search ouput of <code>du -sh *</code> that contains <code>G</code> to identify directories larger than GB</li>
+<li><code>conda install universal-ctags</code></li>
+<li>copy/create files to/in Paperspace:
+<ul>
+<li>ssh keys</li>
+<li>kaggle config</li>
+<li>ohter config files?</li>
+</ul></li>
+</ul>
 
 
 </section>

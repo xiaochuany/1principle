@@ -91,6 +91,55 @@
     "text": "Python Implementation\nHere is a python implementation of the training with min-batch SGD, 1 hidden layer, sigmoid activation in the hidden and output layers, and squared loss.\n\nimport numpy as np\n\ndef sig(x):\n    return (1+np.exp(-x))**-1\n\ng = np.random.default_rng(1123)\n\nd,m = 20, 1000\nd_out = 10\nd_hid = 20\nbatch_size = 8\nn_epoch = 2\nlr = 0.01\n\nX_train = g.normal(0,1,(d,m))\nY_train = g.uniform(size=(d_out,m))\n\nW1 = g.normal(0,1,(d,d_hid))\nW2 = g.normal(0,1,(d_hid,d_out))\nb1 = g.normal(0,1,(d_hid,1))*0.01\nb2 = g.normal(0,1,(d_out,1))*0.01\n\nerrors=[]\n\nfor epoch in range(n_epoch):\n    error = 0\n    # permute the data\n    perm_idx = g.permutation(m)\n    X_train = X_train[:,perm_idx]\n    Y_train = Y_train[:,perm_idx]\n    for bat in range(m//batch_size):\n        x_batch = X_train[:,bat*batch_size:(1+bat)*batch_size]\n        y_batch = Y_train[:,bat*batch_size:(1+bat)*batch_size]\n        # forward pass\n        z1 = np.matmul(W1.T,x_batch) + b1\n        a1 = sig(z1)\n        z2 = np.matmul(W2.T,a1) + b2\n        a2 = sig(z2)\n        # backward pass\n        e = y_batch - a2\n        A2 = sig(z2)*(1-sig(z2))\n        S2 = - A2*e\n        A1 = sig(z1)*(1-sig(z1))\n        S1 = A1*np.matmul(W2,S2)\n        # gradient descent\n        dW2 = np.matmul(a1,S2.T)\n        db2 = np.sum(S2, axis = 1, keepdims=True)\n        dW1 = np.matmul(x_batch,S1.T)\n        db1 = np.sum(S1, axis = 1, keepdims=True)\n        W2 -= lr * dW2\n        b2 -= lr * db2\n        W1 -= lr * dW1\n        b1 -= lr * db1\n        # compute the error \n        error += 0.5*np.sum(e*e)\n    # report error of the current epoch\n    print(\"Epoch:\", epoch, \"SE:\", error)\n    errors.append(error)\n\nEpoch: 0 SE: 1084.095701311093\nEpoch: 1 SE: 931.4561396806077\n\n\nExercise: implement the training with XE loss and more hidden layers."
   },
   {
+    "objectID": "posts/gist/walkthrough.html",
+    "href": "posts/gist/walkthrough.html",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "",
+    "text": "intall WSL if on Windows (all commands below are typed in linux terminal in WSL)\nalt + enter for full screen\npwd print working directory\nwhich shows where a file is\nmkdir makes a directory\nls list stuffs -lah long format all files human readable\ndf -h disk free\ndu -sh * disk usage -s summary of all subdirectories in .\ndu -sh . disk usage of .\n\nconda-forge distribution as of september 2023, mambaforge/miniforge3 are the same. -c conda-forge is the default\nwget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh to download the distribution\nbash Miniforge3-Linux-x86_64.sh -b to install, where -b for less intervention\ninstall pytorch here\nmamba install jupyter ipywidgets\nalias jl=\"jupyter lab\" add this command to the end of .bashrc to save alias for good\nmamba install -c fastai fastai\n\n\n\n\n\n\n\nTip\n\n\n\nJeremy automated setup of conda in this file. To run it, one needs to add executable permission to user chmod u+x setup-conda.sh"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-1",
+    "href": "posts/gist/walkthrough.html#live-coding-1",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "",
+    "text": "intall WSL if on Windows (all commands below are typed in linux terminal in WSL)\nalt + enter for full screen\npwd print working directory\nwhich shows where a file is\nmkdir makes a directory\nls list stuffs -lah long format all files human readable\ndf -h disk free\ndu -sh * disk usage -s summary of all subdirectories in .\ndu -sh . disk usage of .\n\nconda-forge distribution as of september 2023, mambaforge/miniforge3 are the same. -c conda-forge is the default\nwget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh to download the distribution\nbash Miniforge3-Linux-x86_64.sh -b to install, where -b for less intervention\ninstall pytorch here\nmamba install jupyter ipywidgets\nalias jl=\"jupyter lab\" add this command to the end of .bashrc to save alias for good\nmamba install -c fastai fastai\n\n\n\n\n\n\n\nTip\n\n\n\nJeremy automated setup of conda in this file. To run it, one needs to add executable permission to user chmod u+x setup-conda.sh"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-2",
+    "href": "posts/gist/walkthrough.html#live-coding-2",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 2",
+    "text": "Live coding 2\n\nbash\n\ncd - back to most recent directory\npushd ~ push current directory to a stack and change directory to ~\npopd pop what’s in the stack\nctrl+d exit for most program\nctrl+u ctrl+w ctrl+a ctrl+e move cursor faster\n\n\n\ntmux\n\ntmux\nctrl+b start of a tmux command, then\n\" split top-bottom\n% split left-right\nz zoom in/out\nd detach, back to bash\ntmux a attach stuffs running in tmux from bash (everything remains until restart computer)\n\n\n\ngit (with ssh)\n\nssh-keygen generates public/private rsa key pair (prompt where to save the file, by default it’s in ~/.ssh)\nlogin to github.com and upload public key cat ~/.ssh/id_rsa.pub\ngit clone git@github.com:fastai/fastbook.git\ngit status\ngit commit -am 'MESSAGE'\ngit push"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-3",
+    "href": "posts/gist/walkthrough.html#live-coding-3",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 3",
+    "text": "Live coding 3\n\nbash\n\nln -s ONE simlink ONE to here\n$PATH paths that bash knows to run program\n\n\n\npaperspace\n\npip install --user PACKAGE will install PACKAGE to ~/.local/lib/python3.*/site-packages which gets wiped after shutdown\nmv ~/.local /storage/.local then\nln -s /storage/.local ~/ to make it persistent (/storage is persistent across notebook instances)\n\n\n\njupyter lab\n\nctrl + shift + [ change tab\nctrl + b hide side column\n%%debug exit with q\nshift + tab or METHOD? shows signature\nMETHOD?? shows source code"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-4",
+    "href": "posts/gist/walkthrough.html#live-coding-4",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 4",
+    "text": "Live coding 4\n\n\n\n\n\n\nTip\n\n\n\nJeremy teaches how to write your first bash script. The job done via these scripts is to set up paperspace for persistent storage and configs across instances. The repo is here.\n\n\n\nfirst script pre-run.sh\n#!/usr/bin/env bash\n\npushd ~\n\nmkdir -p /storage/cfg\n\nif [ ! -e /storage/cfg/.conda ]; then\n        mamba create -yp /storage/cfg/.conda\nfi\n\nfor p in .local .ssh .config .ipython .fastai .jupyter .conda .kaggle\ndo\n        if [ ! -e /storage/cfg/$p ]; then\n                mkdir /storage/cfg/$p\n        fi\n        rm -rf ~/$p\n        ln -s /storage/cfg/$p ~/\ndone\n\nchmod 700 /storage/cfg/.ssh\n\nfor p in .git-credentials .gitconfig .bash_history\ndo\n        if [ ! -e /storage/cfg/$p ]; then\n                touch /storage/cfg/$p\n        fi\n        rm -rf ~/$p\n        ln -s /storage/cfg/$p ~/\ndone\n\npopd\n\n\nsecond script setup.sh\n#!/usr/bin/env bash\n\nmkdir /storage/cfg\ncp pre-run.sh /storage/\ncp .bash.local /storage/\necho install complete. please start a new instance"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-5",
+    "href": "posts/gist/walkthrough.html#live-coding-5",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 5",
+    "text": "Live coding 5\n\nbash\n\ncat FILE display file\ncat f1 f2 &gt; combined concat\ncat f1 &gt;&gt; f2 append\n\n\n\nvim\n\ni insert mode\nesc back to command mode\nin command mode try :q to quit :wq to write and quit\ntutorial https://vim-adventures.com/\n\nalternatively, type code . then edit/create file with VS code"
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-6",
+    "href": "posts/gist/walkthrough.html#live-coding-6",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 6",
+    "text": "Live coding 6\n\ndu -sh * | grep 'G' search ouput of du -sh * that contains G to identify directories larger than GB\nconda install universal-ctags\ncopy/create files to/in Paperspace:\n\nssh keys\nkaggle config\nohter config files?"
+  },
+  {
     "objectID": "posts/deep-dive/uml-recap1.html",
     "href": "posts/deep-dive/uml-recap1.html",
     "title": "Machine Learning Recap 1 Concepts",
