@@ -159,7 +159,38 @@ alternatively,  type `code .` then edit/create file with VS code
 
 - `du -sh * | grep 'G'`  search ouput of `du -sh *` that contains `G` to identify directories larger than GB
 - `conda install universal-ctags`
-- copy/create files to/in Paperspace:
-  -  ssh keys 
-  -  kaggle config 
-  -  ohter config files? 
+- copy config files to Paperspace (they'll be persistent if we've run the bash script before in live coding 4.)
+  -  copy ssh keys to `~/.ssh` and change permissions `chmod 644 ~/.ssh/id_rsa.pub` `chmod 600 ~/.ssh/id_rsa`
+  -  first time git commit needs `~/.gitconfig` to have name and email of the user, just follow the prompt. 
+
+
+## Live coding 7
+
+- `pip isntall --user kaggle`  
+- pre-append `~/.bashrc` with  `export PATH=~/.local/bin:$PATH`
+- `source .bashrc` 
+- create `kaggle.json` file from kaggle website and copy  it into `~/.kaggle`
+- navigate into `.kaggle` and `chmod 600 kaggle.json`
+- `kaggle competitions donwnload -c NAME`
+
+
+Try `time unzip -q BLA` to see how long it takes to unzip. 
+
+
+- `nvidia-smi dmon` if sm is low, this means i/o slow. Try  
+  -  resize image
+  -  move files to local (see `get_data.sh` below) 
+  -  reduce augmentation
+  -  change to CPU instance?
+
+
+
+On paperspace, create `get_data.sh` in `/notebooks` (persistent)
+```{bash}
+#!/user/bin/env bash
+cd
+mkdir BLA
+cd BLA
+kaggle competitions donwnload -c NAME
+unzip -q NAME
+```
