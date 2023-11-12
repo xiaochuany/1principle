@@ -155,6 +155,7 @@ ul.task-list li input[type="checkbox"] {
   </ul></li>
   <li><a href="#live-coding-5" id="toc-live-coding-5" class="nav-link" data-scroll-target="#live-coding-5">Live coding 5</a></li>
   <li><a href="#live-coding-6" id="toc-live-coding-6" class="nav-link" data-scroll-target="#live-coding-6">Live coding 6</a></li>
+  <li><a href="#live-coding-7" id="toc-live-coding-7" class="nav-link" data-scroll-target="#live-coding-7">Live coding 7</a></li>
   </ul>
 </nav>
     </div>
@@ -349,13 +350,41 @@ echo install complete. please start a new instance</code></pre>
 <ul>
 <li><code>du -sh * | grep 'G'</code> search ouput of <code>du -sh *</code> that contains <code>G</code> to identify directories larger than GB</li>
 <li><code>conda install universal-ctags</code></li>
-<li>copy/create files to/in Paperspace:
+<li>copy config files to Paperspace (they’ll be persistent if we’ve run the bash script before in live coding 4.)
 <ul>
-<li>ssh keys</li>
-<li>kaggle config</li>
-<li>ohter config files?</li>
+<li>copy ssh keys to <code>~/.ssh</code> and change permissions <code>chmod 644 ~/.ssh/id_rsa.pub</code> <code>chmod 600 ~/.ssh/id_rsa</code></li>
+<li>first time git commit needs <code>~/.gitconfig</code> to have name and email of the user, just follow the prompt.</li>
 </ul></li>
 </ul>
+</section>
+<section id="live-coding-7" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-7">Live coding 7</h2>
+<ul>
+<li><code>pip isntall --user kaggle</code><br>
+</li>
+<li>pre-append <code>~/.bashrc</code> with <code>export PATH=~/.local/bin:$PATH</code></li>
+<li><code>source .bashrc</code></li>
+<li>create <code>kaggle.json</code> file from kaggle website and copy it into <code>~/.kaggle</code></li>
+<li>navigate into <code>.kaggle</code> and <code>chmod 600 kaggle.json</code></li>
+<li><code>kaggle competitions donwnload -c NAME</code></li>
+</ul>
+<p>Try <code>time unzip -q BLA</code> to see how long it takes to unzip.</p>
+<ul>
+<li><code>nvidia-smi dmon</code> if sm is low, this means i/o slow. Try
+<ul>
+<li>resize image</li>
+<li>move files to local (see <code>get_data.sh</code> below)</li>
+<li>reduce augmentation</li>
+<li>change to CPU instance?</li>
+</ul></li>
+</ul>
+<p>On paperspace, create <code>get_data.sh</code> in <code>/notebooks</code> (persistent)</p>
+<pre class="{bash}"><code>#!/user/bin/env bash
+cd
+mkdir BLA
+cd BLA
+kaggle competitions donwnload -c NAME
+unzip -q NAME</code></pre>
 
 
 </section>

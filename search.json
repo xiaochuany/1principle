@@ -137,7 +137,14 @@
     "href": "posts/gist/walkthrough.html#live-coding-6",
     "title": "Walkthroughs by Jeremy Howard",
     "section": "Live coding 6",
-    "text": "Live coding 6\n\ndu -sh * | grep 'G' search ouput of du -sh * that contains G to identify directories larger than GB\nconda install universal-ctags\ncopy/create files to/in Paperspace:\n\nssh keys\nkaggle config\nohter config files?"
+    "text": "Live coding 6\n\ndu -sh * | grep 'G' search ouput of du -sh * that contains G to identify directories larger than GB\nconda install universal-ctags\ncopy config files to Paperspace (they’ll be persistent if we’ve run the bash script before in live coding 4.)\n\ncopy ssh keys to ~/.ssh and change permissions chmod 644 ~/.ssh/id_rsa.pub chmod 600 ~/.ssh/id_rsa\nfirst time git commit needs ~/.gitconfig to have name and email of the user, just follow the prompt."
+  },
+  {
+    "objectID": "posts/gist/walkthrough.html#live-coding-7",
+    "href": "posts/gist/walkthrough.html#live-coding-7",
+    "title": "Walkthroughs by Jeremy Howard",
+    "section": "Live coding 7",
+    "text": "Live coding 7\n\npip isntall --user kaggle\n\npre-append ~/.bashrc with export PATH=~/.local/bin:$PATH\nsource .bashrc\ncreate kaggle.json file from kaggle website and copy it into ~/.kaggle\nnavigate into .kaggle and chmod 600 kaggle.json\nkaggle competitions donwnload -c NAME\n\nTry time unzip -q BLA to see how long it takes to unzip.\n\nnvidia-smi dmon if sm is low, this means i/o slow. Try\n\nresize image\nmove files to local (see get_data.sh below)\nreduce augmentation\nchange to CPU instance?\n\n\nOn paperspace, create get_data.sh in /notebooks (persistent)\n#!/user/bin/env bash\ncd\nmkdir BLA\ncd BLA\nkaggle competitions donwnload -c NAME\nunzip -q NAME"
   },
   {
     "objectID": "posts/deep-dive/uml-recap1.html",
