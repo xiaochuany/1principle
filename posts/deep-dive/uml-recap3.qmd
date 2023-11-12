@@ -2,7 +2,7 @@
 title: "Machine Learning Recap 3 SVM and Neural Nets"
 author: "Xiaochuan Yang"
 date: "2023-11-?"
-categories: [code, machine learning]
+categories: [python, machine learning]
 draft: true
 toc: true
 number-sections: false
