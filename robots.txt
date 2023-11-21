@@ -1,1 +1,1 @@
-Sitemap: https://xiaochuany.github.io/1principle/sitemap.xml
+Sitemap: https://github.com/xiaochuany/1principle/sitemap.xml
