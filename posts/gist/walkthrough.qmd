@@ -1,5 +1,5 @@
 ---
-title: "some bits of fastai live-coding sessions"
+title: "bits of fastai live-coding sessions"
 author: "Xiaochuan Yang"
 date: "2023-11-11"
 categories: [hacks]
