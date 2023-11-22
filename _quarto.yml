@@ -11,6 +11,8 @@ website:
         href: https://github.com/xiaochuany
       - icon: linkedin
         href: https://www.linkedin.com/in/xiaochuan-yang-088975188/
+      - href: https://www.youtube.com/@xiaochuanyang
+        icon: youtube
 format:
   html:
     theme: litera
