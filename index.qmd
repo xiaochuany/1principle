@@ -1,5 +1,5 @@
 ---
-title: "Mathematics in the real world"
+title: "first princples first"
 listing:
   contents: posts
   sort: "date desc"
