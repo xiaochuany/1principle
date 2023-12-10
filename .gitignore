@@ -1,4 +1,3 @@
 /.quarto/
 /_site/
-/posts/deep-dive/.ipynb_checkpoints/
-/posts/gist/.ipynb_checkpoints/
+/**/.ipynb_checkpoints/**
