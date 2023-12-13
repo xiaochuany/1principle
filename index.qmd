@@ -1,5 +1,5 @@
 ---
-title: "first princples first"
+title: "fisrt principles first"
 listing:
   contents: posts
   sort: "date desc"
