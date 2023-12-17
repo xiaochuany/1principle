@@ -186,7 +186,7 @@
     "href": "posts/gist/top-fifth-kaggle.html",
     "title": "What is required to achieve a top 20% ranking in Kaggle playground series",
     "section": "",
-    "text": "The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase some streamlined approach to achieve a relatively good performance. The notebook is written for Kaggle playground series season 3 episode 26 (last one in 2023). At the time of writing this blog, the submission achieves 179/871 (top 18%) ranking.\nOutline:\n# install fastkaggle if not available\ntry: import fastkaggle\nexcept ModuleNotFoundError:\n    !pip install -Uq fastkaggle\n\nfrom fastkaggle import *"
+    "text": "The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase some streamlined approach to achieve a relatively good performance. The notebook is written for Kaggle playground series season 3 episode 26 (last one in 2023). At the time of writing this blog, the submission achieves 149/871 (top 18%) ranking.\nOutline:\n# install fastkaggle if not available\ntry: import fastkaggle\nexcept ModuleNotFoundError:\n    !pip install -Uq fastkaggle\n\nfrom fastkaggle import *"
   },
   {
     "objectID": "posts/gist/top-fifth-kaggle.html#getting-set-up",
