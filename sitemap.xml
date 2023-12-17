@@ -2,34 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://github.com/xiaochuany/1principle/posts/gist/walkthrough.html</loc>
-    <lastmod>2023-12-13T18:50:18.060Z</lastmod>
+    <lastmod>2023-12-17T17:15:43.644Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/crm1-fun.html</loc>
-    <lastmod>2023-12-13T18:50:16.340Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/saws.html</loc>
-    <lastmod>2023-12-13T18:50:14.692Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/xiaochuany/1principle/index.html</loc>
-    <lastmod>2023-12-13T18:50:13.308Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/xiaochuany/1principle/about.html</loc>
-    <lastmod>2023-12-13T18:50:14.180Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/uml.html</loc>
-    <lastmod>2023-12-13T18:50:14.984Z</lastmod>
+    <lastmod>2023-12-17T17:15:42.320Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/crm2-ml.html</loc>
-    <lastmod>2023-12-13T18:50:15.844Z</lastmod>
+    <lastmod>2023-12-17T17:15:40.140Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/xiaochuany/1principle/index.html</loc>
+    <lastmod>2023-12-17T17:15:39.232Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/xiaochuany/1principle/about.html</loc>
+    <lastmod>2023-12-17T17:15:37.568Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/uml-recap1.html</loc>
-    <lastmod>2023-12-13T18:50:17.348Z</lastmod>
+    <lastmod>2023-12-17T17:15:39.700Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/saws.html</loc>
+    <lastmod>2023-12-17T17:15:40.628Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/xiaochuany/1principle/posts/deep-dive/uml.html</loc>
+    <lastmod>2023-12-17T17:15:41.204Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/xiaochuany/1principle/posts/gist/top-fifth-kaggle.html</loc>
+    <lastmod>2023-12-17T17:15:42.920Z</lastmod>
   </url>
 </urlset>
