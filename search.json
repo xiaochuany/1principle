@@ -2,56 +2,56 @@
   {
     "objectID": "posts/gist/walkthrough.html",
     "href": "posts/gist/walkthrough.html",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "",
-    "text": "Jeremy Howard, the founder of fastai, organized a series of walkthroughs covering the basics of git, bash, vim, tmux, and more, as a companion to the free fastai course on deep learning. Here is the playlist."
+    "text": "Jeremy Howard, the founder of fastai, organized a series of live coding sessions covering the basics of git, bash, vim, tmux, and more, as a companion to the free fastai course on deep learning. Here is the playlist and the forum post."
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-1",
     "href": "posts/gist/walkthrough.html#live-coding-1",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 1",
     "text": "Live coding 1\n\nintall WSL if on Windows (all commands below are typed in linux terminal in WSL)\nalt + enter for full screen\npwd print working directory\nwhich shows where a file is\nmkdir makes a directory\nls list stuffs -lah long format all files human readable\ndf -h disk free\ndu -sh * disk usage -s summary of all subdirectories in .\ndu -sh . disk usage of .\n\nconda-forge distribution as of september 2023, mambaforge/miniforge3 are the same. -c conda-forge is the default\nwget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh to download the distribution\nbash Miniforge3-Linux-x86_64.sh -b to install, where -b for less intervention\ninstall pytorch here\nmamba install jupyter ipywidgets\nalias jl=\"jupyter lab\" add this command to the end of .bashrc to save alias for good\nmamba install -c fastai fastai\n\n\n\n\n\n\n\nTip\n\n\n\nJeremy automated setup of conda in this file. To run it, one needs to add executable permission to user chmod u+x setup-conda.sh"
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-2",
     "href": "posts/gist/walkthrough.html#live-coding-2",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 2",
     "text": "Live coding 2\n\nbash\n\ncd - back to most recent directory\npushd ~ push current directory to a stack and change directory to ~\npopd pop what’s in the stack\nctrl+d exit for most program\nctrl+u ctrl+w ctrl+a ctrl+e move cursor faster\n\n\n\ntmux\n\ntmux\nctrl+b start of a tmux command, then\n\" split top-bottom\n% split left-right\nz zoom in/out\nd detach, back to bash\ntmux a attach stuffs running in tmux from bash (everything remains until restart computer)\n\n\n\ngit (with ssh)\n\nssh-keygen generates public/private rsa key pair (prompt where to save the file, by default it’s in ~/.ssh)\nlogin to github.com and upload public key cat ~/.ssh/id_rsa.pub\ngit clone git@github.com:fastai/fastbook.git\ngit status\ngit commit -am 'MESSAGE'\ngit push"
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-3",
     "href": "posts/gist/walkthrough.html#live-coding-3",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 3",
     "text": "Live coding 3\n\nbash\n\nln -s ONE simlink ONE to here\n$PATH paths that bash knows to run program\n\n\n\npaperspace\n\npip install --user PACKAGE will install PACKAGE to ~/.local/lib/python3.*/site-packages which gets wiped after shutdown\nmv ~/.local /storage/.local then\nln -s /storage/.local ~/ to make it persistent (/storage is persistent across notebook instances)\n\n\n\njupyter lab\n\nctrl + shift + [ change tab\nctrl + b hide side column\n%%debug exit with q\nshift + tab or METHOD? shows signature\nMETHOD?? shows source code"
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-4",
     "href": "posts/gist/walkthrough.html#live-coding-4",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 4",
     "text": "Live coding 4\n\n\n\n\n\n\nTip\n\n\n\nJeremy teaches how to write your first bash script. The job done via these scripts is to set up paperspace for persistent storage and configs across instances. The repo is here.\n\n\n\nfirst script pre-run.sh\n#!/usr/bin/env bash\n\npushd ~\n\nmkdir -p /storage/cfg\n\nif [ ! -e /storage/cfg/.conda ]; then\n        mamba create -yp /storage/cfg/.conda\nfi\n\nfor p in .local .ssh .config .ipython .fastai .jupyter .conda .kaggle\ndo\n        if [ ! -e /storage/cfg/$p ]; then\n                mkdir /storage/cfg/$p\n        fi\n        rm -rf ~/$p\n        ln -s /storage/cfg/$p ~/\ndone\n\nchmod 700 /storage/cfg/.ssh\n\nfor p in .git-credentials .gitconfig .bash_history\ndo\n        if [ ! -e /storage/cfg/$p ]; then\n                touch /storage/cfg/$p\n        fi\n        rm -rf ~/$p\n        ln -s /storage/cfg/$p ~/\ndone\n\npopd\n\n\nsecond script setup.sh\n#!/usr/bin/env bash\n\nmkdir /storage/cfg\ncp pre-run.sh /storage/\ncp .bash.local /storage/\necho install complete. please start a new instance"
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-5",
     "href": "posts/gist/walkthrough.html#live-coding-5",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 5",
     "text": "Live coding 5\n\nbash\n\ncat FILE display file\ncat f1 f2 &gt; combined concat\ncat f1 &gt;&gt; f2 append\n\n\n\nvim\n\ni insert mode\nesc back to command mode\nin command mode try :q to quit :wq to write and quit\ntutorial https://vim-adventures.com/\n\nalternatively, type code . then edit/create file with VS code"
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-6",
     "href": "posts/gist/walkthrough.html#live-coding-6",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 6",
     "text": "Live coding 6\n\ndu -sh * | grep 'G' search ouput of du -sh * that contains G to identify directories larger than GB\nconda install universal-ctags\ncopy config files to Paperspace (they’ll be persistent if we’ve run the bash script before in live coding 4.)\n\ncopy ssh keys to ~/.ssh and change permissions chmod 644 ~/.ssh/id_rsa.pub chmod 600 ~/.ssh/id_rsa\nfirst time git commit needs ~/.gitconfig to have name and email of the user, just follow the prompt."
   },
   {
     "objectID": "posts/gist/walkthrough.html#live-coding-7",
     "href": "posts/gist/walkthrough.html#live-coding-7",
-    "title": "Walkthroughs by Jeremy Howard",
+    "title": "bits of fastai live-coding sessions",
     "section": "Live coding 7",
     "text": "Live coding 7\n\npip isntall --user kaggle\n\npre-append ~/.bashrc with export PATH=~/.local/bin:$PATH\nsource .bashrc\ncreate kaggle.json file from kaggle website and copy it into ~/.kaggle\nnavigate into .kaggle and chmod 600 kaggle.json\nkaggle competitions donwnload -c NAME\n\nTry time unzip -q BLA to see how long it takes to unzip.\n\nnvidia-smi dmon if sm is low, this means i/o slow. Try\n\nresize image\nmove files to local (see get_data.sh below)\nreduce augmentation\nchange to CPU instance?\n\n\nOn paperspace, create get_data.sh in /notebooks (persistent)\n#!/user/bin/env bash\ncd\nmkdir BLA\ncd BLA\nkaggle competitions donwnload -c NAME\nunzip -q NAME"
   },
