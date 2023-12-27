@@ -8,7 +8,6 @@ toc: true
 ---
 
 
-<!-- \usepackage{minted} -->
 \usepackage{amsmath,amsfonts,amssymb,amsthm,mathrsfs,mathtools,bbm}
 \def\RR{\mathbb{R}}
 \def\ZZ{\mathbb{Z}}
