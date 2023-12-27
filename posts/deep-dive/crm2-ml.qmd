@@ -1,25 +1,21 @@
 ---
-title: "Credit Risk Models Ep 2 machine learning methods for parameter tuning"
+title: "Credit Risk Models Ep 2 machine learning methods for parameter estimation"
 author: "Xiaochuan Yang"
 date: "2023-10-20"
-# format:
-#   html: 
-#     include-in-header: ../assets/macro.qmd
-categories: [credit risk modelling, python, machine learning]
-draft: false
+categories: [credit risk, python, machine learning]
 toc: true
-number-sections: false
 ---
 
 \newcommand{\EE}{\mathbb{E}}
 \newcommand{\RR}{\mathbb{R}}
 
 >In a [previous post](crm1-fun.qmd), we've modelled the loss of a portfolio of $d$ instruments as follows
-$$L = \sum_{i=1}^d \mu_i S_i I_i,
+$$
+L = \sum_{i=1}^d \mu_i S_i I_i,
 $$ 
 where $L$ represents the total loss, $\mu_i$ is the exposure at default, $S_i$ is the loss given default, and $I_i$ is the event of default for the $i$-th instrument.
 To compute expected loss, VaR, and other relevant metrics in risk management, it is crucial to estimate these underlying parameters accurately.
-In this post, our focus is on estimating $p_i=\mathbb{E}[I_i]$, which is formulated as a machine learning problem
+In this post, our focus is on estimating $p_i=\mathbb{E}[I_i]$, which is formulated as a machine learning problem.
 
 ## Estimating probaiblity of default (PD)
 
@@ -32,8 +28,21 @@ This constitutes a binary classification problem. With a substantial number of i
 
 Many supervised learning algorithms for binary prediction actually output probabilities (specifically, the probability of the label being 1). This is suitable for our goal, as we precisely seek to estimate probabilities.
 
-For illustration, let's consider a credit default risk dataset from this [Kaggle competition](https://www.kaggle.com/competitions/home-credit-default-risk). The dataset we are working with contains 308k rows and 121 input features. 
+For illustration, let's consider a credit default risk dataset from this [Kaggle competition](https://www.kaggle.com/competitions/home-credit-default-risk). We set up the competition with `fastkaggle` module. 
 
+```{python}
+try: import fastkaggle
+except ModuleNotFoundError:
+    !pip install -Uq fastkaggle
+
+from fastkaggle import *
+
+comp = 'home-credit-default-risk'
+path = setup_comp(comp, install='')
+path.ls()
+```
+
+We primarily look into `application_train.csv`, which contains 308k rows and 121 input features. 
 While there are numerous aspects to discuss regarding this dataset, for the sake of brevity, I will address two significant points here:
 
 
@@ -56,41 +65,37 @@ For the sake of providing a quick benchmark, we have opted for the second option
 Roughly 8% of the obligors goes into default in this dataset, making it unbalanced. From the perspective of risk management, it is important to predict defaults (label 1) accurately. Therefore, when it comes to evaluate model performance,  accuracy is not an appropriate metric. Simply predicting non-default for all obligors would result in a correct prediction 92% of the time, but it's never correct for the defaults. 
 
 Applying a machine learning model directly to an unbalanced dataset can lead to sub-optimal results. We'll demonstrate this point in the next section. A simple mitigation strategy is to sub-sample the majority class to match the size of the minority class,  creating a balanced dataset. In this example, the minority class comprises roughly 25k rows, so we can train a model using this strategy as the balanced data is not too small to be useful. 
-
+xx
 Obviously, the downside of this strategy is that we have thrown away lots of valuable data, but let's not worry about it at this stage of obtaining a quick benchmark. 
 
 ## Implementation
 
-First we feed the whole unbalanced dataset into HistGradientBoostingClassifier. 
+
+First we feed the whole unbalanced dataset into HistGradientBoostingClassifier.
 
 
 ```{python}
-import os
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import make_column_transformer, make_column_selector
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import classification_report
 
-PATH = '../../../LearnFromTabularData/data/raw'
-df = pd.read_csv(os.path.join(PATH,'application_train.csv'))
-
-y = df.pop('TARGET')
-X = df
+df = pd.read_csv(path/'application_train.csv')
+X = df.drop('TARGET', axis=1)
+y = df.TARGET
 
 X_tr, X_dev, y_tr, y_dev = train_test_split(X,y,test_size=0.2, random_state=1123)
 
 ohe = OneHotEncoder(drop='if_binary')
-scaler = StandardScaler()
 model = HistGradientBoostingClassifier()
 
 ct = make_column_transformer(
     (ohe, make_column_selector(dtype_exclude=np.number)),
-    (scaler, make_column_selector(dtype_include=np.number)),
-    remainder='drop',
+    remainder='passthrough',
 )
 
 pipe = make_pipeline(
@@ -104,41 +109,26 @@ print(classification_report(y_pred,y_dev))
 
 
 
-As we can see, the precision for class 1 is only 0.02, indicating that only 2% of the predicted defaults are true defaults.
+As we can see, the precision for class 1 is only 0.02, indicating that amongst all that are identified as defaults, only 2% of them are true defaults.
 Does this mean that the model we chose is rubbish?
-Not necessarily. Let's use the exact same model but now with a balanced dataset created using the sub-sampling strategy
+Not necessarily. Let's use the exact same model but now with a balanced dataset created using the sub-sampling strategy. 
 
 
 ```{python}
-df = pd.read_csv(os.path.join(PATH,'application_train.csv'))
 mask = (df['TARGET']==1)
 m = mask.sum()
-df_balance = pd.concat([df[~mask].sample(m,random_state=119),df[mask]], axis=0)
 
-y = df_balance.pop("TARGET")
-X = df_balance
+df_balance = pd.concat([df[~mask].sample(m,random_state=1),df[mask]], axis=0)
+
+y = df_balance.TARGET
+X = df_balance.drop('TARGET', axis=1)
 
 X_tr, X_dev, y_tr, y_dev = train_test_split(X,y,test_size=0.2, random_state=112)
-
-ohe = OneHotEncoder(drop='if_binary')
-scaler = StandardScaler()
-model = HistGradientBoostingClassifier()
-
-ct = make_column_transformer(
-    (ohe, make_column_selector(dtype_exclude=np.number)),
-    (scaler, make_column_selector(dtype_include=np.number)),
-    remainder='drop',
-)
-
-pipe = make_pipeline(
-    ct,model
-)
 
 pipe.fit(X_tr,y_tr)
 y_pred = pipe.predict(X_dev)
 print(classification_report(y_pred,y_dev))
 ```
-
 
 Much better! All the metrics look roughly the same, hovering around 69%. While this is far from being deployable in the real world, as a baseline, it's far more reasonable than our previous attempt.
 
