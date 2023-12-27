@@ -3,9 +3,7 @@ title: "bits of fastai live-coding sessions"
 author: "Xiaochuan Yang"
 date: "2023-11-11"
 categories: [hacks]
-draft: false
 toc: true
-number-sections: false
 ---
 
 Jeremy Howard, the founder of fastai, organized a series of live coding sessions covering the basics of git, bash, vim, tmux, and more, as a companion to the free fastai course on deep learning. Here is the [playlist](https://www.youtube.com/playlist?list=PLfYUBJiXbdtSLBPJ1GMx-sQWf6iNhb8mM) and the [forum post](https://forums.fast.ai/t/live-coding-aka-walk-thrus/96617). 
