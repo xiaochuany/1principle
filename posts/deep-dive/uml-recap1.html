@@ -154,7 +154,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="quarto-title column-body">
       <h1 class="title">Machine Learning Recap 1 Concepts</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">code</div>
+                <div class="quarto-category">python</div>
                 <div class="quarto-category">machine learning</div>
               </div>
                   </div>
@@ -241,7 +241,7 @@ L_D(h_S) =  L_D(h^*) + [L_D(h_S) - L_D(h^*)]
 <h2 class="anchored" data-anchor-id="lets-be-concrete">Let’s be concrete</h2>
 <p>From a practical point of view, we may not want to get into the learning theory bounds despite its elegance, what we do is to split the sample <span class="math inline">\(S^0\)</span> into two parts <span class="math inline">\(S, V\)</span>, where <span class="math inline">\(S\)</span> is used to find an ERM which we denote by <span class="math inline">\(h_S\)</span>, another for testing whether the found ERM achieves small <span class="math inline">\(L_D(h_S)\)</span>. The rationale is simple, since we make iid assumption, <span class="math inline">\(V\)</span> is independent of <span class="math inline">\(S\)</span>, hence <span class="math inline">\(L_{V}(h_S) \approx L_D(h_S)\)</span> when <span class="math inline">\(|V|\)</span> is not too small. Therefore, the smallness of <span class="math inline">\(L_{V}(h_S)\)</span> indicates good quality (small true risk) of our predictor <span class="math inline">\(h_1\)</span>.</p>
 <p>The split method for arrays is implemented in <code>sklearn.model_selection</code></p>
-<div id="a84532af" class="cell" data-execution_count="1">
+<div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">12</span>)</span>
@@ -255,7 +255,7 @@ XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
 \]</span> For regression problems, the squared loss is often a good choice <span class="math display">\[SE(y,\hat y)= \|y-\hat y\|^2_2\]</span> where <span class="math inline">\(\|.\|\)</span> is Euclidean norm.</p>
 <p>One of the advantages of these loss functions is that they are convex in the <span class="math inline">\(\hat p\)</span> or <span class="math inline">\(\hat y\)</span> variables, making it possible to leverage the machinery of convex optimistion when it comes to the actual training process.</p>
 <p>Many loss functions are already implemented in <code>sklearn.metrics</code>. The XE is named <code>log_loss</code> and the squared loss is named <code>mean_sqquared_error</code>. Let’s list all of them.</p>
-<div id="0402cd0a" class="cell" data-execution_count="2">
+<div class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.metrics <span class="im">as</span> metrics</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> <span class="bu">dir</span>(metrics):</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> m.startswith(<span class="st">'_'</span>): <span class="bu">print</span>(m)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -344,7 +344,7 @@ zero_one_loss</code></pre>
 </div>
 </div>
 <p>It comes in handy that <code>sklearn</code> has them already defined. Implementing each one of them is often not hard, e.g.</p>
-<div id="7bd99954" class="cell" data-execution_count="3">
+<div class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_loss(yt,yp):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    yt[yt<span class="op">==</span><span class="dv">0</span>]<span class="op">=</span> <span class="dv">1</span><span class="op">-</span>yp[yt<span class="op">==</span><span class="dv">0</span>]</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>np.log(y).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -352,6 +352,7 @@ zero_one_loss</code></pre>
 <!-- ## Model selection / hyperparameter tuning 
 
 Models may have many hyperparameters (learning rate, tree depth, neural network architectures etc). One can use k-fold cross validation to pick the one that optimises a certain metric prescribed by the user of these models. This is 
+
 
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 ``` -->
