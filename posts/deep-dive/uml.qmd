@@ -5,7 +5,7 @@ date: "2023-10-14"
 categories: [machine learning]
 ---
 
-> Since October 2022, I have created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com, closely following the excellent textbook written by Shalev-Shwartz and Ben-David, which is freely available on the [authors' webpage](https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/index.html).
+> From Oct 2022 to Feb 2023, I have created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com, closely following the excellent textbook written by Shalev-Shwartz and Ben-David, which is freely available on the [authors' webpage](https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/index.html).
 
 
 [Playlist in my YouTube channel](https://www.youtube.com/playlist?list=PLRUGJ8qKWnox5Jn2URD_0OQwvnl_uv3IU)
