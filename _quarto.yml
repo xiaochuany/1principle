@@ -13,6 +13,10 @@ website:
         href: https://www.linkedin.com/in/xiaochuan-yang-088975188/
       - href: https://www.youtube.com/@xiaochuanyang
         icon: youtube
+      - href: index.xml
+        icon: rss
+  site-url: https://xiaochuany.github.io/1principle
+  description: "Xiaochuan's blog: first principles first"
 
 format:
   html:
