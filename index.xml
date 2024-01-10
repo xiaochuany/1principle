@@ -1,0 +1,2887 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Xiaochuan&#39;s blog</title>
+<link>https://xiaochuany.github.io/1principle/index.html</link>
+<atom:link href="https://xiaochuany.github.io/1principle/index.xml" rel="self" type="application/rss+xml"/>
+<description>Xiaochuan&#39;s blog: first principles first</description>
+<generator>quarto-1.3.450</generator>
+<lastBuildDate>Sat, 16 Dec 2023 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>What is required to achieve a top 20% ranking in Kaggle playground series</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/gist/top-fifth-kaggle.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase some streamlined approach to achieve a relatively good performance. The notebook is written for Kaggle playground series season 3 episode 26 (last one in 2023). At the time of writing this blog, the submission achieves 149/871 (top 18%) ranking. <code>final ranking private leaderboard: 332/1663 (top 20%)</code></p>
+<p>Outline:</p>
+<ul>
+<li>use <code>fastkaggle</code> module to quickly set up the competition (download and unzip data) and submit it later.</li>
+<li>preprocess data: add additional dataset offered by the competition owner</li>
+<li>modelling: compute cv score of
+<ul>
+<li>base models: logistic regression, random forest (not supporting <code>np.nan</code>)</li>
+<li>gradient boosting: hist gradient boosting, light gbm, xgboost</li>
+</ul></li>
+<li>cross validate the best model (lgbm), return classifiers and average out the predictions on test data.</li>
+</ul>
+<div class="cell" data-execution_count="43">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># install fastkaggle if not available</span></span>
+<span id="cb1-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">try</span>: <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> fastkaggle</span>
+<span id="cb1-3"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">ModuleNotFoundError</span>:</span>
+<span id="cb1-4">    <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>pip install <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>Uq fastkaggle</span>
+<span id="cb1-5"></span>
+<span id="cb1-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastkaggle <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span></span></code></pre></div>
+</div>
+<section id="getting-set-up" class="level2">
+<h2 class="anchored" data-anchor-id="getting-set-up">Getting set up</h2>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">comp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'playground-series-s3e26'</span></span>
+<span id="cb2-2">path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> setup_comp(comp, install<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Downloading playground-series-s3e26.zip to /home/xy/git/1principle/posts/gist
+</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>100%|██████████████████████████████████████████████████████| 350k/350k [00:00&lt;00:00, 1.56MB/s]</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">path</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>Path('playground-series-s3e26')</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb7-2"></span>
+<span id="cb7-3">trn_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'train.csv'</span></span>
+<span id="cb7-4">trn <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(trn_path)</span>
+<span id="cb7-5">trn.info()</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 7905 entries, 0 to 7904
+Data columns (total 20 columns):
+ #   Column         Non-Null Count  Dtype  
+---  ------         --------------  -----  
+ 0   id             7905 non-null   int64  
+ 1   N_Days         7905 non-null   int64  
+ 2   Drug           7905 non-null   object 
+ 3   Age            7905 non-null   int64  
+ 4   Sex            7905 non-null   object 
+ 5   Ascites        7905 non-null   object 
+ 6   Hepatomegaly   7905 non-null   object 
+ 7   Spiders        7905 non-null   object 
+ 8   Edema          7905 non-null   object 
+ 9   Bilirubin      7905 non-null   float64
+ 10  Cholesterol    7905 non-null   float64
+ 11  Albumin        7905 non-null   float64
+ 12  Copper         7905 non-null   float64
+ 13  Alk_Phos       7905 non-null   float64
+ 14  SGOT           7905 non-null   float64
+ 15  Tryglicerides  7905 non-null   float64
+ 16  Platelets      7905 non-null   float64
+ 17  Prothrombin    7905 non-null   float64
+ 18  Stage          7905 non-null   float64
+ 19  Status         7905 non-null   object 
+dtypes: float64(10), int64(3), object(7)
+memory usage: 1.2+ MB</code></pre>
+</div>
+</div>
+</section>
+<section id="preprocessing-data" class="level2">
+<h2 class="anchored" data-anchor-id="preprocessing-data">Preprocessing data</h2>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1">get_dataset(path, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'joebeachcapital/cirrhosis-patient-survival-prediction'</span>, force<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># filename= cirrhosis.csv</span></span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> preprocess(df, train<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, dropna<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>):</span>
+<span id="cb10-2">    df_ <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.copy()</span>
+<span id="cb10-3">    df_[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'is_gen'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Y'</span></span>
+<span id="cb10-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> train:</span>
+<span id="cb10-5">        df1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cirrhosis.csv'</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># original data based on which the dataset is synthesized</span></span>
+<span id="cb10-6">        df1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.concat([df1.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>), df1[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>]], axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># move status to last col, same as df_</span></span>
+<span id="cb10-7">        df1[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'is_gen'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'N'</span></span>
+<span id="cb10-8">        df1.columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_.columns</span>
+<span id="cb10-9">        df_ <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.concat([df_,df1], axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>).reset_index(drop<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb10-10">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> dropna: df_<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>df_.dropna()</span>
+<span id="cb10-11">        df_[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_.Status.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">map</span>({<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'C'</span>:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'CL'</span>:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'D'</span>:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>})</span>
+<span id="cb10-12">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> df_</span></code></pre></div>
+</div>
+</section>
+<section id="modelling" class="level2">
+<h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb11-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.preprocessing <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> StandardScaler,OneHotEncoder,PowerTransformer,LabelEncoder</span>
+<span id="cb11-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.compose <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> make_column_transformer, make_column_selector</span>
+<span id="cb11-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.pipeline <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> make_pipeline</span>
+<span id="cb11-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.model_selection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> train_test_split, RandomizedSearchCV, StratifiedKFold, cross_val_score, cross_validate, KFold</span>
+<span id="cb11-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.ensemble <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> HistGradientBoostingRegressor, HistGradientBoostingClassifier, RandomForestClassifier</span>
+<span id="cb11-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.metrics <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> make_scorer, mean_absolute_error, classification_report, log_loss</span>
+<span id="cb11-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.linear_model <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LogisticRegression</span>
+<span id="cb11-9"></span>
+<span id="cb11-10"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> scipy.stats <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> loguniform</span>
+<span id="cb11-11"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> lightgbm <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LGBMRegressor, LGBMClassifier</span>
+<span id="cb11-12"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> xgboost <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> XGBRegressor, XGBClassifier</span>
+<span id="cb11-13"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> tqdm <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> tqdm</span>
+<span id="cb11-14"></span>
+<span id="cb11-15"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> warnings</span>
+<span id="cb11-16">warnings.filterwarnings(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'ignore'</span>)</span></code></pre></div>
+</div>
+<section id="models-not-supporting-nan" class="level3">
+<h3 class="anchored" data-anchor-id="models-not-supporting-nan">models not supporting nan</h3>
+<div class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocess(pd.read_csv(trn_path),train<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, dropna<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb12-2">X, y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).iloc[:,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:], df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>]</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="29">
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">ct <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> make_column_transformer(</span>
+<span id="cb13-2">                (PowerTransformer(), make_column_selector(dtype_include <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.number)),</span>
+<span id="cb13-3">                (OneHotEncoder(drop<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'if_binary'</span>, handle_unknown<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'ignore'</span>), make_column_selector(dtype_include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">object</span>)), </span>
+<span id="cb13-4">                remainder <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'passthrough'</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb14-2">logit_cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>cross_val_score(</span>
+<span id="cb14-3">    make_pipeline(ct, LogisticRegression(max_iter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>)),</span>
+<span id="cb14-4">    X,y, scoring <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, cv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, n_jobs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb14-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'logitstic regression </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>logit_cv<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/xy/miniforge3/lib/python3.10/site-packages/sklearn/preprocessing/_encoders.py:228: UserWarning: Found unknown categories in columns [6] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>logitstic regression -logit_cv.mean()=0.5110572273752632
+CPU times: user 92.2 ms, sys: 20.3 ms, total: 113 ms
+Wall time: 1.05 s</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb17-2">RF_cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cross_val_score(make_pipeline(ct, RandomForestClassifier(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>,</span>
+<span id="cb17-3">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'criterion'</span>: <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'log_loss'</span>,</span>
+<span id="cb17-4">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">14</span>,</span>
+<span id="cb17-5">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'min_samples_split'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,</span>
+<span id="cb17-6">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'min_samples_leaf'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,</span>
+<span id="cb17-7">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_features'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>,</span>
+<span id="cb17-8">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'random_state'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,</span>
+<span id="cb17-9">                                                  <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_jobs'</span>: <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>})),</span>
+<span id="cb17-10">                        X, y, scoring <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, n_jobs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb17-11"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"random forrest </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>RF_cv<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>random forrest -RF_cv.mean()=0.44559989137605854
+CPU times: user 2min 23s, sys: 33.3 s, total: 2min 56s
+Wall time: 48.5 s</code></pre>
+</div>
+</div>
+</section>
+<section id="models-supporting-nan" class="level3">
+<h3 class="anchored" data-anchor-id="models-supporting-nan">models supporting nan</h3>
+<div class="cell" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocess(pd.read_csv(trn_path),train<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, dropna<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb19-2">X, y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).iloc[:,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:], df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Status'</span>]</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb20-2">HB_cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cross_val_score(make_pipeline(ct, HistGradientBoostingClassifier(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'l2_regularization'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8.876168706639714</span>,</span>
+<span id="cb20-3">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'early_stopping'</span>: <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>,</span>
+<span id="cb20-4">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'learning_rate'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.009956485590638034</span>,</span>
+<span id="cb20-5">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_iter'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">500</span>,</span>
+<span id="cb20-6">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>,</span>
+<span id="cb20-7">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_bins'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">255</span>,</span>
+<span id="cb20-8">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'min_samples_leaf'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16</span>,</span>
+<span id="cb20-9">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_leaf_nodes'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">18</span>,</span>
+<span id="cb20-10">                                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'random_state'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>})),</span>
+<span id="cb20-11">                        X, y, scoring <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, n_jobs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb20-12"></span>
+<span id="cb20-13"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"histGB </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>HB_cv<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/home/xy/miniforge3/lib/python3.10/site-packages/sklearn/preprocessing/_encoders.py:228: UserWarning: Found unknown categories in columns [0, 2, 3, 4, 6] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>histGB -HB_cv.mean()=0.43771002014457927
+CPU times: user 162 ms, sys: 118 ms, total: 281 ms
+Wall time: 15.5 s</code></pre>
+</div>
+</div>
+<div class="cell" data-scrolled="true">
+<div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb23-2">LGBM_cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cross_val_score(make_pipeline(ct,LGBMClassifier(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>,</span>
+<span id="cb23-3">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'learning_rate'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.013657589160895923</span>,</span>
+<span id="cb23-4">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">17</span>,</span>
+<span id="cb23-5">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'reg_alpha'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.9791969860931342</span>,</span>
+<span id="cb23-6">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'reg_lambda'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.2857088172765347</span>,</span>
+<span id="cb23-7">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'num_leaves'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">37</span>,</span>
+<span id="cb23-8">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'subsample'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.6351453342675659</span>,</span>
+<span id="cb23-9">                                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'colsample_bytree'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2644509924064132</span>})),</span>
+<span id="cb23-10">                          X, y, scoring <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, n_jobs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-scrolled="true" data-execution_count="44">
+<div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Light GBM  </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>LGBM_cv<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>) </span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Light GBM  -LGBM_cv.mean()=0.42275781396747264</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb26-2">XGB_cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cross_val_score(make_pipeline(ct, XGBClassifier(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7</span>,</span>
+<span id="cb26-3">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'learning_rate'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.03570188608151033</span>,</span>
+<span id="cb26-4">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>,</span>
+<span id="cb26-5">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'gamma'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.6440001307764849</span>,</span>
+<span id="cb26-6">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'min_child_weight'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,</span>
+<span id="cb26-7">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'colsample_bytree'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.27034458854562116</span>,</span>
+<span id="cb26-8">                                          <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'subsample'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.8435412915999765</span>})), </span>
+<span id="cb26-9">                          X, y, scoring <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, cv <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, n_jobs <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="45">
+<div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"XGBoost </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>XGB_cv<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>XGBoost -XGB_cv.mean()=0.42872410511564896</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="34">
+<div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> cv(X,y,cv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>):</span>
+<span id="cb29-2">    clf <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> LGBMClassifier(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**</span>{<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>,</span>
+<span id="cb29-3">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'learning_rate'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.013657589160895923</span>,</span>
+<span id="cb29-4">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">17</span>,</span>
+<span id="cb29-5">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'reg_alpha'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.9791969860931342</span>,</span>
+<span id="cb29-6">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'reg_lambda'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.2857088172765347</span>,</span>
+<span id="cb29-7">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'num_leaves'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">37</span>,</span>
+<span id="cb29-8">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'subsample'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.6351453342675659</span>,</span>
+<span id="cb29-9">                            <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'colsample_bytree'</span>: <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2644509924064132</span>})</span>
+<span id="cb29-10">    ct <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> make_column_transformer(</span>
+<span id="cb29-11">                (PowerTransformer(), make_column_selector(dtype_include <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.number)),</span>
+<span id="cb29-12">                (OneHotEncoder(drop<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'if_binary'</span>, handle_unknown<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'ignore'</span>), make_column_selector(dtype_include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">object</span>)), </span>
+<span id="cb29-13">                remainder <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'passthrough'</span>)</span>
+<span id="cb29-14">    model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> make_pipeline(ct, clf)</span>
+<span id="cb29-15">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> cross_validate(model, X, y, cv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>cv, scoring<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'neg_log_loss'</span>, return_estimator<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, n_jobs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-scrolled="true">
+<div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%%</span>time</span>
+<span id="cb30-2">cv_output <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> cv(X,y,cv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="58">
+<div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>cv_output[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'test_score'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>mean()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">, </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>cv_output[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'test_score'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">.</span>std()<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>-cv_output['test_score'].mean()=0.4206909352553819, cv_output['test_score'].std()=0.04075158479629894</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="submitting-to-kaggle" class="level2">
+<h2 class="anchored" data-anchor-id="submitting-to-kaggle">Submitting to Kaggle</h2>
+<div class="cell" data-execution_count="37">
+<div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1">ss <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'sample_submission.csv'</span>)</span>
+<span id="cb33-2">ss.head()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="37">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">Status_C</th>
+<th data-quarto-table-cell-role="th">Status_CL</th>
+<th data-quarto-table-cell-role="th">Status_D</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>7905</td>
+<td>0.628084</td>
+<td>0.034788</td>
+<td>0.337128</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>7906</td>
+<td>0.628084</td>
+<td>0.034788</td>
+<td>0.337128</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>7907</td>
+<td>0.628084</td>
+<td>0.034788</td>
+<td>0.337128</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>7908</td>
+<td>0.628084</td>
+<td>0.034788</td>
+<td>0.337128</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>7909</td>
+<td>0.628084</td>
+<td>0.034788</td>
+<td>0.337128</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="38">
+<div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">tst <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocess(pd.read_csv(path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'test.csv'</span>), train<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb34-2">tst.head()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="38">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">N_Days</th>
+<th data-quarto-table-cell-role="th">Drug</th>
+<th data-quarto-table-cell-role="th">Age</th>
+<th data-quarto-table-cell-role="th">Sex</th>
+<th data-quarto-table-cell-role="th">Ascites</th>
+<th data-quarto-table-cell-role="th">Hepatomegaly</th>
+<th data-quarto-table-cell-role="th">Spiders</th>
+<th data-quarto-table-cell-role="th">Edema</th>
+<th data-quarto-table-cell-role="th">Bilirubin</th>
+<th data-quarto-table-cell-role="th">Cholesterol</th>
+<th data-quarto-table-cell-role="th">Albumin</th>
+<th data-quarto-table-cell-role="th">Copper</th>
+<th data-quarto-table-cell-role="th">Alk_Phos</th>
+<th data-quarto-table-cell-role="th">SGOT</th>
+<th data-quarto-table-cell-role="th">Tryglicerides</th>
+<th data-quarto-table-cell-role="th">Platelets</th>
+<th data-quarto-table-cell-role="th">Prothrombin</th>
+<th data-quarto-table-cell-role="th">Stage</th>
+<th data-quarto-table-cell-role="th">is_gen</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>7905</td>
+<td>3839</td>
+<td>D-penicillamine</td>
+<td>19724</td>
+<td>F</td>
+<td>N</td>
+<td>Y</td>
+<td>N</td>
+<td>N</td>
+<td>1.2</td>
+<td>546.0</td>
+<td>3.37</td>
+<td>65.0</td>
+<td>1636.0</td>
+<td>151.90</td>
+<td>90.0</td>
+<td>430.0</td>
+<td>10.6</td>
+<td>2.0</td>
+<td>Y</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>7906</td>
+<td>2468</td>
+<td>D-penicillamine</td>
+<td>14975</td>
+<td>F</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>1.1</td>
+<td>660.0</td>
+<td>4.22</td>
+<td>94.0</td>
+<td>1257.0</td>
+<td>151.90</td>
+<td>155.0</td>
+<td>227.0</td>
+<td>10.0</td>
+<td>2.0</td>
+<td>Y</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>7907</td>
+<td>51</td>
+<td>Placebo</td>
+<td>13149</td>
+<td>F</td>
+<td>N</td>
+<td>Y</td>
+<td>N</td>
+<td>Y</td>
+<td>2.0</td>
+<td>151.0</td>
+<td>2.96</td>
+<td>46.0</td>
+<td>961.0</td>
+<td>69.75</td>
+<td>101.0</td>
+<td>213.0</td>
+<td>13.0</td>
+<td>4.0</td>
+<td>Y</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>7908</td>
+<td>2330</td>
+<td>D-penicillamine</td>
+<td>20510</td>
+<td>F</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>N</td>
+<td>0.6</td>
+<td>293.0</td>
+<td>3.85</td>
+<td>40.0</td>
+<td>554.0</td>
+<td>125.55</td>
+<td>56.0</td>
+<td>270.0</td>
+<td>10.6</td>
+<td>2.0</td>
+<td>Y</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>7909</td>
+<td>1615</td>
+<td>D-penicillamine</td>
+<td>21904</td>
+<td>F</td>
+<td>N</td>
+<td>Y</td>
+<td>N</td>
+<td>N</td>
+<td>1.4</td>
+<td>277.0</td>
+<td>2.97</td>
+<td>121.0</td>
+<td>1110.0</td>
+<td>125.00</td>
+<td>126.0</td>
+<td>221.0</td>
+<td>9.8</td>
+<td>1.0</td>
+<td>Y</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="39">
+<div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">tst_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.stack([est.predict_proba(tst.iloc[:,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:]) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> est <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> cv_output[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'estimator'</span>]]).mean(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="40">
+<div class="sourceCode cell-code" id="cb36" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1">ss.iloc[:,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>:] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tst_pred</span></code></pre></div>
+</div>
+<div class="cell" data-execution_count="41">
+<div class="sourceCode cell-code" id="cb37" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1">ss.to_csv(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'subm.csv'</span>, index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb37-2"><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>head subm.csv</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>id,Status_C,Status_CL,Status_D
+7905,0.3034480206600728,0.02175049687406757,0.6748014824658597
+7906,0.464722990035046,0.17105995489987008,0.3642170550650838
+7907,0.034054616093133115,0.011479074721858778,0.954466309185008
+7908,0.9778662946803056,0.002733559845527006,0.01940014547416722
+7909,0.8730251010963693,0.042703149687327954,0.08427174921630272
+7910,0.9909153131787145,0.0011266786376778267,0.007958008183607803
+7911,0.9843376622366685,0.0014776242979965683,0.014184713465334847
+7912,0.0945863204842192,0.026772389955302976,0.8786412895604778
+7913,0.009370330198415863,0.0019239529424342871,0.98870571685915</code></pre>
+</div>
+</div>
+<div class="cell" data-scrolled="true">
+<div class="sourceCode cell-code" id="cb39" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">not</span> iskaggle:</span>
+<span id="cb39-2">    <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> kaggle <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> api</span>
+<span id="cb39-3">    api.competition_submit_cli(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'subm.csv'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'lgbm 10fold avg'</span>, comp)</span></code></pre></div>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>The hypterparameters for each model should be found before hand with e.g.&nbsp;<code>optuna</code>. Here we copy those from this excellent <a href="https://github.com/oscarm524/Kaggle_Notebooks/blob/0ed35829e79eb1d7a37ed4410072c738008ee042/ps-s3-ep26-eda-modeling-submission.ipynb">notebook</a>. Note however that the ensemble method adopted here is less sophisticated than the said notebook, the purpose of which is to reach a reasonable place faster.</p>
+<p>Apart from careful ensemble (such as weighted average), it would be useful to exploit/create more predictive features. Some domain knowledge might come in handy.</p>
+<p>A different direction is to replace tree-based models by neural nets. This is worth another post and hopefully I will come back to it soon.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>kaggle</category>
+  <category>python</category>
+  <category>machine learning</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/gist/top-fifth-kaggle.html</guid>
+  <pubDate>Sat, 16 Dec 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>bits of fastai live-coding sessions</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/gist/walkthrough.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Jeremy Howard, the founder of fastai, organized a series of live coding sessions covering the basics of git, bash, vim, tmux, and more, as a companion to the free fastai course on deep learning. Here is the <a href="https://www.youtube.com/playlist?list=PLfYUBJiXbdtSLBPJ1GMx-sQWf6iNhb8mM">playlist</a> and the <a href="https://forums.fast.ai/t/live-coding-aka-walk-thrus/96617">forum post</a>.</p>
+<section id="live-coding-1" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-1">Live coding 1</h2>
+<ul>
+<li>intall WSL if on Windows (all commands below are typed in linux terminal in WSL)</li>
+<li><code>alt + enter</code> for full screen</li>
+<li><code>pwd</code> print working directory</li>
+<li><code>which</code> shows where a file is</li>
+<li><code>mkdir</code> makes a directory</li>
+<li><code>ls</code> list stuffs <code>-lah</code> long format all files human readable</li>
+<li><code>df -h</code> disk free</li>
+<li><code>du -sh *</code> disk usage <code>-s</code> summary of all subdirectories in <code>.</code></li>
+<li><code>du -sh .</code> disk usage of <code>.</code><br>
+</li>
+<li><a href="https://github.com/conda-forge/miniforge">conda-forge distribution</a> as of september 2023, mambaforge/miniforge3 are the same. <code>-c conda-forge</code> is the default</li>
+<li><code>wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh</code> to download the distribution</li>
+<li><code>bash Miniforge3-Linux-x86_64.sh -b</code> to install, where <code>-b</code> for less intervention</li>
+<li>install pytorch <a href="https://pytorch.org/get-started/locally/">here</a></li>
+<li><code>mamba install jupyter ipywidgets</code></li>
+<li><code>alias jl="jupyter lab"</code> add this command to the end of <code>.bashrc</code> to save alias for good</li>
+<li><code>mamba install -c fastai fastai</code></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Jeremy automated setup of conda in this <a href="https://raw.githubusercontent.com/fastai/fastsetup/master/setup-conda.sh">file</a>. To run it, one needs to add executable permission to user <code>chmod u+x setup-conda.sh</code></p>
+</div>
+</div>
+</section>
+<section id="live-coding-2" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-2">Live coding 2</h2>
+<section id="bash" class="level4">
+<h4 class="anchored" data-anchor-id="bash">bash</h4>
+<ul>
+<li><code>cd -</code> back to most recent directory</li>
+<li><code>pushd ~</code> push current directory to a stack and change directory to <code>~</code></li>
+<li><code>popd</code> pop what’s in the stack</li>
+<li><code>ctrl+d</code> exit for most program</li>
+<li><code>ctrl+u</code> <code>ctrl+w</code> <code>ctrl+a</code> <code>ctrl+e</code> move cursor faster</li>
+</ul>
+</section>
+<section id="tmux" class="level4">
+<h4 class="anchored" data-anchor-id="tmux">tmux</h4>
+<ul>
+<li><code>tmux</code></li>
+<li><code>ctrl+b</code> start of a tmux command, then</li>
+<li><code>"</code> split top-bottom</li>
+<li><code>%</code> split left-right</li>
+<li><code>z</code> zoom in/out</li>
+<li><code>d</code> detach, back to bash</li>
+<li><code>tmux a</code> attach stuffs running in tmux from bash (everything remains until restart computer)</li>
+</ul>
+</section>
+<section id="git-with-ssh" class="level4">
+<h4 class="anchored" data-anchor-id="git-with-ssh">git (with ssh)</h4>
+<ul>
+<li><code>ssh-keygen</code> generates public/private rsa key pair (prompt where to save the file, by default it’s in <code>~/.ssh</code>)</li>
+<li>login to github.com and upload public key <code>cat ~/.ssh/id_rsa.pub</code></li>
+<li><code>git clone git@github.com:fastai/fastbook.git</code></li>
+<li><code>git status</code></li>
+<li><code>git commit -am 'MESSAGE'</code></li>
+<li><code>git push</code></li>
+</ul>
+</section>
+</section>
+<section id="live-coding-3" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-3">Live coding 3</h2>
+<section id="bash-1" class="level4">
+<h4 class="anchored" data-anchor-id="bash-1">bash</h4>
+<ul>
+<li><code>ln -s ONE</code> simlink ONE to here</li>
+<li><code>$PATH</code> paths that bash knows to run program</li>
+</ul>
+</section>
+<section id="paperspace" class="level4">
+<h4 class="anchored" data-anchor-id="paperspace">paperspace</h4>
+<ul>
+<li><code>pip install --user PACKAGE</code> will install PACKAGE to <code>~/.local/lib/python3.*/site-packages</code> which gets wiped after shutdown</li>
+<li><code>mv ~/.local /storage/.local</code> then</li>
+<li><code>ln -s /storage/.local ~/</code> to make it persistent (<code>/storage</code> is persistent across notebook instances)</li>
+</ul>
+</section>
+<section id="jupyter-lab" class="level4">
+<h4 class="anchored" data-anchor-id="jupyter-lab">jupyter lab</h4>
+<ul>
+<li><code>ctrl + shift + [</code> change tab</li>
+<li><code>ctrl + b</code> hide side column</li>
+<li><code>%%debug</code> exit with <code>q</code></li>
+<li><code>shift + tab</code> or <code>METHOD?</code> shows signature</li>
+<li><code>METHOD??</code> shows source code</li>
+</ul>
+</section>
+</section>
+<section id="live-coding-4" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-4">Live coding 4</h2>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Jeremy teaches how to write your first bash script. The job done via these scripts is to set up paperspace for persistent storage and configs across instances. The repo is <a href="https://github.com/fastai/paperspace-setup/tree/master">here</a>.</p>
+</div>
+</div>
+<section id="first-script-pre-run.sh" class="level3">
+<h3 class="anchored" data-anchor-id="first-script-pre-run.sh">first script <code>pre-run.sh</code></h3>
+<pre class="{bash}"><code>#!/usr/bin/env bash
+
+pushd ~
+
+mkdir -p /storage/cfg
+
+if [ ! -e /storage/cfg/.conda ]; then
+        mamba create -yp /storage/cfg/.conda
+fi
+
+for p in .local .ssh .config .ipython .fastai .jupyter .conda .kaggle
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                mkdir /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+chmod 700 /storage/cfg/.ssh
+
+for p in .git-credentials .gitconfig .bash_history
+do
+        if [ ! -e /storage/cfg/$p ]; then
+                touch /storage/cfg/$p
+        fi
+        rm -rf ~/$p
+        ln -s /storage/cfg/$p ~/
+done
+
+popd</code></pre>
+</section>
+<section id="second-script-setup.sh" class="level3">
+<h3 class="anchored" data-anchor-id="second-script-setup.sh">second script <code>setup.sh</code></h3>
+<pre class="{bash}"><code>#!/usr/bin/env bash
+
+mkdir /storage/cfg
+cp pre-run.sh /storage/
+cp .bash.local /storage/
+echo install complete. please start a new instance</code></pre>
+</section>
+</section>
+<section id="live-coding-5" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-5">Live coding 5</h2>
+<section id="bash-2" class="level4">
+<h4 class="anchored" data-anchor-id="bash-2">bash</h4>
+<ul>
+<li><code>cat FILE</code> display file</li>
+<li><code>cat f1 f2 &gt; combined</code> concat</li>
+<li><code>cat f1 &gt;&gt; f2</code> append</li>
+</ul>
+</section>
+<section id="vim" class="level4">
+<h4 class="anchored" data-anchor-id="vim">vim</h4>
+<ul>
+<li><code>i</code> insert mode</li>
+<li><code>esc</code> back to command mode</li>
+<li>in command mode try <code>:q</code> to quit <code>:wq</code> to write and quit</li>
+<li>tutorial <a href="https://vim-adventures.com/">https://vim-adventures.com/</a></li>
+</ul>
+<p>alternatively, type <code>code .</code> then edit/create file with VS code</p>
+</section>
+</section>
+<section id="live-coding-6" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-6">Live coding 6</h2>
+<ul>
+<li><code>du -sh * | grep 'G'</code> search ouput of <code>du -sh *</code> that contains <code>G</code> to identify directories larger than GB</li>
+<li><code>conda install universal-ctags</code></li>
+<li>copy config files to Paperspace (they’ll be persistent if we’ve run the bash script before in live coding 4.)
+<ul>
+<li>copy ssh keys to <code>~/.ssh</code> and change permissions <code>chmod 644 ~/.ssh/id_rsa.pub</code> <code>chmod 600 ~/.ssh/id_rsa</code></li>
+<li>first time git commit needs <code>~/.gitconfig</code> to have name and email of the user, just follow the prompt.</li>
+</ul></li>
+</ul>
+</section>
+<section id="live-coding-7" class="level2">
+<h2 class="anchored" data-anchor-id="live-coding-7">Live coding 7</h2>
+<ul>
+<li><code>pip isntall --user kaggle</code><br>
+</li>
+<li>pre-append <code>~/.bashrc</code> with <code>export PATH=~/.local/bin:$PATH</code></li>
+<li><code>source .bashrc</code></li>
+<li>create <code>kaggle.json</code> file from kaggle website and copy it into <code>~/.kaggle</code></li>
+<li>navigate into <code>.kaggle</code> and <code>chmod 600 kaggle.json</code></li>
+<li><code>kaggle competitions donwnload -c NAME</code></li>
+</ul>
+<p>Try <code>time unzip -q BLA</code> to see how long it takes to unzip.</p>
+<ul>
+<li><code>nvidia-smi dmon</code> if sm is low, this means i/o slow. Try
+<ul>
+<li>resize image</li>
+<li>move files to local (see <code>get_data.sh</code> below)</li>
+<li>reduce augmentation</li>
+<li>change to CPU instance?</li>
+</ul></li>
+</ul>
+<p>On paperspace, create <code>get_data.sh</code> in <code>/notebooks</code> (persistent)</p>
+<pre class="{bash}"><code>#!/user/bin/env bash
+cd
+mkdir BLA
+cd BLA
+kaggle competitions donwnload -c NAME
+unzip -q NAME</code></pre>
+
+
+</section>
+
+ ]]></description>
+  <category>hacks</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/gist/walkthrough.html</guid>
+  <pubDate>Sat, 11 Nov 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Machine Learning Recap 1 Concepts</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/deep-dive/uml-recap1.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<section id="setting-up-the-scene" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-scene">Setting up the scene</h2>
+<p>In a supervised learning, we specify</p>
+<ul>
+<li>an example space <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%20X"><br>
+</li>
+<li>a label space <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%20Y"></li>
+<li>a collection of hypotheses <img src="https://latex.codecogs.com/png.latex?h:%20%5Cmathcal%20X%20%5Cto%20%5Cmathcal%20Y">, making up the hypothesis class (inductive bias), from which we want to pick a predictor</li>
+<li>a loss function <img src="https://latex.codecogs.com/png.latex?%5Cell:%20%5Cmathcal%20Y%20%5Ctimes%20%5Cmathcal%20Y%20%5Cto%20%5Cmathbb%7BR%7D_+">, quantifying how good or bad a prediction <img src="https://latex.codecogs.com/png.latex?%5Chat%20y"> is compared to the ground truth label <img src="https://latex.codecogs.com/png.latex?y"></li>
+</ul>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We are given an independent and identically distributed input-output pairs <img src="https://latex.codecogs.com/png.latex?S%20=%20%5C%7B(x_i,y_i),%20i=%5Bm%5D%5C%7D%5Csubset%20%5Cmathcal%20X%5Ctimes%5Cmathcal%20Y"> with distribution <img src="https://latex.codecogs.com/png.latex?D">.</p>
+</div>
+</div>
+<p>Our goal is to pick the “best” predictor in the sense of minimising the true loss<br>
+<img src="https://latex.codecogs.com/png.latex?%0AL_D(h)%20=%20%5Cmathbb%7BE%7D_%7B(x,y)%5Csim%20D%7D%5B%5Cell(h(x),y))%5D%20%20%0A"> where <img src="https://latex.codecogs.com/png.latex?D"> is the <em>true</em> distribution of <img src="https://latex.codecogs.com/png.latex?(x,y)">.</p>
+<p>Obviously <em>a priori</em> the distribution <img src="https://latex.codecogs.com/png.latex?D"> of the samples is unkonwn. However by law of large numbers we know that <img src="https://latex.codecogs.com/png.latex?%0AL_S(h):=%20%5Cfrac%7B1%7D%7Bm%7D%5Csum_%7Bi=1%7D%5Em%20%5Cell(h(x_i),y_i)%0A"> is a consistent estimator of <img src="https://latex.codecogs.com/png.latex?L_D(h)"> (when <img src="https://latex.codecogs.com/png.latex?m%5Cto%5Cinfty"> under mild condition on the distribution of <img src="https://latex.codecogs.com/png.latex?%5Cell(h(x),y)">). This motivates the empirical risk minimisation (ERM) approach i.e.&nbsp;we look for <img src="https://latex.codecogs.com/png.latex?%0Ah_S%20%5Cin%20%5Cmathrm%7Bargmin%7D_%7Bh%5Cin%5Cmathcal%20H%7D%20L_S(h)%0A"> Hence, instead of minimising the true risk, we minimise the empirical risk, which is close to the true risk when <img src="https://latex.codecogs.com/png.latex?m"> is large, for a fixed <img src="https://latex.codecogs.com/png.latex?h">. Whether such approximation is valid uniformly for all the hypothesis in <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%20H">, in other words, whether <img src="https://latex.codecogs.com/png.latex?h_S%5Capprox%20h%5E*%5Cin%20%5Cmathrm%7Bargmin%7D_%7Bh%5Cin%5Cmathcal%20H%7D%20L_D(h)">, is at the centre of the so-called learning theory.</p>
+<p>We often decompose the generalisation error <img src="https://latex.codecogs.com/png.latex?L_D(h_S)"> in two parts: <img src="https://latex.codecogs.com/png.latex?%0AL_D(h_S)%20=%20%20L_D(h%5E*)%20+%20%5BL_D(h_S)%20-%20L_D(h%5E*)%5D%0A"> the first is called the approximation error, and second estimation error.</p>
+</section>
+<section id="lets-be-concrete" class="level2">
+<h2 class="anchored" data-anchor-id="lets-be-concrete">Let’s be concrete</h2>
+<p>From a practical point of view, we may not want to get into the learning theory bounds despite its elegance, what we do is to split the sample <img src="https://latex.codecogs.com/png.latex?S%5E0"> into two parts <img src="https://latex.codecogs.com/png.latex?S,%20V">, where <img src="https://latex.codecogs.com/png.latex?S"> is used to find an ERM which we denote by <img src="https://latex.codecogs.com/png.latex?h_S">, another for testing whether the found ERM achieves small <img src="https://latex.codecogs.com/png.latex?L_D(h_S)">. The rationale is simple, since we make iid assumption, <img src="https://latex.codecogs.com/png.latex?V"> is independent of <img src="https://latex.codecogs.com/png.latex?S">, hence <img src="https://latex.codecogs.com/png.latex?L_%7BV%7D(h_S)%20%5Capprox%20L_D(h_S)"> when <img src="https://latex.codecogs.com/png.latex?%7CV%7C"> is not too small. Therefore, the smallness of <img src="https://latex.codecogs.com/png.latex?L_%7BV%7D(h_S)"> indicates good quality (small true risk) of our predictor <img src="https://latex.codecogs.com/png.latex?h_1">.</p>
+<p>The split method for arrays is implemented in <code>sklearn.model_selection</code></p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.model_selection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> train_test_split</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb1-3">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.random.default_rng(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>)</span>
+<span id="cb1-4">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>,))</span>
+<span id="cb1-5">x_tr, x_te <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> train_test_split(x,test_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2</span>,random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>)</span></code></pre></div>
+</div>
+<p>Typically, examples are vectors in <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BR%7D%5Ed,%20d%5Cge%201">. In <img src="https://latex.codecogs.com/png.latex?k">-way (<img src="https://latex.codecogs.com/png.latex?k%5Cge%202">) classification problems, labels are one-hot encodings <img src="https://latex.codecogs.com/png.latex?e_1,...,%20e_k"> where <img src="https://latex.codecogs.com/png.latex?e_i"> is the unit vector in <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BR%7D%5Ek"> with one on the <img src="https://latex.codecogs.com/png.latex?i"> th coordinate and zero elsewhere. If <img src="https://latex.codecogs.com/png.latex?k=2">, we can drop the second coordinate and simply denote the two classes by <img src="https://latex.codecogs.com/png.latex?%5C%7B1,%20-1%5C%7D"> or <img src="https://latex.codecogs.com/png.latex?%5C%7B0,1%5C%7D">. In regression problems, the labels are in the continuum <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BR%7D%5Ek,%20k%5Cge%201">.</p>
+<p>Now consider <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%20H">. For classification problems, instead of predicting discrete class labels directly, it is sometimes beneficial to predict a probability mass function over the <img src="https://latex.codecogs.com/png.latex?k"> classes. From the pmf, a label can be obtained by taking argmax. In other words, the range of <img src="https://latex.codecogs.com/png.latex?h%5Cin%5Cmathcal%20H"> is assumed to be <img src="https://latex.codecogs.com/png.latex?%5C%7By%5Cin%5Cmathbb%7BR%7D%5Ek:%20y_i%5Cge%200,%20y_1+...+y_k=1%5C%7D">. For regression problems there are no such constraints and the range can be the whole <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BR%7D%5Ek">.</p>
+<p>The choie of the loss function may vary, depending on what goal we are trying to achiecve. Researchers can design new losses suitable for their use case. Here we mention a few popular ones. For classification problems, if we use hypothesis predicting pmf, the cross entropy loss is often a good choice <img src="https://latex.codecogs.com/png.latex?%0AXE(p,%5Chat%20p)%20=%20%20-%20%5Csum_%7Bi=1%7D%5Ek%20p_i%20%5Clog(%5Chat%20p_i)%0A"> For regression problems, the squared loss is often a good choice <img src="https://latex.codecogs.com/png.latex?SE(y,%5Chat%20y)=%20%5C%7Cy-%5Chat%20y%5C%7C%5E2_2"> where <img src="https://latex.codecogs.com/png.latex?%5C%7C.%5C%7C"> is Euclidean norm.</p>
+<p>One of the advantages of these loss functions is that they are convex in the <img src="https://latex.codecogs.com/png.latex?%5Chat%20p"> or <img src="https://latex.codecogs.com/png.latex?%5Chat%20y"> variables, making it possible to leverage the machinery of convex optimistion when it comes to the actual training process.</p>
+<p>Many loss functions are already implemented in <code>sklearn.metrics</code>. The XE is named <code>log_loss</code> and the squared loss is named <code>mean_sqquared_error</code>. Let’s list all of them.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> sklearn.metrics <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> metrics</span>
+<span id="cb2-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> m <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">dir</span>(metrics):</span>
+<span id="cb2-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">not</span> m.startswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'_'</span>): <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(m)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ConfusionMatrixDisplay
+DetCurveDisplay
+DistanceMetric
+PrecisionRecallDisplay
+PredictionErrorDisplay
+RocCurveDisplay
+accuracy_score
+adjusted_mutual_info_score
+adjusted_rand_score
+auc
+average_precision_score
+balanced_accuracy_score
+brier_score_loss
+calinski_harabasz_score
+check_scoring
+class_likelihood_ratios
+classification_report
+cluster
+cohen_kappa_score
+completeness_score
+confusion_matrix
+consensus_score
+coverage_error
+d2_absolute_error_score
+d2_pinball_score
+d2_tweedie_score
+davies_bouldin_score
+dcg_score
+det_curve
+euclidean_distances
+explained_variance_score
+f1_score
+fbeta_score
+fowlkes_mallows_score
+get_scorer
+get_scorer_names
+hamming_loss
+hinge_loss
+homogeneity_completeness_v_measure
+homogeneity_score
+jaccard_score
+label_ranking_average_precision_score
+label_ranking_loss
+log_loss
+make_scorer
+matthews_corrcoef
+max_error
+mean_absolute_error
+mean_absolute_percentage_error
+mean_gamma_deviance
+mean_pinball_loss
+mean_poisson_deviance
+mean_squared_error
+mean_squared_log_error
+mean_tweedie_deviance
+median_absolute_error
+multilabel_confusion_matrix
+mutual_info_score
+nan_euclidean_distances
+ndcg_score
+normalized_mutual_info_score
+pair_confusion_matrix
+pairwise
+pairwise_distances
+pairwise_distances_argmin
+pairwise_distances_argmin_min
+pairwise_distances_chunked
+pairwise_kernels
+precision_recall_curve
+precision_recall_fscore_support
+precision_score
+r2_score
+rand_score
+recall_score
+roc_auc_score
+roc_curve
+silhouette_samples
+silhouette_score
+top_k_accuracy_score
+v_measure_score
+zero_one_loss</code></pre>
+</div>
+</div>
+<p>It comes in handy that <code>sklearn</code> has them already defined. Implementing each one of them is often not hard, e.g.</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> log_loss(yt,yp):</span>
+<span id="cb4-2">    yt[yt<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>yp[yt<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb4-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>np.log(y).mean()</span></code></pre></div>
+</div>
+<!-- ## Model selection / hyperparameter tuning 
+
+Models may have many hyperparameters (learning rate, tree depth, neural network architectures etc). One can use k-fold cross validation to pick the one that optimises a certain metric prescribed by the user of these models. This is 
+
+
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+``` -->
+</section>
+<section id="analysis-of-errors" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-of-errors">Analysis of errors</h2>
+<p>In practice, <img src="https://latex.codecogs.com/png.latex?D"> is unknown and we only observe the training error <img src="https://latex.codecogs.com/png.latex?L_S(h_S)"> and the validation error <img src="https://latex.codecogs.com/png.latex?L_V(h_S)">. Hence we decompose the generalisation error differently <img src="https://latex.codecogs.com/png.latex?%0AL_D(h_S)%20=%20%5BL_D(h_S)%20-%20L_V(h_S)%5D%20+%20%5BL_V(h_S)%20-%20L_S(h_S)%5D%20+%20L_S(h_S)%0A"> The first term is small when <img src="https://latex.codecogs.com/png.latex?%7CV%7C"> is moderately large by independence of <img src="https://latex.codecogs.com/png.latex?V"> and <img src="https://latex.codecogs.com/png.latex?S">. The second and third term are observalbe and several cases may arise.</p>
+<ul>
+<li>the gap is small and the training error is small. This is a happy scenario</li>
+<li>the training error is large. To address this, we may consider
+<ul>
+<li>engarge the hypothesis class,</li>
+<li>completely changing it,</li>
+<li>find a better feature representation,</li>
+<li>find a better optimiser<br>
+</li>
+</ul></li>
+<li>training error is small but the gap is large. To address this, we may consider
+<ul>
+<li>add regularisation</li>
+<li>get more training data</li>
+<li>reduce the hypothesis class</li>
+</ul></li>
+</ul>
+<p>It is benefiical to plot the learning curve during training. This amounts to visualise the training error and validation error on the same plot as time evolves (every X batches, every X epoch etc).</p>
+
+
+</section>
+
+ ]]></description>
+  <category>python</category>
+  <category>machine learning</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/deep-dive/uml-recap1.html</guid>
+  <pubDate>Fri, 27 Oct 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Credit Risk Models Ep 2 machine learning methods for parameter estimation</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/deep-dive/crm2-ml.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p>In a <a href="../../posts/deep-dive/crm1-fun.html">previous post</a>, we’ve modelled the loss of a portfolio of <img src="https://latex.codecogs.com/png.latex?d"> instruments as follows <img src="https://latex.codecogs.com/png.latex?%0AL%20=%20%5Csum_%7Bi=1%7D%5Ed%20%5Cmu_i%20S_i%20I_i,%0A"> where <img src="https://latex.codecogs.com/png.latex?L"> represents the total loss, <img src="https://latex.codecogs.com/png.latex?%5Cmu_i"> is the exposure at default, <img src="https://latex.codecogs.com/png.latex?S_i"> is the loss given default, and <img src="https://latex.codecogs.com/png.latex?I_i"> is the event of default for the <img src="https://latex.codecogs.com/png.latex?i">-th instrument. To compute expected loss, VaR, and other relevant metrics in risk management, it is crucial to estimate these underlying parameters accurately. In this post, our focus is on estimating <img src="https://latex.codecogs.com/png.latex?p_i=%5Cmathbb%7BE%7D%5BI_i%5D">, which is formulated as a machine learning problem.</p>
+</blockquote>
+<section id="estimating-probaiblity-of-default-pd" class="level2">
+<h2 class="anchored" data-anchor-id="estimating-probaiblity-of-default-pd">Estimating probaiblity of default (PD)</h2>
+<p>Consider the real-world example of a bank approving loans for applicants based on their profiles. In this scenario, every applicant must fill out a comprehensive application form, including details such as their profession, age, amount of debts, monthly salary, and so on. The bank maintains records and, in retrospect, knows who has defaulted on their loans.</p>
+<p>To formalize this process, each applicant corresponds to a vector in <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BR%7D%5Ek">, known as the feature vector, which incorporates all the information from the form (possibly encoded for categorical values, e.g., converting ‘profession’ into dummy variables). The output we aim to predict is whether the applicant is in default (1) or not (0).</p>
+<p>This constitutes a binary classification problem. With a substantial number of input-output pairs (features and default status) available, supervised learning algorithms can be employed to learn a relationship that can subsequently be used for predictions.</p>
+<p>Many supervised learning algorithms for binary prediction actually output probabilities (specifically, the probability of the label being 1). This is suitable for our goal, as we precisely seek to estimate probabilities.</p>
+<p>For illustration, let’s consider a credit default risk dataset from this <a href="https://www.kaggle.com/competitions/home-credit-default-risk">Kaggle competition</a>. We set up the competition with <code>fastkaggle</code> module.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">try</span>: <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> fastkaggle</span>
+<span id="cb1-2"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">except</span> <span class="pp" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">ModuleNotFoundError</span>:</span>
+<span id="cb1-3">    <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!</span>pip install <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>Uq fastkaggle</span>
+<span id="cb1-4"></span>
+<span id="cb1-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> fastkaggle <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span></span>
+<span id="cb1-6"></span>
+<span id="cb1-7">comp <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'home-credit-default-risk'</span></span>
+<span id="cb1-8">path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> setup_comp(comp, install<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">''</span>)</span>
+<span id="cb1-9">path.ls()</span></code></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>(#10) [Path('home-credit-default-risk/application_train.csv'),Path('home-credit-default-risk/bureau_balance.csv'),Path('home-credit-default-risk/application_test.csv'),Path('home-credit-default-risk/sample_submission.csv'),Path('home-credit-default-risk/previous_application.csv'),Path('home-credit-default-risk/POS_CASH_balance.csv'),Path('home-credit-default-risk/HomeCredit_columns_description.csv'),Path('home-credit-default-risk/credit_card_balance.csv'),Path('home-credit-default-risk/installments_payments.csv'),Path('home-credit-default-risk/bureau.csv')]</code></pre>
+</div>
+</div>
+<p>We primarily look into <code>application_train.csv</code>, which contains 308k rows and 121 input features. While there are numerous aspects to discuss regarding this dataset, for the sake of brevity, I will address two significant points here:</p>
+<section id="missing-values" class="level3">
+<h3 class="anchored" data-anchor-id="missing-values">Missing values</h3>
+<p>There are many missing values in this dataset. To be more precise, 41 columns actually have half of their values missing.</p>
+<p>This is a critical issue that needs to be addressed because many off-the-shelf machine learning models in scikit-learn, such as logistic regression, random forest, and support vector machines, cannot handle missing values represented as <code>np.nan</code>. There are two possible options to handle this:</p>
+<ol type="1">
+<li><p><strong>Impute the missing values</strong> before feeding the data into these models. Imputation can be done using “rule-based” methods such as scikit-learn’s SimpleImputer or “learning-based” methods such as scikit-learn’s IterativeImputer.</p></li>
+<li><p><strong>Use a different model that supports missing values natively.</strong> For instance, many gradient boosting implementations like HistGradientBoosting, XGBoost, LightGBM, and CatBoost handle missing values natively.</p></li>
+</ol>
+<p>For the sake of providing a quick benchmark, we have opted for the second option and are using scikit-learn’s gradient boosting implementation, HistGradientBoostingClassifier. Explaining the detailed workings of gradient boosting is a vast topic that we might delve into in a future post.</p>
+</section>
+<section id="unbalanced-data" class="level3">
+<h3 class="anchored" data-anchor-id="unbalanced-data">Unbalanced data</h3>
+<p>Roughly 8% of the obligors goes into default in this dataset, making it unbalanced. From the perspective of risk management, it is important to predict defaults (label 1) accurately. Therefore, when it comes to evaluate model performance, accuracy is not an appropriate metric. Simply predicting non-default for all obligors would result in a correct prediction 92% of the time, but it’s never correct for the defaults.</p>
+<p>Applying a machine learning model directly to an unbalanced dataset can lead to sub-optimal results. We’ll demonstrate this point in the next section. A simple mitigation strategy is to sub-sample the majority class to match the size of the minority class, creating a balanced dataset. In this example, the minority class comprises roughly 25k rows, so we can train a model using this strategy as the balanced data is not too small to be useful. xx Obviously, the downside of this strategy is that we have thrown away lots of valuable data, but let’s not worry about it at this stage of obtaining a quick benchmark.</p>
+</section>
+</section>
+<section id="implementation" class="level2">
+<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
+<p>First we feed the whole unbalanced dataset into HistGradientBoostingClassifier.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb3-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb3-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.preprocessing <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> OneHotEncoder</span>
+<span id="cb3-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.compose <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> make_column_transformer, make_column_selector</span>
+<span id="cb3-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.pipeline <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> make_pipeline</span>
+<span id="cb3-6"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.model_selection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> train_test_split</span>
+<span id="cb3-7"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.ensemble <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> HistGradientBoostingClassifier</span>
+<span id="cb3-8"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.metrics <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> classification_report</span>
+<span id="cb3-9"></span>
+<span id="cb3-10">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(path<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'application_train.csv'</span>)</span>
+<span id="cb3-11">X <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TARGET'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb3-12">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.TARGET</span>
+<span id="cb3-13"></span>
+<span id="cb3-14">X_tr, X_dev, y_tr, y_dev <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> train_test_split(X,y,test_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1123</span>)</span>
+<span id="cb3-15"></span>
+<span id="cb3-16">ohe <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> OneHotEncoder(drop<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'if_binary'</span>)</span>
+<span id="cb3-17">model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> HistGradientBoostingClassifier()</span>
+<span id="cb3-18"></span>
+<span id="cb3-19">ct <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> make_column_transformer(</span>
+<span id="cb3-20">    (ohe, make_column_selector(dtype_exclude<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>np.number)),</span>
+<span id="cb3-21">    remainder<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'passthrough'</span>,</span>
+<span id="cb3-22">)</span>
+<span id="cb3-23"></span>
+<span id="cb3-24">pipe <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> make_pipeline(</span>
+<span id="cb3-25">    ct,model</span>
+<span id="cb3-26">)</span>
+<span id="cb3-27"></span>
+<span id="cb3-28">pipe.fit(X_tr,y_tr)</span>
+<span id="cb3-29">y_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pipe.predict(X_dev)</span>
+<span id="cb3-30"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(classification_report(y_pred,y_dev))</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              precision    recall  f1-score   support
+
+           0       1.00      0.92      0.96     61330
+           1       0.02      0.56      0.04       173
+
+    accuracy                           0.92     61503
+   macro avg       0.51      0.74      0.50     61503
+weighted avg       1.00      0.92      0.96     61503
+</code></pre>
+</div>
+</div>
+<p>As we can see, the precision for class 1 is only 0.02, indicating that amongst all that are identified as defaults, only 2% of them are true defaults. Does this mean that the model we chose is rubbish? Not necessarily. Let’s use the exact same model but now with a balanced dataset created using the sub-sampling strategy.</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1">mask <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TARGET'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb5-2">m <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> mask.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb5-3"></span>
+<span id="cb5-4">df_balance <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.concat([df[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">~</span>mask].sample(m,random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>),df[mask]], axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)</span>
+<span id="cb5-5"></span>
+<span id="cb5-6">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_balance.TARGET</span>
+<span id="cb5-7">X <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_balance.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TARGET'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb5-8"></span>
+<span id="cb5-9">X_tr, X_dev, y_tr, y_dev <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> train_test_split(X,y,test_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">112</span>)</span>
+<span id="cb5-10"></span>
+<span id="cb5-11">pipe.fit(X_tr,y_tr)</span>
+<span id="cb5-12">y_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pipe.predict(X_dev)</span>
+<span id="cb5-13"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(classification_report(y_pred,y_dev))</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              precision    recall  f1-score   support
+
+           0       0.70      0.68      0.69      5050
+           1       0.68      0.69      0.69      4880
+
+    accuracy                           0.69      9930
+   macro avg       0.69      0.69      0.69      9930
+weighted avg       0.69      0.69      0.69      9930
+</code></pre>
+</div>
+</div>
+<p>Much better! All the metrics look roughly the same, hovering around 69%. While this is far from being deployable in the real world, as a baseline, it’s far more reasonable than our previous attempt.</p>
+<p>We’ll conclude the post here. To further enhance the overall performance, it’s necessary to meticulously explore the features, engage in more feature engineering, employ clever methods of data imputation, and conduct thorough hyperparameter tuning. Give it a go!</p>
+
+
+</section>
+
+ ]]></description>
+  <category>credit risk</category>
+  <category>python</category>
+  <category>machine learning</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/deep-dive/crm2-ml.html</guid>
+  <pubDate>Fri, 20 Oct 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Credit Risk Models Ep 1 Fundamentals</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/deep-dive/crm1-fun.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p>This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions for the sake of simplicity and tractability. Despite its simplicity, this model serves as an excellent starting point for understanding the fundamental concepts of credit risk. It lays the foundation for more complex models that will be explored later in this series. The mathematical concepts introduced in this post are commonly found in any first-year probability textbook</p>
+</blockquote>
+<section id="pd-lgd-ead-approach" class="level2">
+<h2 class="anchored" data-anchor-id="pd-lgd-ead-approach">PD-LGD-EAD approach</h2>
+<p>Credit risk models are mathematical representations of the potential losses within a portfolio of financial instruments. Each instrument carries a probability of default, leading to either a complete loss or a partial loss. Modeling credit risk is crucial as it offers valuable insights to stakeholders, enabling them to take proactive measures to mitigate these losses. Consequently, it plays a pivotal role in the financial sector.</p>
+<p>Let’s introduce some notation. Consider a portfolio containing <img src="https://latex.codecogs.com/png.latex?d"> instruments. The event of default for the <img src="https://latex.codecogs.com/png.latex?i">-th instrument is denoted as <img src="https://latex.codecogs.com/png.latex?D_i">. Here, <img src="https://latex.codecogs.com/png.latex?%5Cmu_i"> represents the exposure at default (EAD) of the <img src="https://latex.codecogs.com/png.latex?i">-th instrument, and <img src="https://latex.codecogs.com/png.latex?S_i%20%5Cin%20%5B0,1%5D"> the loss given default (LGD) where <img src="https://latex.codecogs.com/png.latex?S"> signifies severity, indicating the actual loss relative to the exposure. We define <img src="https://latex.codecogs.com/png.latex?I_i%20:=%20I_%7BD_i%7D"> as the indicator of the event <img src="https://latex.codecogs.com/png.latex?D_i">, which follows a Bernoulli distribution with parameter <img src="https://latex.codecogs.com/png.latex?p_i%20:=%20%5Cmathbb%7BP%7D%5BD_i%5D">. The total loss of the portfolio is expressed as the sum: <span id="eq-loss"><img src="https://latex.codecogs.com/png.latex?%0AL%20=%20%5Csum_%7Bi=1%7D%5Ed%20%5Cmu_i%20S_i%20I_i%0A%5Ctag%7B1%7D"></span> From the perspective of risk managers, the values of <img src="https://latex.codecogs.com/png.latex?%5Cmu_i"> are known. However, the uncertainly lies in whether an instrument will default and the corresponding severity, making the total loss <img src="https://latex.codecogs.com/png.latex?L"> a random variable. Our interest lies in understanding the probability distribution of <img src="https://latex.codecogs.com/png.latex?L">.</p>
+<p>In this post we make the following naive assumptions.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Important
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that</p>
+<ul>
+<li><img src="https://latex.codecogs.com/png.latex?%5C%7B(I_i,S_i)%5C%7D_%7Bi=1%7D%5Ed"> is a family of independent random vectors.</li>
+<li><img src="https://latex.codecogs.com/png.latex?I_i"> is independent of <img src="https://latex.codecogs.com/png.latex?S_i"> for all <img src="https://latex.codecogs.com/png.latex?i%5Cin%20%5Bd%5D">.</li>
+</ul>
+</div>
+</div>
+<p>Under this assumption, it is clear that <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BE%7D%5BL%5D%20=%20%5Csum_%7Bi=1%7D%5Ed%20%5Cmu_i%20%5Cmathbb%7BE%7D%5BS_i%5D%20p_i%0A"> <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathrm%7BVar%7D%5BL%5D%20=%20%5Csum_%7Bi=1%7D%5Ed%20%5Cmu_i%5E2%20(%5Cmathbb%7BE%7D%5BS_i%5E2%5D%20p_i%20%20-%20%5Cmathbb%7BE%7D%5BS%5D%5E2%20p_i%5E2)%0A"> The expected loss (EL) is an important quantity in the <a href="https://www.eba.europa.eu/regulation-and-policy/single-rulebook/interactive-single-rulebook/1586">Basel III guidelines</a>.</p>
+</section>
+<section id="var-and-expected-shortfalls" class="level2">
+<h2 class="anchored" data-anchor-id="var-and-expected-shortfalls">VaR and expected shortfalls</h2>
+<p>In a stable economy, default events are infrequent, making credit risk modeling primarily focused on rare occurrences. Obtaining a precise measure of the credit risk of a portfolio is not achieved by merely calculating the average; instead, it’s crucial to comprehend the quantiles. In the realm of credit risk, these quantiles are referred to as the Value at Risk (VaR).<br>
+<img src="https://latex.codecogs.com/png.latex?%0A%5Cmathrm%7BVaR%7D_%5Calpha(L)%20=%20%5Cinf%5C%7Bt%5Cin%5Cmathbb%7BR%7D:%20%5Cmathbb%7BP%7D%5BL%5Cge%20t%5D%5Cle%20%5Calpha%20%5C%7D.%0A"> Another commonly utilized metric is the Expected Shortfall, which represents the conditional expectation of the loss <img src="https://latex.codecogs.com/png.latex?L"> given that <img src="https://latex.codecogs.com/png.latex?L"> exceeds the VaR <img src="https://latex.codecogs.com/png.latex?%0AE_%5Calpha(L)%20=%20%5Cmathbb%7BE%7D%5BL%7CL%5Cge%5Cmathrm%7BVaR%7D_%5Calpha%5D.%0A"> Clearly <img src="https://latex.codecogs.com/png.latex?E_%5Calpha(L)%5Cge%20%5Cmathrm%7BVaR%7D_%5Calpha(L)">.</p>
+<p>It’s crucial to acknowledge that the joint distribution of <img src="https://latex.codecogs.com/png.latex?(I_i,%20S_i)"> is <strong>unknown</strong>. To compute VaR and expected shortfalls, risk analysts must undertake at least three tasks:</p>
+<ol type="1">
+<li><strong>Model Calibration:</strong> This involves determining the model’s parameters using available data.</li>
+<li><strong>Distribution Computation:</strong> Compute the distribution of <img src="https://latex.codecogs.com/png.latex?L"> either analytically or through Monte Carlo simulation, based on the calibrated parameters.</li>
+<li><strong>Metrics Computation:</strong> Utilize the obtained distribution to compute VaR, shortfall, or other relevant metrics either analytically or numerically.</li>
+</ol>
+<p>The calibration process demands substantial effort and is specific to the chosen model. We will delve into this topic in a future post. For the remainder of this discussion, let’s assume that we have already established a set of parameters and focus on the last two steps.</p>
+<p>It’s important to emphasize that deriving the exact distribution of <img src="https://latex.codecogs.com/png.latex?L"> can be tedious, if not infeasible. In practice, risk analysts resort to simulations and numerical computations to determine VaR and shortfalls. This pragmatic approach is the one we adopt here.</p>
+</section>
+<section id="monte-carlo-simulation-for-estimating-var-and-shortfalls" class="level2">
+<h2 class="anchored" data-anchor-id="monte-carlo-simulation-for-estimating-var-and-shortfalls">Monte Carlo simulation for estimating VaR and shortfalls</h2>
+<p><strong>Step 1</strong></p>
+<p>We first specify the parameters <img src="https://latex.codecogs.com/png.latex?p_i,%20%5Cmu_i"> and parameters for the distribution of <img src="https://latex.codecogs.com/png.latex?S_i">. These parameters are generated at random with arbitrary choice of distributions, following<br>
+<span class="citation" data-cites="bolder2018credit">Bolder (2018)</span></p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb1-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb1-4"></span>
+<span id="cb1-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set random seed for reproducibility</span></span>
+<span id="cb1-6">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.random.default_rng(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1123</span>)</span>
+<span id="cb1-7"></span>
+<span id="cb1-8">d <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># number of instruments</span></span>
+<span id="cb1-9"></span>
+<span id="cb1-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set the probability of default for d instruments, low 0.1 high 7 per cent</span></span>
+<span id="cb1-11">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.chisquare(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d,))</span>
+<span id="cb1-12">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.where(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>, x)</span>
+<span id="cb1-13">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.where(x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7</span>, x)</span>
+<span id="cb1-14">p <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span> </span>
+<span id="cb1-15"></span>
+<span id="cb1-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set exposures parameters normalised to have total exposure 1000</span></span>
+<span id="cb1-17">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.weibull(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,(d,))</span>
+<span id="cb1-18">mu <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span>y.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb1-19"></span>
+<span id="cb1-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># set serverity parameters</span></span>
+<span id="cb1-21">a,b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.5</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2.5</span></span></code></pre></div>
+</div>
+<p><strong>Step 2</strong></p>
+<p>Next we simulate <img src="https://latex.codecogs.com/png.latex?L"> for a large number of times accoding to Equation&nbsp;1. We sort the samples in the end, useful for computing the empirical distributions later on.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">m <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50_000</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># number of repetitions</span></span>
+<span id="cb2-2">S <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.beta(a, b, (m,d))</span>
+<span id="cb2-3">I <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.uniform(size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(m,d)) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;</span> p</span>
+<span id="cb2-4">L <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (S<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>I)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">@</span> mu</span>
+<span id="cb2-5">L <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.sort(L)</span></code></pre></div>
+</div>
+<p><strong>Step 3</strong></p>
+<p>We plot the histogram and empirical distribution, then estimate VaR and expected shortfalls.</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Estimate VaR </span></span>
+<span id="cb3-2">pers <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.array([<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">95</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">99</span>,<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">99.9</span>])</span>
+<span id="cb3-3">alphas <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> pers<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span></span>
+<span id="cb3-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.percentile(L, pers)</span>
+<span id="cb3-5"></span>
+<span id="cb3-6">fig, axes <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> plt.subplots(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb3-7">axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>].hist(L, bins<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>, label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Histogram of Loss'</span>)</span>
+<span id="cb3-8"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i, var <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">enumerate</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span>): </span>
+<span id="cb3-9">  axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>].axvline(var,linestyle<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'dashed'</span>, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>g.uniform(size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>,)),label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'VaR</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>alphas[i]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:.3f}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span>
+<span id="cb3-10">axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>].legend()</span>
+<span id="cb3-11"></span>
+<span id="cb3-12">axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>].plot(L,np.linspace(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(L),endpoint<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>), color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'red'</span>, label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'empirical distribution'</span>)</span>
+<span id="cb3-13">axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>].legend()</span>
+<span id="cb3-14"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> var <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span>: </span>
+<span id="cb3-15">  axes[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>].axvline(var,linestyle<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'dashed'</span>)</span>
+<span id="cb3-16">plt.show()</span>
+<span id="cb3-17"></span>
+<span id="cb3-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Estimate shortfalls</span></span>
+<span id="cb3-19">shortfalls <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.zeros(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">len</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span>))</span>
+<span id="cb3-20"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> i,var <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">enumerate</span>(<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span>):</span>
+<span id="cb3-21">  shortfalls[i] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> L[L<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span>var].mean()</span>
+<span id="cb3-22"></span>
+<span id="cb3-23">pd.set_option(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'display.precision'</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>)</span>
+<span id="cb3-24">pd.DataFrame({<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'alphas'</span>: alphas, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'VaR'</span>: <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">vars</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Shortfalls'</span>: shortfalls}).set_index(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'alphas'</span>)</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="https://xiaochuany.github.io/1principle/posts/deep-dive/crm1-fun_files/figure-html/cell-4-output-1.png" width="592" height="411"></p>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">VaR</th>
+<th data-quarto-table-cell-role="th">Shortfalls</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">alphas</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0.050</td>
+<td>12.6668</td>
+<td>16.2741</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">0.010</td>
+<td>18.6163</td>
+<td>21.4599</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0.001</td>
+<td>25.4548</td>
+<td>28.1533</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We’ve completed tasks 2 and 3! Next time, we’ll delve into methods of parameter estimation, still within the naive setting. This will bring us full circle and complete the lifecycle of a single model.</p>
+</section>
+<section id="references" class="level2">
+
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-bolder2018credit" class="csl-entry">
+Bolder, David Jamieson. 2018. <em>Credit-Risk Modelling</em>. Springer.
+</div>
+</div></section></div> ]]></description>
+  <category>credit risk</category>
+  <category>applied probability</category>
+  <category>python</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/deep-dive/crm1-fun.html</guid>
+  <pubDate>Sun, 15 Oct 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Understanding Machine Learning: a series of 20 videos</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/deep-dive/uml.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p>From Oct 2022 to Feb 2023, I have created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com, closely following the excellent textbook written by Shalev-Shwartz and Ben-David, which is freely available on the <a href="https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/index.html">authors’ webpage</a>.</p>
+</blockquote>
+<p><a href="https://www.youtube.com/playlist?list=PLRUGJ8qKWnox5Jn2URD_0OQwvnl_uv3IU">Playlist in my YouTube channel</a></p>
+<p>Topics covered include</p>
+<ul>
+<li>Probably Approximately Correct (PAC) learning model</li>
+<li>VC dimension</li>
+<li>no free lunch theorem</li>
+<li>linear predictors: logistic regression, linear regression, perceptron</li>
+<li>convex learning problems</li>
+<li>regularisation</li>
+<li>stochastic gradient descent</li>
+<li>support vector machine</li>
+<li>kernel methods</li>
+<li>decision trees</li>
+<li>boosting: AdaBoost</li>
+<li>clustering: k-means, spectral clustering, linkage-based clustering</li>
+<li>dimenionality reduction: PCA, compressed sensing</li>
+<li>generative models: naive Bayes, LDA, EM algorithms</li>
+</ul>
+<p><img src="https://xiaochuany.github.io/1principle/posts/assets/uml_cover.jpg" class="img-fluid"></p>
+
+
+
+ ]]></description>
+  <category>machine learning</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/deep-dive/uml.html</guid>
+  <pubDate>Sat, 14 Oct 2023 00:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Secret ‘SAWS’ of deep learning, feature backprop</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/deep-dive/saws.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<blockquote class="blockquote">
+<p>My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 module on deep learning. I found this a perfect example of “good notation helps memorisation” which hopefully reinforces understanding. In this post, I will explain how we get to this recursion and end the post with a python implementation.</p>
+</blockquote>
+<section id="multi-layer-perceptron" class="level2">
+<h2 class="anchored" data-anchor-id="multi-layer-perceptron">Multi-Layer Perceptron</h2>
+<p>Everyone knows that a neural network is a universal function approximator that can be used to learn complex relationships between inputs and outputs. It is a learning machine that mimics biological neural networks in the human brain. Mathematically, given an input <img src="https://latex.codecogs.com/png.latex?x%5Cin%5Cmathbb%7BR%7D%5E%7Bn_x%7D">, a neural nerwork computes an ouput <img src="https://latex.codecogs.com/png.latex?%5Chat%20y%5Cin%5Cmathbb%7BR%7D%5E%7Bn_y%7D"> as follows, <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0Aa%5E%7B%5B1%5D%7D%20&amp;=%20%5Csigma(W%5E%7B%5B1%5D%5Ctop%7D%20x%20+%20b%5E%7B%5B1%5D%7D)%20%5C%5C%0Aa%5E%7B%5B2%5D%7D%20&amp;=%20%5Csigma(W%5E%7B%5B2%5D%5Ctop%7D%20a%5E%7B%5B1%5D%7D%20+%20b%5E%7B%5B2%5D%7D)%20%5C%5C%0A&amp;%5Cvdots%20%5C%5C%0Aa%5E%7B%5BL%5D%7D%20&amp;=%20%5Csigma(W%5E%7B%5BL%5D%5Ctop%7D%20a%5E%7B%5BL-1%5D%7D%20+%20b%5E%7B%5BL%5D%7D)%20%5C%5C%0A%5Chat%20y%20&amp;=%20%5Csigma(W%5E%7B%5BL+1%5D%5Ctop%7D%20a%5E%7B%5BL%5D%7D%20+%20b%5E%7B%5BL+1%5D%7D)%0A%5Cend%7Balign*%7D"></p>
+<p>Here <img src="https://latex.codecogs.com/png.latex?%5Csigma:%5Cmathbb%7BR%7D%5Cto%5Cmathbb%7BR%7D"> is any nonlinear differentiable function (or sufficiently close to be such), <img src="https://latex.codecogs.com/png.latex?L"> is the number of hidden layers, <img src="https://latex.codecogs.com/png.latex?W"> and <img src="https://latex.codecogs.com/png.latex?b"> are weight matrices and bias vectors. We use <img src="https://latex.codecogs.com/png.latex?n_l"> to denote the number of hidden nodes in the <img src="https://latex.codecogs.com/png.latex?l">-th layer. The pre-activation vector at layer <img src="https://latex.codecogs.com/png.latex?l"> is denoted by <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5Bl%5D%7D">.</p>
+<p>From the definition we see that <img src="https://latex.codecogs.com/png.latex?%5Chat%20y"> is not only a function of <img src="https://latex.codecogs.com/png.latex?x">, but also a function of <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5B1%5D%7D,%20z%5E%7B%5B2%5D%7D"> and so forth using sub-networks. This may seem like stating the obvious, but it’s a useful fact to keep in mind when we derive the algorithm for training these networks.</p>
+</section>
+<section id="training" class="level2">
+<h2 class="anchored" data-anchor-id="training">Training</h2>
+<p>How to train a neural network to make good predictions? Well, we first need to specify a computable objective. To achieve this we introduce a loss function that measures how good or bad a predictor is compared to the ground truth. This is called supervised learning. A commonly used loss is the squared loss <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20%5Cell(u,v)%20=%20%20%5Cfrac%7B1%7D%7B2%7D%20%5C%7Cu-v%5C%7C%5E2%0A%5Cend%7Balign*%7D"> where <img src="https://latex.codecogs.com/png.latex?%5C%7C%5Ccdot%5C%7C"> is the Euclidean norm. Then our goal is to minimize <img src="https://latex.codecogs.com/png.latex?J=%5Cell(y,%5Chat%20y)">.</p>
+<p>A general-purpose optimization method is gradient descent. In every iteration step, this method updates the parameters (i.e.&nbsp;weights and biases) by moving along the opposite of the gradient of the loss with respect to the parameters. Due to the characterization of the gradient of a function as being the direction along which the function increases the most (infinitesimally speaking), this method is heuristically justified for minimizing an objective function when the step size (aka learning rate) is not too large.</p>
+<p>A crucial point is that we need to compute all the partial derivatives for every gradient descent step! Mathematically this is tedious but not hard at all. Everyone knows that to differentiate a composition of functions, the chain rule is our best friend. Sure, we have multiple compositions, but it does not produce any conceptual complications because we can just apply the chain rule multiple times.</p>
+<p>Take weight matrix <img src="https://latex.codecogs.com/png.latex?W%5E%7B%5B1%5D%7D"> as an example. Any small nudge on its value would result in changes in <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5B1%5D%7D">, and once we have the value of <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5B1%5D%7D">, we feed it into the sub-network made of layers <img src="https://latex.codecogs.com/png.latex?1"> to <img src="https://latex.codecogs.com/png.latex?L+1"> and get the output. Hence <img src="https://latex.codecogs.com/png.latex?J=g(z%5E%7B%5B1%5D%7D)"> for some <img src="https://latex.codecogs.com/png.latex?g">. By the chain rule,<br>
+<img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20W%5E%7B%5B1%5D%7D%7D%20=%20%20%0A%20%20%20%20%5Csum_i%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5B1%5D%7D_i%7D%20%5Cfrac%7B%5Cpartial%20z%5E%7B%5B1%5D%7D_i%7D%7B%5Cpartial%20W%5E%7B%5B1%5D%7D%7D.%0A%5Cend%7Balign*%7D"></p>
+<p>The second gradient in the summand is the rather simple because <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5B1%5D%7D"> is a linear function of <img src="https://latex.codecogs.com/png.latex?W%5E%7B%5B1%5D%7D">. However, the first gradient is not explicit because the function <img src="https://latex.codecogs.com/png.latex?g"> is cumbersome as a composition of compositions of compositions … What we can do is to apply chain rule again, then <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5B1%5D%7D%7D%0A%20%20%20%20=%20%5Csum_i%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5B2%5D%7D_i%7D%20%5Cfrac%7B%5Cpartial%20z%5E%7B%5B2%5D%7D_i%7D%7B%5Cpartial%20z%5E%7B%5B1%5D%7D%7D%0A%5Cend%7Balign*%7D"></p>
+<p>Recalling <img src="https://latex.codecogs.com/png.latex?z%5E%7B%5B2%5D%7D%20=%20W%5E%7B%5B2%5D%5Ctop%7D%20%5Csigma(z%5E%7B%5B1%5D%7D)%20+%20b%5E%7B%5B2%5D%7D">, the second gradient is easy to calculate. Hence, the gradient of <img src="https://latex.codecogs.com/png.latex?J"> with respect to the first layer pre-activation is a linear combination of the gradient with respect to the second layer pre-activation. Applying the chain rule recursively in the forward direction all the way to the output layer, we can express <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5B1%5D%7D%7D"> as a multiple sum over <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5BL+1%5D%7D%7D"> times multiple products of gradients of consecutive pre-activations.</p>
+Following the same recipe, we can compute the gradients with respect to weights and biases of all the layers. In summary, we would need for all <img src="https://latex.codecogs.com/png.latex?l=1,%5Cldots,L+1">:
+<p>and chain them together using multiple sums and products. This seems like a lot of work, even for a computer!</p>
+<p>Here comes an important observation. There are lots of redundant computations if we use the recipe just described to compute an explicit form for all the gradients at every layer.</p>
+<p>The big idea is to take advantage of the recursive relations between gradients with respect to pre-activations of consecutive layers. To be more precise, let’s rewrite both equations at a general layer (we also include an equation for the biases).</p>
+<p><span id="eq-gradW"><img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20W%5E%7B%5Bl%5D%7D%7D%20=%20%5Csum_i%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D_i%7D%20%5Cfrac%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D_i%7D%7B%5Cpartial%20W%5E%7B%5Bl%5D%7D%7D.%0A%5Ctag%7B1%7D"></span></p>
+<p><span id="eq-gradb"><img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20b%5E%7B%5Bl%5D%7D%7D%20=%20%5Csum_i%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D_i%7D%20%5Cfrac%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D_i%7D%7B%5Cpartial%20b%5E%7B%5Bl%5D%7D%7D%0A%5Ctag%7B2%7D"></span></p>
+<p><span id="eq-recursion"><img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D%7D%20=%20%5Csum_i%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5Bl+1%5D%7D_i%7D%20%5Cfrac%7B%5Cpartial%20z%5E%7B%5Bl+1%5D%7D_i%7D%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D%7D%0A%5Ctag%7B3%7D"></span></p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?S%5E%7B%5Bl%5D%7D%20=%20%5Cfrac%7B%5Cpartial%20J%7D%7B%5Cpartial%20z%5E%7B%5Bl%5D%7D%7D">. We use equations Equation&nbsp;1 and Equation&nbsp;2, along with <img src="https://latex.codecogs.com/png.latex?S%5E%7B%5BL+1%5D%7D"> (easy to compute), to find the required gradients for updating <img src="https://latex.codecogs.com/png.latex?W%5E%7B%5BL+1%5D%7D"> and <img src="https://latex.codecogs.com/png.latex?b%5E%7B%5BL+1%5D%7D">. Then we use equation Equation&nbsp;3 to find <img src="https://latex.codecogs.com/png.latex?S%5E%7B%5BL%5D%7D">, which can be plugged back into equations Equation&nbsp;1 and Equation&nbsp;2 to get the required gradient for updating <img src="https://latex.codecogs.com/png.latex?W%5E%7B%5BL%5D%7D"> and <img src="https://latex.codecogs.com/png.latex?b%5E%7B%5BL%5D%7D">, and so on.</p>
+<p>What we just described is the famous backpropagation. The advantage of this approach is that we compute each basic computation (itemized above) only once for each gradient descent iteration.</p>
+<p>From layer to layer, the computation is done sequentially, because output of <img src="https://latex.codecogs.com/png.latex?l+1">-th layer is requiredd as the input for computing gradients of <img src="https://latex.codecogs.com/png.latex?l">-th layer. For each fixed <img src="https://latex.codecogs.com/png.latex?l">, however, it is better to parallelise the computation and write Equation&nbsp;1 -Equation&nbsp;3 in matrix forms. Here is how we do it:</p>
+<section id="squared-loss" class="level3">
+<h3 class="anchored" data-anchor-id="squared-loss">Squared loss</h3>
+<p>Set <img src="https://latex.codecogs.com/png.latex?A%5E%7B%5Bl%5D%7D=%5Cmathrm%7Bdiag%7D(%5Csigma'(z%5E%7B%5Bl%5D%7D))"> and <img src="https://latex.codecogs.com/png.latex?e%20=%20y%20-%20%5Chat%20y">. It is easy to see that <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20S%5E%7B%5BL+1%5D%7D%20=%20-%20A%5E%7B%5BL+1%5D%7D%20e%0A%5Cend%7Balign*%7D"> Equation Equation&nbsp;3 can be written in matrix form as well <span id="eq-saws"><img src="https://latex.codecogs.com/png.latex?%0AS%5E%7B%5Bl%5D%7D%20=%20A%5E%7B%5Bl%5D%7D%20W%5E%7B%5Bl+1%5D%7D%20S%5E%7B%5Bl+1%5D%7D%0A%5Ctag%7B4%7D"></span> Now the gradients <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20dW%5E%7B%5Bl%5D%7D%20&amp;=%20a%5E%7B%5Bl-1%5D%7D%20S%5E%7B%5Bl%5D%5Ctop%7D%20%5C%5C%0A%20%20%20%20db%5E%7B%5Bl%5D%7D%20&amp;=%20S%5E%7B%5Bl%5D%7D%0A%5Cend%7Balign*%7D"></p>
+<p>Equation&nbsp;4 is what I meant by secret “SAWS” of deep learning!</p>
+</section>
+<section id="cross-entropy-loss" class="level3">
+<h3 class="anchored" data-anchor-id="cross-entropy-loss">Cross entropy loss</h3>
+<p>The XE loss is defined for two probability mass functions as follows <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20%5Cell(u,v)%20=%20-%5Csum_k%20u_k%5Clog%20v_k.%0A%5Cend%7Balign*%7D"> It is particularly well suited for multiclass classification problem. To ensure that <img src="https://latex.codecogs.com/png.latex?%5Chat%20y"> is a probability mass function. We use the softmax activation function at the output layer <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20%5Cmathrm%7Bsoftmax%7D(x)%20=%20%20%5Cfrac%7Be%5E%7Bx%7D%7D%7B%5Csum_i%20e%5E%7Bx_i%7D%7D%0A%5Cend%7Balign*%7D"> All we have to do is to change the computation of <img src="https://latex.codecogs.com/png.latex?S%5E%7B%5BL+1%5D%7D">, namely the gradient of the XE loss with respect to the output layer pre-activation, then back propagate using the last three equations in the squared loss case. A routine application of chain rule yields that <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%20%20%20%20S%5E%7B%5BL+1%5D%7D%20=%20-%20e%0A%5Cend%7Balign*%7D"> where <img src="https://latex.codecogs.com/png.latex?e"> was defined earlier in the squared loss case.</p>
+</section>
+</section>
+<section id="python-implementation" class="level2">
+<h2 class="anchored" data-anchor-id="python-implementation">Python Implementation</h2>
+<p>Here is a python implementation of the training with min-batch SGD, 1 hidden layer, sigmoid activation in the hidden and output layers, and squared loss.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">def</span> sig(x):</span>
+<span id="cb1-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">return</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>np.exp(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>x))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">**-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb1-5"></span>
+<span id="cb1-6">g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.random.default_rng(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1123</span>)</span>
+<span id="cb1-7"></span>
+<span id="cb1-8">d,m <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span></span>
+<span id="cb1-9">d_out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span></span>
+<span id="cb1-10">d_hid <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span></span>
+<span id="cb1-11">batch_size <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span></span>
+<span id="cb1-12">n_epoch <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span></span>
+<span id="cb1-13">lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span></span>
+<span id="cb1-14"></span>
+<span id="cb1-15">X_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d,m))</span>
+<span id="cb1-16">Y_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.uniform(size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(d_out,m))</span>
+<span id="cb1-17"></span>
+<span id="cb1-18">W1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d,d_hid))</span>
+<span id="cb1-19">W2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d_hid,d_out))</span>
+<span id="cb1-20">b1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d_hid,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span></span>
+<span id="cb1-21">b2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.normal(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>,(d_out,<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span></span>
+<span id="cb1-22"></span>
+<span id="cb1-23">errors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[]</span>
+<span id="cb1-24"></span>
+<span id="cb1-25"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> epoch <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n_epoch):</span>
+<span id="cb1-26">    error <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span></span>
+<span id="cb1-27">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># permute the data</span></span>
+<span id="cb1-28">    perm_idx <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> g.permutation(m)</span>
+<span id="cb1-29">    X_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> X_train[:,perm_idx]</span>
+<span id="cb1-30">    Y_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Y_train[:,perm_idx]</span>
+<span id="cb1-31">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">for</span> bat <span class="kw" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(m<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">//</span>batch_size):</span>
+<span id="cb1-32">        x_batch <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> X_train[:,bat<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>batch_size:(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>bat)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>batch_size]</span>
+<span id="cb1-33">        y_batch <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Y_train[:,bat<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>batch_size:(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span>bat)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>batch_size]</span>
+<span id="cb1-34">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># forward pass</span></span>
+<span id="cb1-35">        z1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.matmul(W1.T,x_batch) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> b1</span>
+<span id="cb1-36">        a1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sig(z1)</span>
+<span id="cb1-37">        z2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.matmul(W2.T,a1) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> b2</span>
+<span id="cb1-38">        a2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sig(z2)</span>
+<span id="cb1-39">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># backward pass</span></span>
+<span id="cb1-40">        e <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> y_batch <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> a2</span>
+<span id="cb1-41">        A2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sig(z2)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>sig(z2))</span>
+<span id="cb1-42">        S2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> A2<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>e</span>
+<span id="cb1-43">        A1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> sig(z1)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>sig(z1))</span>
+<span id="cb1-44">        S1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> A1<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>np.matmul(W2,S2)</span>
+<span id="cb1-45">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># gradient descent</span></span>
+<span id="cb1-46">        dW2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.matmul(a1,S2.T)</span>
+<span id="cb1-47">        db2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>(S2, axis <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, keepdims<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb1-48">        dW1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.matmul(x_batch,S1.T)</span>
+<span id="cb1-49">        db1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> np.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>(S1, axis <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, keepdims<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb1-50">        W2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> dW2</span>
+<span id="cb1-51">        b2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> db2</span>
+<span id="cb1-52">        W1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> dW1</span>
+<span id="cb1-53">        b1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-=</span> lr <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> db1</span>
+<span id="cb1-54">        <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># compute the error </span></span>
+<span id="cb1-55">        error <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.5</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>np.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>(e<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span>e)</span>
+<span id="cb1-56">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># report error of the current epoch</span></span>
+<span id="cb1-57">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Epoch:"</span>, epoch, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SE:"</span>, error)</span>
+<span id="cb1-58">    errors.append(error)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Epoch: 0 SE: 1084.095701311093
+Epoch: 1 SE: 931.4561396806077</code></pre>
+</div>
+</div>
+<p><strong>Exercise</strong>: implement the training with XE loss and more hidden layers.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>deep learning</category>
+  <category>python</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/deep-dive/saws.html</guid>
+  <pubDate>Tue, 10 Oct 2023 00:00:00 GMT</pubDate>
+  <media:content url="https://xiaochuany.github.io/1principle/posts/deep-dive/image.jpg" medium="image" type="image/jpeg"/>
+</item>
+</channel>
+</rss>
