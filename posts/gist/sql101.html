@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xiaochuan Yang">
-<meta name="dcterms.date" content="2023-10-27">
+<meta name="dcterms.date" content="2024-01-27">
 
-<title>Xiaochuan’s blog - Machine Learning Recap 1 Concepts</title>
+<title>Xiaochuan’s blog - SQL 101</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,44 +22,10 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -104,36 +70,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -191,10 +131,9 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Machine Learning Recap 1 Concepts</h1>
+      <h1 class="title">SQL 101</h1>
                                 <div class="quarto-categories">
-                <div class="quarto-category">python</div>
-                <div class="quarto-category">machine learning</div>
+                <div class="quarto-category">data engineering</div>
               </div>
                   </div>
   </div>
@@ -212,7 +151,7 @@ window.Quarto = {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 27, 2023</p>
+        <p class="date">January 27, 2024</p>
       </div>
     </div>
     
@@ -228,9 +167,10 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#setting-up-the-scene" id="toc-setting-up-the-scene" class="nav-link active" data-scroll-target="#setting-up-the-scene">Setting up the scene</a></li>
-  <li><a href="#lets-be-concrete" id="toc-lets-be-concrete" class="nav-link" data-scroll-target="#lets-be-concrete">Let’s be concrete</a></li>
-  <li><a href="#analysis-of-errors" id="toc-analysis-of-errors" class="nav-link" data-scroll-target="#analysis-of-errors">Analysis of errors</a></li>
+  <li><a href="#vocabulary" id="toc-vocabulary" class="nav-link active" data-scroll-target="#vocabulary">vocabulary</a></li>
+  <li><a href="#aggregate-function" id="toc-aggregate-function" class="nav-link" data-scroll-target="#aggregate-function">aggregate function</a></li>
+  <li><a href="#windows-function" id="toc-windows-function" class="nav-link" data-scroll-target="#windows-function">windows function</a></li>
+  <li><a href="#subquery-and-common-table-expression" id="toc-subquery-and-common-table-expression" class="nav-link" data-scroll-target="#subquery-and-common-table-expression">subquery and common table expression</a></li>
   </ul>
 </nav>
     </div>
@@ -241,185 +181,661 @@ window.Quarto = {
 
 
 
-<section id="setting-up-the-scene" class="level2">
-<h2 class="anchored" data-anchor-id="setting-up-the-scene">Setting up the scene</h2>
-<p>In a supervised learning, we specify</p>
-<ul>
-<li>an example space <span class="math inline">\(\mathcal X\)</span><br>
-</li>
-<li>a label space <span class="math inline">\(\mathcal Y\)</span></li>
-<li>a collection of hypotheses <span class="math inline">\(h: \mathcal X \to \mathcal Y\)</span>, making up the hypothesis class (inductive bias), from which we want to pick a predictor</li>
-<li>a loss function <span class="math inline">\(\ell: \mathcal Y \times \mathcal Y \to \mathbb{R}_+\)</span>, quantifying how good or bad a prediction <span class="math inline">\(\hat y\)</span> is compared to the ground truth label <span class="math inline">\(y\)</span></li>
-</ul>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<p>Every professional interacting with data will come across SQL sooner or later. In this post, we cover a core set of vocabulary, grammer, expression for efficient use of this language.</p>
+<section id="vocabulary" class="level2">
+<h2 class="anchored" data-anchor-id="vocabulary">vocabulary</h2>
+<p><code>from</code> <code>where</code> <code>group by</code> <code>having</code> <code>select</code> <code>distinct</code> <code>union</code> <code>order by</code></p>
+<p>these vocabularies are fundamental in the day to day usage of SQL. They are listed in the execution order as well, meaning that the <code>from</code> clause first gets executed (which table do we want), then <code>where</code> (which row) and so on. We don’t have to include all the clauses in one query, but if we do, then knowing the order in which they are executed matters, especially for debugging errors.</p>
+<p>In this post, we use a jupyter kernel called <code>xsqlite</code> with <code>sqlite3</code> backend (the most commonly used in-memory database) to demonstrate the SQL language. To install the kernel, plesae visit <a href="https://xeus-sqlite.readthedocs.io/en/latest/getting_started.html">here</a>.</p>
+<p>Here are simple queries with some of the vocabs.</p>
+<div id="450341c6" class="cell">
+<pre class="sqlite cell-code"><code>%load ../assets/tutorial.db</code></pre>
 </div>
-<div class="callout-title-container flex-fill">
-Important
+<div id="85e3ee60-b575-4024-bdf4-50fc87cb686a" class="cell">
+<pre class="sqlite cell-code"><code>select * from customers</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">name</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+<td data-quarto-table-cell-role="th">amount</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Jhon</td>
+<td>2019-01-01</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Daniel</td>
+<td>2019-01-02</td>
+<td>110</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Jade</td>
+<td>2019-01-03</td>
+<td>120</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>Khaled</td>
+<td>2019-01-04</td>
+<td>130</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>Winston</td>
+<td>2019-01-05</td>
+<td>110</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>Elvis</td>
+<td>2019-01-06</td>
+<td>140</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>Anna</td>
+<td>2019-01-07</td>
+<td>150</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>Maria</td>
+<td>2019-01-08</td>
+<td>80</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>Jaze</td>
+<td>2019-01-09</td>
+<td>110</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>Jhon</td>
+<td>2019-01-10</td>
+<td>130</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Jade</td>
+<td>2019-01-10</td>
+<td>150</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<div class="callout-body-container callout-body">
-<p>We are given an independent and identically distributed input-output pairs <span class="math inline">\(S = \{(x_i,y_i), i=[m]\}\subset \mathcal X\times\mathcal Y\)</span> with distribution <span class="math inline">\(D\)</span>.</p>
+<div id="1cacf302-49ec-4533-a52a-858890c06aa4" class="cell">
+<pre class="sqlite cell-code"><code>select * from customers where customer_id&lt;3</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">name</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+<td data-quarto-table-cell-role="th">amount</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Jhon</td>
+<td>2019-01-01</td>
+<td>100</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Daniel</td>
+<td>2019-01-02</td>
+<td>110</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Jhon</td>
+<td>2019-01-10</td>
+<td>130</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<p>Our goal is to pick the “best” predictor in the sense of minimising the true loss<br>
-<span class="math display">\[
-L_D(h) = \mathbb{E}_{(x,y)\sim D}[\ell(h(x),y))]  
-\]</span> where <span class="math inline">\(D\)</span> is the <em>true</em> distribution of <span class="math inline">\((x,y)\)</span>.</p>
-<p>Obviously <em>a priori</em> the distribution <span class="math inline">\(D\)</span> of the samples is unkonwn. However by law of large numbers we know that <span class="math display">\[
-L_S(h):= \frac{1}{m}\sum_{i=1}^m \ell(h(x_i),y_i)
-\]</span> is a consistent estimator of <span class="math inline">\(L_D(h)\)</span> (when <span class="math inline">\(m\to\infty\)</span> under mild condition on the distribution of <span class="math inline">\(\ell(h(x),y)\)</span>). This motivates the empirical risk minimisation (ERM) approach i.e.&nbsp;we look for <span class="math display">\[
-h_S \in \mathrm{argmin}_{h\in\mathcal H} L_S(h)
-\]</span> Hence, instead of minimising the true risk, we minimise the empirical risk, which is close to the true risk when <span class="math inline">\(m\)</span> is large, for a fixed <span class="math inline">\(h\)</span>. Whether such approximation is valid uniformly for all the hypothesis in <span class="math inline">\(\mathcal H\)</span>, in other words, whether <span class="math inline">\(h_S\approx h^*\in \mathrm{argmin}_{h\in\mathcal H} L_D(h)\)</span>, is at the centre of the so-called learning theory.</p>
-<p>We often decompose the generalisation error <span class="math inline">\(L_D(h_S)\)</span> in two parts: <span class="math display">\[
-L_D(h_S) =  L_D(h^*) + [L_D(h_S) - L_D(h^*)]
-\]</span> the first is called the approximation error, and second estimation error.</p>
+<div id="2929fc9b-a230-4e28-9f3b-11008e8b20c5" class="cell">
+<pre class="sqlite cell-code"><code>select * from customers where customer_id=2
+union
+select * from customers where customer_id=2</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">name</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+<td data-quarto-table-cell-role="th">amount</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Daniel</td>
+<td>2019-01-02</td>
+<td>110</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="fae34340-27a5-43af-92a8-bfa17f5aaad9" class="cell">
+<pre class="sqlite cell-code"><code>select * from customers where customer_id=2
+union all
+select * from customers where customer_id=2</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">name</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+<td data-quarto-table-cell-role="th">amount</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Daniel</td>
+<td>2019-01-02</td>
+<td>110</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Daniel</td>
+<td>2019-01-02</td>
+<td>110</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="0106e814-6b6c-4db0-8c56-64f06b8d79e2" class="cell">
+<pre class="sqlite cell-code"><code>select distinct customer_id, visited_on 
+from customers 
+order by visited_on, customer_id</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-01</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2019-01-02</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2019-01-03</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>2019-01-04</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>2019-01-05</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>2019-01-06</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>2019-01-07</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>2019-01-08</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>2019-01-09</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-10</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2019-01-10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
-<section id="lets-be-concrete" class="level2">
-<h2 class="anchored" data-anchor-id="lets-be-concrete">Let’s be concrete</h2>
-<p>From a practical point of view, we may not want to get into the learning theory bounds despite its elegance, what we do is to split the sample <span class="math inline">\(S^0\)</span> into two parts <span class="math inline">\(S, V\)</span>, where <span class="math inline">\(S\)</span> is used to find an ERM which we denote by <span class="math inline">\(h_S\)</span>, another for testing whether the found ERM achieves small <span class="math inline">\(L_D(h_S)\)</span>. The rationale is simple, since we make iid assumption, <span class="math inline">\(V\)</span> is independent of <span class="math inline">\(S\)</span>, hence <span class="math inline">\(L_{V}(h_S) \approx L_D(h_S)\)</span> when <span class="math inline">\(|V|\)</span> is not too small. Therefore, the smallness of <span class="math inline">\(L_{V}(h_S)\)</span> indicates good quality (small true risk) of our predictor <span class="math inline">\(h_1\)</span>.</p>
-<p>The split method for arrays is implemented in <code>sklearn.model_selection</code></p>
-<div class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> np.random.default_rng(<span class="dv">12</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> g.normal(<span class="dv">0</span>,<span class="dv">1</span>,(<span class="dv">20</span>,))</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>x_tr, x_te <span class="op">=</span> train_test_split(x,test_size<span class="op">=</span><span class="fl">0.2</span>,random_state<span class="op">=</span><span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Typically, examples are vectors in <span class="math inline">\(\mathbb{R}^d, d\ge 1\)</span>. In <span class="math inline">\(k\)</span>-way (<span class="math inline">\(k\ge 2\)</span>) classification problems, labels are one-hot encodings <span class="math inline">\(e_1,..., e_k\)</span> where <span class="math inline">\(e_i\)</span> is the unit vector in <span class="math inline">\(\mathbb{R}^k\)</span> with one on the <span class="math inline">\(i\)</span> th coordinate and zero elsewhere. If <span class="math inline">\(k=2\)</span>, we can drop the second coordinate and simply denote the two classes by <span class="math inline">\(\{1, -1\}\)</span> or <span class="math inline">\(\{0,1\}\)</span>. In regression problems, the labels are in the continuum <span class="math inline">\(\mathbb{R}^k, k\ge 1\)</span>.</p>
-<p>Now consider <span class="math inline">\(\mathcal H\)</span>. For classification problems, instead of predicting discrete class labels directly, it is sometimes beneficial to predict a probability mass function over the <span class="math inline">\(k\)</span> classes. From the pmf, a label can be obtained by taking argmax. In other words, the range of <span class="math inline">\(h\in\mathcal H\)</span> is assumed to be <span class="math inline">\(\{y\in\mathbb{R}^k: y_i\ge 0, y_1+...+y_k=1\}\)</span>. For regression problems there are no such constraints and the range can be the whole <span class="math inline">\(\mathbb{R}^k\)</span>.</p>
-<p>The choie of the loss function may vary, depending on what goal we are trying to achiecve. Researchers can design new losses suitable for their use case. Here we mention a few popular ones. For classification problems, if we use hypothesis predicting pmf, the cross entropy loss is often a good choice <span class="math display">\[
-XE(p,\hat p) =  - \sum_{i=1}^k p_i \log(\hat p_i)
-\]</span> For regression problems, the squared loss is often a good choice <span class="math display">\[SE(y,\hat y)= \|y-\hat y\|^2_2\]</span> where <span class="math inline">\(\|.\|\)</span> is Euclidean norm.</p>
-<p>One of the advantages of these loss functions is that they are convex in the <span class="math inline">\(\hat p\)</span> or <span class="math inline">\(\hat y\)</span> variables, making it possible to leverage the machinery of convex optimistion when it comes to the actual training process.</p>
-<p>Many loss functions are already implemented in <code>sklearn.metrics</code>. The XE is named <code>log_loss</code> and the squared loss is named <code>mean_sqquared_error</code>. Let’s list all of them.</p>
-<div class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sklearn.metrics <span class="im">as</span> metrics</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> <span class="bu">dir</span>(metrics):</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> m.startswith(<span class="st">'_'</span>): <span class="bu">print</span>(m)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>ConfusionMatrixDisplay
-DetCurveDisplay
-DistanceMetric
-PrecisionRecallDisplay
-PredictionErrorDisplay
-RocCurveDisplay
-accuracy_score
-adjusted_mutual_info_score
-adjusted_rand_score
-auc
-average_precision_score
-balanced_accuracy_score
-brier_score_loss
-calinski_harabasz_score
-check_scoring
-class_likelihood_ratios
-classification_report
-cluster
-cohen_kappa_score
-completeness_score
-confusion_matrix
-consensus_score
-coverage_error
-d2_absolute_error_score
-d2_pinball_score
-d2_tweedie_score
-davies_bouldin_score
-dcg_score
-det_curve
-euclidean_distances
-explained_variance_score
-f1_score
-fbeta_score
-fowlkes_mallows_score
-get_scorer
-get_scorer_names
-hamming_loss
-hinge_loss
-homogeneity_completeness_v_measure
-homogeneity_score
-jaccard_score
-label_ranking_average_precision_score
-label_ranking_loss
-log_loss
-make_scorer
-matthews_corrcoef
-max_error
-mean_absolute_error
-mean_absolute_percentage_error
-mean_gamma_deviance
-mean_pinball_loss
-mean_poisson_deviance
-mean_squared_error
-mean_squared_log_error
-mean_tweedie_deviance
-median_absolute_error
-multilabel_confusion_matrix
-mutual_info_score
-nan_euclidean_distances
-ndcg_score
-normalized_mutual_info_score
-pair_confusion_matrix
-pairwise
-pairwise_distances
-pairwise_distances_argmin
-pairwise_distances_argmin_min
-pairwise_distances_chunked
-pairwise_kernels
-precision_recall_curve
-precision_recall_fscore_support
-precision_score
-r2_score
-rand_score
-recall_score
-roc_auc_score
-roc_curve
-silhouette_samples
-silhouette_score
-top_k_accuracy_score
-v_measure_score
-zero_one_loss</code></pre>
+<section id="aggregate-function" class="level2">
+<h2 class="anchored" data-anchor-id="aggregate-function">aggregate function</h2>
+<p>It is very common that one wants summary statistics of different group of people/items/products. In SQL, this is done with the <code>group by</code> clause together with aggregate function(s).</p>
+<div id="067a8c3d-8211-4878-8e4d-4ac407cd203c" class="cell">
+<pre class="sqlite cell-code"><code>select customer_id, min(visited_on), count(*) 
+from customers 
+where customer_id&lt;3 
+group by customer_id</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">min(visited_on)</td>
+<td data-quarto-table-cell-role="th">count(*)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-01</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2019-01-02</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<p>It comes in handy that <code>sklearn</code> has them already defined. Implementing each one of them is often not hard, e.g.</p>
-<div class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_loss(yt,yp):</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    yt[yt<span class="op">==</span><span class="dv">0</span>]<span class="op">=</span> <span class="dv">1</span><span class="op">-</span>yp[yt<span class="op">==</span><span class="dv">0</span>]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>np.log(y).mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="387ea267-880b-4291-bbe0-0e38b5f1f1c5" class="cell">
+<pre class="sqlite cell-code"><code>select customer_id, min(visited_on), count(*) as cnt 
+from customers 
+where customer_id&lt;3
+group by customer_id 
+having cnt=1</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">customer_id</td>
+<td data-quarto-table-cell-role="th">min(visited_on)</td>
+<td data-quarto-table-cell-role="th">cnt</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>2019-01-02</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
 </div>
-<!-- ## Model selection / hyperparameter tuning 
-
-Models may have many hyperparameters (learning rate, tree depth, neural network architectures etc). One can use k-fold cross validation to pick the one that optimises a certain metric prescribed by the user of these models. This is 
-
-
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
-``` -->
+</div>
+<p>notice that <code>having</code> and <code>where</code> play a similar role which is to select relevant rows, but one gets executed before <code>group by</code>, the other after.</p>
 </section>
-<section id="analysis-of-errors" class="level2">
-<h2 class="anchored" data-anchor-id="analysis-of-errors">Analysis of errors</h2>
-<p>In practice, <span class="math inline">\(D\)</span> is unknown and we only observe the training error <span class="math inline">\(L_S(h_S)\)</span> and the validation error <span class="math inline">\(L_V(h_S)\)</span>. Hence we decompose the generalisation error differently <span class="math display">\[
-L_D(h_S) = [L_D(h_S) - L_V(h_S)] + [L_V(h_S) - L_S(h_S)] + L_S(h_S)
-\]</span> The first term is small when <span class="math inline">\(|V|\)</span> is moderately large by independence of <span class="math inline">\(V\)</span> and <span class="math inline">\(S\)</span>. The second and third term are observalbe and several cases may arise.</p>
-<ul>
-<li>the gap is small and the training error is small. This is a happy scenario</li>
-<li>the training error is large. To address this, we may consider
-<ul>
-<li>engarge the hypothesis class,</li>
-<li>completely changing it,</li>
-<li>find a better feature representation,</li>
-<li>find a better optimiser<br>
-</li>
-</ul></li>
-<li>training error is small but the gap is large. To address this, we may consider
-<ul>
-<li>add regularisation</li>
-<li>get more training data</li>
-<li>reduce the hypothesis class</li>
-</ul></li>
-</ul>
-<p>It is benefiical to plot the learning curve during training. This amounts to visualise the training error and validation error on the same plot as time evolves (every X batches, every X epoch etc).</p>
+<section id="windows-function" class="level2">
+<h2 class="anchored" data-anchor-id="windows-function">windows function</h2>
+<p>windows function and aggregate function are similar-ish in that they both act on groups (with different synatx though). The difference is that an aggregate function collapses rows within the same group into one, whereas a windows function keeps all the rows within the same group/window, and add a new value to each row.</p>
+<div id="2b4bda8c-a112-4942-8757-99f3db2f8d53" class="cell">
+<pre class="sqlite cell-code"><code>select row_number() over(partition by visited_on), visited_on from customers</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">row_number() over(partition by visited_on)</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-01</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-02</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-03</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-04</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-05</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-06</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-07</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-08</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-09</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2019-01-10</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>2019-01-10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>here <code>row_number()</code> is the windows function acting on the groups obtained from <code>partition by visited_on</code>.</p>
+<p>We can use <code>order by</code> instead of <code>partition by</code>, in which case there is a single group, and the function is executed in the requested order.</p>
+<div id="93c6f630-0c5c-4492-a69c-38cf2ca4a155" class="cell">
+<pre class="sqlite cell-code"><code>select row_number() over(order by visited_on), visited_on from customers</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">row_number() over(order by visited_on)</td>
+<td data-quarto-table-cell-role="th">visited_on</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2019-01-01</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2019-01-02</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2019-01-03</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>2019-01-04</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>2019-01-05</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>2019-01-06</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>2019-01-07</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>2019-01-08</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>2019-01-09</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>2019-01-10</td>
+</tr>
+<tr class="even">
+<td>11</td>
+<td>2019-01-10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>it is possible to use both <code>partition by</code> and <code>order by</code> in <code>over()</code>.</p>
+</section>
+<section id="subquery-and-common-table-expression" class="level2">
+<h2 class="anchored" data-anchor-id="subquery-and-common-table-expression">subquery and common table expression</h2>
+<p>One can nest one query in another, called subquery. They are very useful in practice. Indeed, one complicated query needs to be decomposed into a few tasks. After figuring out the intermediate steps, one can put things together by either chaining them sequentially, or union, or a combination of both.</p>
+<p>nested subqueries can be hard to read as the level of nested queries increases. this is where CTE comes into rescue. CTE is like defining intermediate variables in a general-purpose language such as python.</p>
+<p>To illuastrate this, we consider three tables which are relational through ids.</p>
+<div id="40f5cb6d-e8cb-45e9-bbe1-fd633f63257d" class="cell">
+<pre class="sqlite cell-code"><code>select * from movies</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">movie_id</td>
+<td data-quarto-table-cell-role="th">title</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Avengers</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Frozen 2</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Joker</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="57cd8cf3-113c-420b-a927-2733653ede1b" class="cell">
+<pre class="sqlite cell-code"><code>select * from userss</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">user_id</td>
+<td data-quarto-table-cell-role="th">name</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Daniel</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Monica</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Maria</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>James</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ff52f3f0-00c2-474b-9374-247d0b225d51" class="cell">
+<pre class="sqlite cell-code"><code>select * from movierating</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">movie_id</td>
+<td data-quarto-table-cell-role="th">user_id</td>
+<td data-quarto-table-cell-role="th">rating</td>
+<td data-quarto-table-cell-role="th">created_at</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>2020-01-12</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>2020-02-11</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>3</td>
+<td>2</td>
+<td>2020-02-12</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>2020-01-01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1</td>
+<td>5</td>
+<td>2020-02-17</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2020-02-01</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>2020-03-01</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>1</td>
+<td>3</td>
+<td>2020-02-22</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2</td>
+<td>4</td>
+<td>2020-02-25</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>first we <code>join</code> three tables (search online for all kinds of <code>join</code> methods!)</p>
+<div id="ee68190b-7a10-4d0d-9e08-f5b3b14e1029" class="cell">
+<pre class="sqlite cell-code"><code>select * from movierating left join userss using (user_id) left join movies using (movie_id)</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">movie_id</td>
+<td data-quarto-table-cell-role="th">user_id</td>
+<td data-quarto-table-cell-role="th">rating</td>
+<td data-quarto-table-cell-role="th">created_at</td>
+<td data-quarto-table-cell-role="th">name</td>
+<td data-quarto-table-cell-role="th">title</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>2020-01-12</td>
+<td>Daniel</td>
+<td>Avengers</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>2020-02-11</td>
+<td>Monica</td>
+<td>Avengers</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>3</td>
+<td>2</td>
+<td>2020-02-12</td>
+<td>Maria</td>
+<td>Avengers</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>2020-01-01</td>
+<td>James</td>
+<td>Avengers</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>1</td>
+<td>5</td>
+<td>2020-02-17</td>
+<td>Daniel</td>
+<td>Frozen 2</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2020-02-01</td>
+<td>Monica</td>
+<td>Frozen 2</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>2020-03-01</td>
+<td>Maria</td>
+<td>Frozen 2</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>1</td>
+<td>3</td>
+<td>2020-02-22</td>
+<td>Daniel</td>
+<td>Joker</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2</td>
+<td>4</td>
+<td>2020-02-25</td>
+<td>Monica</td>
+<td>Joker</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>now we define <code>t</code> as the result of joining with CTE, then find the person’s name who watched the largest number of movies, in case of a tie, choose the name that is lexicographical smaller (i.e.&nbsp;appears first in English dictionary). We would need the counts in order to find the name, this is where a subquery is required.</p>
+<div id="8cd60b51-ee72-4281-8597-f26a09e8fbef" class="cell">
+<pre class="sqlite cell-code"><code>-- CTE
+with t as (
+    select * from movierating left join userss using (user_id) left join movies using (movie_id)
+)
+
+select name as results from (
+    -- subquery
+    select name, count(*) cnt from t group by user_id, name order by cnt desc, name 
+) 
+limit 1</code></pre>
+<div class="cell-output cell-output-display">
+<table data-quarto-postprocess="true" class="table table-sm table-striped small">
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">results</td>
+</tr>
+<tr class="even">
+<td>Daniel</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 
 </section>

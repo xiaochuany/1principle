@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/gist/sql101.html",
       "/posts/gist/top-fifth-kaggle.html",
       "/posts/gist/walkthrough.html",
       "/posts/deep-dive/uml-recap1.html",

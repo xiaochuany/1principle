@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -49,7 +49,13 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -58,6 +64,7 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -96,16 +103,43 @@ ul.task-list li input[type="checkbox"] {
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 <link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="Xiaochuan's blog" href="index.xml"></head>
+<link rel="alternate" type="application/rss+xml" title="Xiaochuan's blog" href="index.xml" data-external="1"></head>
 
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">Xiaochuan’s blog</span>
     </a>
@@ -117,34 +151,34 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="https://xiaochuany.github.io/omega/" rel="" target="">
- <span class="menu-text">about</span></a>
+    <a class="nav-link" href="https://xiaochuany.github.io/omega/"> 
+<span class="menu-text">about</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/xiaochuany" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/xiaochuany"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/xiaochuan-yang-088975188/" rel="" target=""><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/xiaochuan-yang-088975188/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.youtube.com/@xiaochuanyang" rel="" target=""><i class="bi bi-youtube" role="img">
+    <a class="nav-link" href="https://www.youtube.com/@xiaochuanyang"> <i class="bi bi-youtube" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="./index.xml" rel="" target=""><i class="bi bi-rss" role="img">
+    <a class="nav-link" href="./index.xml"> <i class="bi bi-rss" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -157,7 +191,7 @@ ul.task-list li input[type="checkbox"] {
   </div>
     
   
-  <div class="quarto-title-meta">
+  <div class="quarto-title-meta column-page-left">
 
       
     
@@ -170,7 +204,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(7)</span></div><div class="category" data-category="applied probability">applied probability <span class="quarto-category-count">(1)</span></div><div class="category" data-category="credit risk">credit risk <span class="quarto-category-count">(2)</span></div><div class="category" data-category="deep learning">deep learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="hacks">hacks <span class="quarto-category-count">(1)</span></div><div class="category" data-category="kaggle">kaggle <span class="quarto-category-count">(1)</span></div><div class="category" data-category="machine learning">machine learning <span class="quarto-category-count">(4)</span></div><div class="category" data-category="python">python <span class="quarto-category-count">(5)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(8)</span></div><div class="category" data-category="applied probability">applied probability <span class="quarto-category-count">(1)</span></div><div class="category" data-category="credit risk">credit risk <span class="quarto-category-count">(2)</span></div><div class="category" data-category="data engineering">data engineering <span class="quarto-category-count">(1)</span></div><div class="category" data-category="deep learning">deep learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="hacks">hacks <span class="quarto-category-count">(1)</span></div><div class="category" data-category="kaggle">kaggle <span class="quarto-category-count">(1)</span></div><div class="category" data-category="machine learning">machine learning <span class="quarto-category-count">(4)</span></div><div class="category" data-category="python">python <span class="quarto-category-count">(5)</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
@@ -181,21 +215,55 @@ ul.task-list li input[type="checkbox"] {
 
 
 
+
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="kaggle,python,machine learning" data-listing-date-sort="1702684800000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="0" data-categories="data engineering" data-listing-date-sort="1706313600000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="481">
 <div class="thumbnail">
-<p><a href="./posts/gist/top-fifth-kaggle.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="./posts/gist/sql101.html" class="no-external"></a></p><a href="./posts/gist/sql101.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="./posts/gist/sql101.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/gist/top-fifth-kaggle.html">
 <h3 class="no-anchor listing-title">
-What is required to achieve a top 20% ranking in Kaggle playground series
+<a href="./posts/gist/sql101.html" class="no-external">SQL 101</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/gist/sql101.html" class="no-external"></a>
+</div>
+<div class="listing-categories">
+<div class="listing-category" onclick="window.quartoListingCategory('data engineering'); return false;">
+data engineering
+</div>
+</div>
+<div class="listing-description">
+<a href="./posts/gist/sql101.html" class="no-external">Every professional interacting with data will come across SQL sooner or later. In this post, we cover a core set of vocabulary, grammer, expression for efficient use of this…</a>
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/gist/sql101.html" class="no-external">
+<div class="listing-date">
+Jan 27, 2024
+</div>
+<div class="listing-author">
+Xiaochuan Yang
 </div>
 </a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="kaggle,python,machine learning" data-listing-date-sort="1702684800000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="261">
+<div class="thumbnail">
+<p><a href="./posts/gist/top-fifth-kaggle.html" class="no-external"></a></p><a href="./posts/gist/top-fifth-kaggle.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="./posts/gist/top-fifth-kaggle.html" class="no-external"></a></p>
+</div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/gist/top-fifth-kaggle.html" class="no-external">What is required to achieve a top 20% ranking in Kaggle playground series</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/gist/top-fifth-kaggle.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('kaggle'); return false;">
 kaggle
@@ -207,14 +275,12 @@ python
 machine learning
 </div>
 </div>
-<a href="./posts/gist/top-fifth-kaggle.html">
 <div class="listing-description">
-The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase…<code></code>
+<a href="./posts/gist/top-fifth-kaggle.html" class="no-external">The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase…<code></code></a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/gist/top-fifth-kaggle.html">
+<a href="./posts/gist/top-fifth-kaggle.html" class="no-external">
 <div class="listing-date">
 Dec 16, 2023
 </div>
@@ -224,32 +290,30 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="hacks" data-listing-date-sort="1699660800000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
+<div class="quarto-post image-right" data-index="2" data-categories="hacks" data-listing-date-sort="1699660800000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="876">
 <div class="thumbnail">
-<p><a href="./posts/gist/walkthrough.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="./posts/gist/walkthrough.html" class="no-external"></a></p><a href="./posts/gist/walkthrough.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="./posts/gist/walkthrough.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/gist/walkthrough.html">
 <h3 class="no-anchor listing-title">
-bits of fastai live-coding sessions
+<a href="./posts/gist/walkthrough.html" class="no-external">bits of fastai live-coding sessions</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/gist/walkthrough.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('hacks'); return false;">
 hacks
 </div>
 </div>
-<a href="./posts/gist/walkthrough.html">
 <div class="listing-description">
-Jeremy Howard, the founder of…
+<a href="./posts/gist/walkthrough.html" class="no-external">Jeremy Howard, the founder of fastai, organized a series of live coding sessions covering the basics of git, bash, vim, tmux, and more, as a companion to the free fastai…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/gist/walkthrough.html">
+<a href="./posts/gist/walkthrough.html" class="no-external">
 <div class="listing-date">
 Nov 11, 2023
 </div>
@@ -259,19 +323,19 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="python,machine learning" data-listing-date-sort="1698364800000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
+<div class="quarto-post image-right" data-index="3" data-categories="python,machine learning" data-listing-date-sort="1698364800000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="943">
 <div class="thumbnail">
-<p><a href="./posts/deep-dive/uml-recap1.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="./posts/deep-dive/uml-recap1.html" class="no-external"></a></p><a href="./posts/deep-dive/uml-recap1.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="./posts/deep-dive/uml-recap1.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/deep-dive/uml-recap1.html">
 <h3 class="no-anchor listing-title">
-Machine Learning Recap 1 Concepts
+<a href="./posts/deep-dive/uml-recap1.html" class="no-external">Machine Learning Recap 1 Concepts</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/deep-dive/uml-recap1.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('python'); return false;">
 python
@@ -280,14 +344,12 @@ python
 machine learning
 </div>
 </div>
-<a href="./posts/deep-dive/uml-recap1.html">
 <div class="listing-description">
-In a supervised learning, we specify
+<a href="./posts/deep-dive/uml-recap1.html" class="no-external">In a supervised learning, we specify</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/deep-dive/uml-recap1.html">
+<a href="./posts/deep-dive/uml-recap1.html" class="no-external">
 <div class="listing-date">
 Oct 27, 2023
 </div>
@@ -297,19 +359,19 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="credit risk,python,machine learning" data-listing-date-sort="1697760000000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
+<div class="quarto-post image-right" data-index="4" data-categories="credit risk,python,machine learning" data-listing-date-sort="1697760000000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="880">
 <div class="thumbnail">
-<p><a href="./posts/deep-dive/crm2-ml.html"> <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div> </a></p>
+<p><a href="./posts/deep-dive/crm2-ml.html" class="no-external"></a></p><a href="./posts/deep-dive/crm2-ml.html" class="no-external">
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+</a><p><a href="./posts/deep-dive/crm2-ml.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/deep-dive/crm2-ml.html">
 <h3 class="no-anchor listing-title">
-Credit Risk Models Ep 2 machine learning methods for parameter estimation
+<a href="./posts/deep-dive/crm2-ml.html" class="no-external">Credit Risk Models Ep 2 machine learning methods for parameter estimation</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/deep-dive/crm2-ml.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('credit risk'); return false;">
 credit risk
@@ -321,16 +383,14 @@ python
 machine learning
 </div>
 </div>
-<a href="./posts/deep-dive/crm2-ml.html">
 <div class="listing-description">
-In a previous post, we’ve modelled the loss of a portfolio of <span class="math inline">\(d\)</span> instruments as follows <span class="math display">\[
+<a href="./posts/deep-dive/crm2-ml.html" class="no-external">In a previous post, we’ve modelled the loss of a portfolio of <span class="math inline">\(d\)</span> instruments as follows <span class="math display">\[
 L = \sum_{i=1}^d \mu_i S_i I_i,
-\]</span> where <span class="math inline">\(L\)</span> represents the total loss, <span class="math inline">\…</span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span>
+\]</span> where <span class="math inline">\(L\)</span> represents the total loss, <span class="math inline">\(\mu_…</span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span></a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/deep-dive/crm2-ml.html">
+<a href="./posts/deep-dive/crm2-ml.html" class="no-external">
 <div class="listing-date">
 Oct 20, 2023
 </div>
@@ -340,19 +400,19 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="credit risk,applied probability,python" data-listing-date-sort="1697328000000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
+<div class="quarto-post image-right" data-index="5" data-categories="credit risk,applied probability,python" data-listing-date-sort="1697328000000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="867">
 <div class="thumbnail">
-<p><a href="./posts/deep-dive/crm1-fun.html"> <p class="card-img-top"><img src="posts/deep-dive/crm1-fun_files/figure-html/cell-4-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./posts/deep-dive/crm1-fun.html" class="no-external"></a></p><a href="./posts/deep-dive/crm1-fun.html" class="no-external">
+<p class="card-img-top"><img src="posts/deep-dive/crm1-fun_files/figure-html/cell-4-output-1.png"  class="thumbnail-image card-img"/></p>
+</a><p><a href="./posts/deep-dive/crm1-fun.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/deep-dive/crm1-fun.html">
 <h3 class="no-anchor listing-title">
-Credit Risk Models Ep 1 Fundamentals
+<a href="./posts/deep-dive/crm1-fun.html" class="no-external">Credit Risk Models Ep 1 Fundamentals</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/deep-dive/crm1-fun.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('credit risk'); return false;">
 credit risk
@@ -364,14 +424,12 @@ applied probability
 python
 </div>
 </div>
-<a href="./posts/deep-dive/crm1-fun.html">
 <div class="listing-description">
-This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions…
+<a href="./posts/deep-dive/crm1-fun.html" class="no-external">This is the first post in a series dedicated to credit risk models. The model discussed in this post is intentionally naive, as it relies on several unrealistic assumptions…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/deep-dive/crm1-fun.html">
+<a href="./posts/deep-dive/crm1-fun.html" class="no-external">
 <div class="listing-date">
 Oct 15, 2023
 </div>
@@ -381,32 +439,30 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="machine learning" data-listing-date-sort="1697241600000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1">
+<div class="quarto-post image-right" data-index="6" data-categories="machine learning" data-listing-date-sort="1697241600000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="103">
 <div class="thumbnail">
-<p><a href="./posts/deep-dive/uml.html"> <p class="card-img-top"><img src="posts/assets/uml_cover.jpg"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./posts/deep-dive/uml.html" class="no-external"></a></p><a href="./posts/deep-dive/uml.html" class="no-external">
+<p class="card-img-top"><img src="posts/assets/uml_cover.jpg"  class="thumbnail-image card-img"/></p>
+</a><p><a href="./posts/deep-dive/uml.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/deep-dive/uml.html">
 <h3 class="no-anchor listing-title">
-Understanding Machine Learning: a series of 20 videos
+<a href="./posts/deep-dive/uml.html" class="no-external">Understanding Machine Learning: a series of 20 videos</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/deep-dive/uml.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('machine learning'); return false;">
 machine learning
 </div>
 </div>
-<a href="./posts/deep-dive/uml.html">
 <div class="listing-description">
-From Oct 2022 to Feb 2023, I have created a series of 20 videos (in…
+<a href="./posts/deep-dive/uml.html" class="no-external">From Oct 2022 to Feb 2023, I have created a series of 20 videos (in Chinese) on machine learning theory and algorithms on bilibili.com, closely following the excellent…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/deep-dive/uml.html">
+<a href="./posts/deep-dive/uml.html" class="no-external">
 <div class="listing-date">
 Oct 14, 2023
 </div>
@@ -416,19 +472,19 @@ Xiaochuan Yang
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="deep learning,python" data-listing-date-sort="1696896000000" data-listing-file-modified-sort="1704902965096" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8">
+<div class="quarto-post image-right" data-index="7" data-categories="deep learning,python" data-listing-date-sort="1696896000000" data-listing-file-modified-sort="1706377020385" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1575">
 <div class="thumbnail">
-<p><a href="./posts/deep-dive/saws.html"> <img src="./posts/deep-dive/image.jpg" class="thumbnail-image"> </a></p>
+<p><a href="./posts/deep-dive/saws.html" class="no-external"></a></p><a href="./posts/deep-dive/saws.html" class="no-external">
+<p><img src="./posts/deep-dive/image.jpg" class="thumbnail-image"></p>
+</a><p><a href="./posts/deep-dive/saws.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/deep-dive/saws.html">
 <h3 class="no-anchor listing-title">
-Secret ‘SAWS’ of deep learning, feature backprop
+<a href="./posts/deep-dive/saws.html" class="no-external">Secret ‘SAWS’ of deep learning, feature backprop</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/deep-dive/saws.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('deep learning'); return false;">
 deep learning
@@ -437,14 +493,12 @@ deep learning
 python
 </div>
 </div>
-<a href="./posts/deep-dive/saws.html">
 <div class="listing-description">
-My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 module on deep learning. I found this a perfect example…
+<a href="./posts/deep-dive/saws.html" class="no-external">My colleague Simon Shaw came up with the memorable notation SAWS for the key recursion step in backprop in a Year 2 module on deep learning. I found this a perfect example…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/deep-dive/saws.html">
+<a href="./posts/deep-dive/saws.html" class="no-external">
 <div class="listing-date">
 Oct 10, 2023
 </div>
@@ -500,6 +554,33 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       } else {
         el.classList.add('notransition');
       }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
     }
   }
   const toggleColorMode = (alternate) => {
@@ -568,13 +649,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return localAlternateSentinel;
     }
   }
-  let localAlternateSentinel = 'default';
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
   // Dark / light mode switch
   window.quartoToggleColorScheme = () => {
     // Read the current dark / light value 
     let toAlternate = !hasAlternateSentinel();
     toggleColorMode(toAlternate);
     setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
   };
   // Ensure there is a toggle, if there isn't float one in the top right
   if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
@@ -653,10 +736,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -666,8 +748,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -680,6 +771,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -723,6 +933,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -748,6 +959,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -808,6 +1045,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.549">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -24,7 +24,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -59,7 +59,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -83,7 +83,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -92,13 +98,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
 }</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
@@ -108,10 +115,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Xiaochuan’s blog</span>
     </a>
@@ -123,34 +130,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="https://xiaochuany.github.io/omega/" rel="" target="">
- <span class="menu-text">about</span></a>
+    <a class="nav-link" href="https://xiaochuany.github.io/omega/"> 
+<span class="menu-text">about</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/xiaochuany" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/xiaochuany"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.linkedin.com/in/xiaochuan-yang-088975188/" rel="" target=""><i class="bi bi-linkedin" role="img">
+    <a class="nav-link" href="https://www.linkedin.com/in/xiaochuan-yang-088975188/"> <i class="bi bi-linkedin" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://www.youtube.com/@xiaochuanyang" rel="" target=""><i class="bi bi-youtube" role="img">
+    <a class="nav-link" href="https://www.youtube.com/@xiaochuanyang"> <i class="bi bi-youtube" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="../../index.xml" rel="" target=""><i class="bi bi-rss" role="img">
+    <a class="nav-link" href="../../index.xml"> <i class="bi bi-rss" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
+          </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
-          </div> <!-- /navcollapse -->
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -214,6 +221,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+
 <p>The playground series is devoted to tabular datasets and are the most accessible competitions for beginners to learn and develop skills. This blog/notebook is to showcase some streamlined approach to achieve a relatively good performance. The notebook is written for Kaggle playground series season 3 episode 26 (last one in 2023). At the time of writing this blog, the submission achieves 149/871 (top 18%) ranking. <code>final ranking private leaderboard: 332/1663 (top 20%)</code></p>
 <p>Outline:</p>
 <ul>
@@ -226,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul></li>
 <li>cross validate the best model (lgbm), return classifiers and average out the predictions on test data.</li>
 </ul>
-<div class="cell" data-execution_count="43">
+<div id="732f09f4" class="cell" data-execution_count="43">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install fastkaggle if not available</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>: <span class="im">import</span> fastkaggle</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">ModuleNotFoundError</span>:</span>
@@ -236,7 +244,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <section id="getting-set-up" class="level2">
 <h2 class="anchored" data-anchor-id="getting-set-up">Getting set up</h2>
-<div class="cell" data-execution_count="2">
+<div id="70f2d75c" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>comp <span class="op">=</span> <span class="st">'playground-series-s3e26'</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> setup_comp(comp, install<span class="op">=</span><span class="st">''</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -247,13 +255,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>100%|██████████████████████████████████████████████████████| 350k/350k [00:00&lt;00:00, 1.56MB/s]</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="3">
+<div id="879f9000" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <pre><code>Path('playground-series-s3e26')</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="7">
+<div id="1c8e2512" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>trn_path <span class="op">=</span> path<span class="op">/</span><span class="st">'train.csv'</span></span>
@@ -292,10 +300,10 @@ memory usage: 1.2+ MB</code></pre>
 </section>
 <section id="preprocessing-data" class="level2">
 <h2 class="anchored" data-anchor-id="preprocessing-data">Preprocessing data</h2>
-<div class="cell" data-execution_count="8">
+<div id="199ddfda-36a7-4c1e-92b9-4da9370ebe4d" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>get_dataset(path, <span class="st">'joebeachcapital/cirrhosis-patient-survival-prediction'</span>, force<span class="op">=</span><span class="va">True</span>) <span class="co"># filename= cirrhosis.csv</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="11">
+<div id="293552a4-dca8-4d23-a02b-29ed926bd31c" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> preprocess(df, train<span class="op">=</span><span class="va">True</span>, dropna<span class="op">=</span><span class="va">False</span>):</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    df_ <span class="op">=</span> df.copy()</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    df_[<span class="st">'is_gen'</span>]<span class="op">=</span><span class="st">'Y'</span></span>
@@ -312,7 +320,7 @@ memory usage: 1.2+ MB</code></pre>
 </section>
 <section id="modelling" class="level2">
 <h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
-<div class="cell" data-execution_count="10">
+<div id="53eef354-27a0-4f22-8ded-70b3e8ff0df2" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler,OneHotEncoder,PowerTransformer,LabelEncoder</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> make_column_transformer, make_column_selector</span>
@@ -332,17 +340,17 @@ memory usage: 1.2+ MB</code></pre>
 </div>
 <section id="models-not-supporting-nan" class="level3">
 <h3 class="anchored" data-anchor-id="models-not-supporting-nan">models not supporting nan</h3>
-<div class="cell" data-execution_count="28">
+<div id="b8591976-2dba-4970-b929-c276b66607eb" class="cell" data-execution_count="28">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> preprocess(pd.read_csv(trn_path),train<span class="op">=</span><span class="va">True</span>, dropna<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> df.drop(<span class="st">'Status'</span>, axis<span class="op">=</span><span class="dv">1</span>).iloc[:,<span class="dv">1</span>:], df[<span class="st">'Status'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="29">
+<div id="ad3d4662-b9f8-46cf-af65-242828e6f9fa" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> make_column_transformer(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                (PowerTransformer(), make_column_selector(dtype_include <span class="op">=</span> np.number)),</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                (OneHotEncoder(drop<span class="op">=</span><span class="st">'if_binary'</span>, handle_unknown<span class="op">=</span><span class="st">'ignore'</span>), make_column_selector(dtype_include<span class="op">=</span><span class="bu">object</span>)), </span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>                remainder <span class="op">=</span> <span class="st">'passthrough'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="30">
+<div id="d6e54ad7-cce2-4955-afe5-79c439a57d66" class="cell" data-execution_count="30">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>logit_cv <span class="op">=</span>cross_val_score(</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    make_pipeline(ct, LogisticRegression(max_iter<span class="op">=</span><span class="dv">1000</span>)),</span>
@@ -358,7 +366,7 @@ CPU times: user 92.2 ms, sys: 20.3 ms, total: 113 ms
 Wall time: 1.05 s</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="32">
+<div id="92de18f8-346b-4cf3-8f73-a5da9f05cef2" class="cell" data-execution_count="32">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>RF_cv <span class="op">=</span> cross_val_score(make_pipeline(ct, RandomForestClassifier(<span class="op">**</span>{<span class="st">'n_estimators'</span>: <span class="dv">1000</span>,</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                                                  <span class="st">'criterion'</span>: <span class="st">'log_loss'</span>,</span>
@@ -379,11 +387,11 @@ Wall time: 48.5 s</code></pre>
 </section>
 <section id="models-supporting-nan" class="level3">
 <h3 class="anchored" data-anchor-id="models-supporting-nan">models supporting nan</h3>
-<div class="cell" data-execution_count="16">
+<div id="79d86bf0-fa85-4166-a09e-1624dfa7f5e7" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> preprocess(pd.read_csv(trn_path),train<span class="op">=</span><span class="va">True</span>, dropna<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> df.drop(<span class="st">'Status'</span>, axis<span class="op">=</span><span class="dv">1</span>).iloc[:,<span class="dv">1</span>:], df[<span class="st">'Status'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="17">
+<div id="9d07267b-8dd3-495b-a7af-04c664df6e6b" class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>HB_cv <span class="op">=</span> cross_val_score(make_pipeline(ct, HistGradientBoostingClassifier(<span class="op">**</span>{<span class="st">'l2_regularization'</span>: <span class="fl">8.876168706639714</span>,</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>                                                          <span class="st">'early_stopping'</span>: <span class="va">False</span>,</span>
@@ -407,7 +415,7 @@ CPU times: user 162 ms, sys: 118 ms, total: 281 ms
 Wall time: 15.5 s</code></pre>
 </div>
 </div>
-<div class="cell" data-scrolled="true">
+<div id="0afdfb88-9a33-444d-b9f5-b3b6055fd93a" class="cell" data-scrolled="true">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>LGBM_cv <span class="op">=</span> cross_val_score(make_pipeline(ct,LGBMClassifier(<span class="op">**</span>{<span class="st">'n_estimators'</span>: <span class="dv">1000</span>,</span>
 <span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">'learning_rate'</span>: <span class="fl">0.013657589160895923</span>,</span>
@@ -419,13 +427,13 @@ Wall time: 15.5 s</code></pre>
 <span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">'colsample_bytree'</span>: <span class="fl">0.2644509924064132</span>})),</span>
 <span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                          X, y, scoring <span class="op">=</span> <span class="st">'neg_log_loss'</span>, cv <span class="op">=</span> <span class="dv">10</span>, n_jobs <span class="op">=</span> <span class="op">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-scrolled="true" data-execution_count="44">
+<div id="0a4ee7b2-5c1f-492c-8b38-ca1ab7b950ad" class="cell" data-scrolled="true" data-execution_count="44">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Light GBM  </span><span class="sc">{</span><span class="op">-</span>LGBM_cv<span class="sc">.</span>mean()<span class="op">=</span><span class="sc">}</span><span class="ss">"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Light GBM  -LGBM_cv.mean()=0.42275781396747264</code></pre>
 </div>
 </div>
-<div class="cell">
+<div id="60e3d83f-2f18-45a9-b66c-3a84581f1392" class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>XGB_cv <span class="op">=</span> cross_val_score(make_pipeline(ct, XGBClassifier(<span class="op">**</span>{<span class="st">'max_depth'</span>: <span class="dv">7</span>,</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>                                          <span class="st">'learning_rate'</span>: <span class="fl">0.03570188608151033</span>,</span>
@@ -436,13 +444,13 @@ Wall time: 15.5 s</code></pre>
 <span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>                                          <span class="st">'subsample'</span>: <span class="fl">0.8435412915999765</span>})), </span>
 <span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>                          X, y, scoring <span class="op">=</span> <span class="st">'neg_log_loss'</span>, cv <span class="op">=</span> <span class="dv">10</span>, n_jobs <span class="op">=</span> <span class="op">-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="45">
+<div id="d60a58b8-777a-482e-9516-1198e8d0edce" class="cell" data-execution_count="45">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"XGBoost </span><span class="sc">{</span><span class="op">-</span>XGB_cv<span class="sc">.</span>mean()<span class="op">=</span><span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>XGBoost -XGB_cv.mean()=0.42872410511564896</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="34">
+<div id="bca6b1cb-c469-4743-94bd-1b1a0b72d7f5" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cv(X,y,cv<span class="op">=</span><span class="dv">10</span>):</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    clf <span class="op">=</span> LGBMClassifier(<span class="op">**</span>{<span class="st">'n_estimators'</span>: <span class="dv">1000</span>,</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                            <span class="st">'learning_rate'</span>: <span class="fl">0.013657589160895923</span>,</span>
@@ -459,11 +467,11 @@ Wall time: 15.5 s</code></pre>
 <span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> make_pipeline(ct, clf)</span>
 <span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cross_validate(model, X, y, cv<span class="op">=</span>cv, scoring<span class="op">=</span><span class="st">'neg_log_loss'</span>, return_estimator<span class="op">=</span><span class="va">True</span>, n_jobs<span class="op">=-</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-scrolled="true">
+<div id="36b9ab8d-ca32-48e6-8dcd-89df62739e27" class="cell" data-scrolled="true">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>cv_output <span class="op">=</span> cv(X,y,cv<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="58">
+<div id="41c1ddd0-075c-480e-a5d2-a12d863611e7" class="cell" data-execution_count="58">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="op">-</span>cv_output[<span class="st">'test_score'</span>]<span class="sc">.</span>mean()<span class="op">=</span><span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>cv_output[<span class="st">'test_score'</span>]<span class="sc">.</span>std()<span class="op">=</span><span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>-cv_output['test_score'].mean()=0.4206909352553819, cv_output['test_score'].std()=0.04075158479629894</code></pre>
@@ -473,7 +481,7 @@ Wall time: 15.5 s</code></pre>
 </section>
 <section id="submitting-to-kaggle" class="level2">
 <h2 class="anchored" data-anchor-id="submitting-to-kaggle">Submitting to Kaggle</h2>
-<div class="cell" data-execution_count="37">
+<div id="55cd25e5" class="cell" data-execution_count="37">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ss <span class="op">=</span> pd.read_csv(path<span class="op">/</span><span class="st">'sample_submission.csv'</span>)</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>ss.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
@@ -532,7 +540,7 @@ Wall time: 15.5 s</code></pre>
 </div>
 </div>
 </div>
-<div class="cell" data-execution_count="38">
+<div id="266c32e1-a7cc-43b7-ac8b-cc0a8a5c8fa4" class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> preprocess(pd.read_csv(path<span class="op">/</span><span class="st">'test.csv'</span>), train<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>tst.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="38">
@@ -687,13 +695,13 @@ Wall time: 15.5 s</code></pre>
 </div>
 </div>
 </div>
-<div class="cell" data-execution_count="39">
+<div id="48406c30-8f65-41e2-89d9-b7d888179b45" class="cell" data-execution_count="39">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>tst_pred <span class="op">=</span> np.stack([est.predict_proba(tst.iloc[:,<span class="dv">1</span>:]) <span class="cf">for</span> est <span class="kw">in</span> cv_output[<span class="st">'estimator'</span>]]).mean(<span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="40">
+<div id="e91d57bd-d75a-4936-a374-6ec7f1a4611d" class="cell" data-execution_count="40">
 <div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>ss.iloc[:,<span class="dv">1</span>:] <span class="op">=</span> tst_pred</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="41">
+<div id="35172dac-97be-425c-b3db-a73e7950e2d2" class="cell" data-execution_count="41">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>ss.to_csv(<span class="st">'subm.csv'</span>, index<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>head subm.csv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -709,7 +717,7 @@ Wall time: 15.5 s</code></pre>
 7913,0.009370330198415863,0.0019239529424342871,0.98870571685915</code></pre>
 </div>
 </div>
-<div class="cell" data-scrolled="true">
+<div id="ed52342c" class="cell" data-scrolled="true">
 <div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> iskaggle:</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    <span class="im">from</span> kaggle <span class="im">import</span> api</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    api.competition_submit_cli(<span class="st">'subm.csv'</span>, <span class="st">'lgbm 10fold avg'</span>, comp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -766,6 +774,33 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       } else {
         el.classList.add('notransition');
       }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
     }
   }
   const toggleColorMode = (alternate) => {
@@ -834,13 +869,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       return localAlternateSentinel;
     }
   }
-  let localAlternateSentinel = 'default';
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
   // Dark / light mode switch
   window.quartoToggleColorScheme = () => {
     // Read the current dark / light value 
     let toAlternate = !hasAlternateSentinel();
     toggleColorMode(toAlternate);
     setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
   };
   // Ensure there is a toggle, if there isn't float one in the top right
   if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
@@ -919,10 +956,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -932,8 +968,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -946,6 +991,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -989,6 +1153,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1014,6 +1179,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1074,6 +1265,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
