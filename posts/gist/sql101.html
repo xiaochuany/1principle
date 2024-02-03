@@ -185,7 +185,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Every professional interacting with data will come across SQL sooner or later. In this post, we cover a core set of vocabulary, grammer, expression for efficient use of this language.</p>
 <section id="vocabulary" class="level2">
 <h2 class="anchored" data-anchor-id="vocabulary">vocabulary</h2>
-<p><code>from</code> <code>where</code> <code>group by</code> <code>having</code> <code>select</code> <code>distinct</code> <code>union</code> <code>order by</code></p>
+<p><code>from</code> <code>where</code> <code>group by</code> <code>having</code> <code>select</code> <code>distinct</code> <code>union</code> <code>order by</code> <code>limit/fetch first rows only</code></p>
 <p>these vocabularies are fundamental in the day to day usage of SQL. They are listed in the execution order as well, meaning that the <code>from</code> clause first gets executed (which table do we want), then <code>where</code> (which row) and so on. We don’t have to include all the clauses in one query, but if we do, then knowing the order in which they are executed matters, especially for debugging errors.</p>
 <p>In this post, we use a jupyter kernel called <code>xsqlite</code> with <code>sqlite3</code> backend (the most commonly used in-memory database) to demonstrate the SQL language. To install the kernel, plesae visit <a href="https://xeus-sqlite.readthedocs.io/en/latest/getting_started.html">here</a>.</p>
 <p>Here are simple queries with some of the vocabs.</p>
@@ -193,7 +193,7 @@ ul.task-list li input[type="checkbox"] {
 <pre class="sqlite cell-code"><code>%load ../assets/tutorial.db</code></pre>
 </div>
 <div id="85e3ee60-b575-4024-bdf4-50fc87cb686a" class="cell">
-<pre class="sqlite cell-code"><code>select * from customers</code></pre>
+<pre class="sqlite cell-code"><code>select * from customers limit 5</code></pre>
 <div class="cell-output cell-output-display">
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
@@ -232,42 +232,6 @@ ul.task-list li input[type="checkbox"] {
 <td>Winston</td>
 <td>2019-01-05</td>
 <td>110</td>
-</tr>
-<tr class="odd">
-<td>6</td>
-<td>Elvis</td>
-<td>2019-01-06</td>
-<td>140</td>
-</tr>
-<tr class="even">
-<td>7</td>
-<td>Anna</td>
-<td>2019-01-07</td>
-<td>150</td>
-</tr>
-<tr class="odd">
-<td>8</td>
-<td>Maria</td>
-<td>2019-01-08</td>
-<td>80</td>
-</tr>
-<tr class="even">
-<td>9</td>
-<td>Jaze</td>
-<td>2019-01-09</td>
-<td>110</td>
-</tr>
-<tr class="odd">
-<td>1</td>
-<td>Jhon</td>
-<td>2019-01-10</td>
-<td>130</td>
-</tr>
-<tr class="even">
-<td>3</td>
-<td>Jade</td>
-<td>2019-01-10</td>
-<td>150</td>
 </tr>
 </tbody>
 </table>
