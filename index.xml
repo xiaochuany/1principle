@@ -9,7 +9,7 @@
 <link>https://xiaochuany.github.io/1principle/</link>
 <atom:link href="https://xiaochuany.github.io/1principle/index.xml" rel="self" type="application/rss+xml"/>
 <description>Xiaochuan&#39;s blog: first principles first</description>
-<generator>quarto-1.4.549</generator>
+<generator>quarto-1.4.550</generator>
 <lastBuildDate>Sat, 27 Jan 2024 00:00:00 GMT</lastBuildDate>
 <item>
   <title>SQL 101</title>
@@ -34,6 +34,7 @@
 <div id="85e3ee60-b575-4024-bdf4-50fc87cb686a" class="cell">
 <pre class="sqlite cell-code"><code>select * from customers limit 5</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -76,9 +77,11 @@
 </table>
 </div>
 </div>
+</div>
 <div id="1cacf302-49ec-4533-a52a-858890c06aa4" class="cell">
 <pre class="sqlite cell-code"><code>select * from customers where customer_id&lt;3</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -109,11 +112,13 @@
 </table>
 </div>
 </div>
+</div>
 <div id="2929fc9b-a230-4e28-9f3b-11008e8b20c5" class="cell">
 <pre class="sqlite cell-code"><code>select * from customers where customer_id=2
 union
 select * from customers where customer_id=2</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -130,6 +135,7 @@ select * from customers where customer_id=2</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 <div id="fae34340-27a5-43af-92a8-bfa17f5aaad9" class="cell">
@@ -137,6 +143,7 @@ select * from customers where customer_id=2</code></pre>
 union all
 select * from customers where customer_id=2</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -161,11 +168,13 @@ select * from customers where customer_id=2</code></pre>
 </table>
 </div>
 </div>
+</div>
 <div id="0106e814-6b6c-4db0-8c56-64f06b8d79e2" class="cell">
 <pre class="sqlite cell-code"><code>select distinct customer_id, visited_on 
 from customers 
 order by visited_on, customer_id</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -220,6 +229,7 @@ order by visited_on, customer_id</code></pre>
 </table>
 </div>
 </div>
+</div>
 </section>
 <section id="aggregate-function" class="level2">
 <h2 class="anchored" data-anchor-id="aggregate-function">aggregate function</h2>
@@ -230,6 +240,7 @@ from customers
 where customer_id&lt;3 
 group by customer_id</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -251,6 +262,7 @@ group by customer_id</code></pre>
 </table>
 </div>
 </div>
+</div>
 <div id="387ea267-880b-4291-bbe0-0e38b5f1f1c5" class="cell">
 <pre class="sqlite cell-code"><code>select customer_id, min(visited_on), count(*) as cnt 
 from customers 
@@ -258,6 +270,7 @@ where customer_id&lt;3
 group by customer_id 
 having cnt=1</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -274,6 +287,7 @@ having cnt=1</code></pre>
 </table>
 </div>
 </div>
+</div>
 <p>notice that <code>having</code> and <code>where</code> play a similar role which is to select relevant rows, but one gets executed before <code>group by</code>, the other after.</p>
 </section>
 <section id="windows-function" class="level2">
@@ -282,6 +296,7 @@ having cnt=1</code></pre>
 <div id="2b4bda8c-a112-4942-8757-99f3db2f8d53" class="cell">
 <pre class="sqlite cell-code"><code>select row_number() over(partition by visited_on), visited_on from customers</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -336,11 +351,13 @@ having cnt=1</code></pre>
 </table>
 </div>
 </div>
+</div>
 <p>here <code>row_number()</code> is the windows function acting on the groups obtained from <code>partition by visited_on</code>.</p>
 <p>We can use <code>order by</code> instead of <code>partition by</code>, in which case there is a single group, and the function is executed in the requested order.</p>
 <div id="93c6f630-0c5c-4492-a69c-38cf2ca4a155" class="cell">
 <pre class="sqlite cell-code"><code>select row_number() over(order by visited_on), visited_on from customers</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -395,6 +412,7 @@ having cnt=1</code></pre>
 </table>
 </div>
 </div>
+</div>
 <p>it is possible to use both <code>partition by</code> and <code>order by</code> in <code>over()</code>.</p>
 </section>
 <section id="subquery-and-common-table-expression" class="level2">
@@ -405,6 +423,7 @@ having cnt=1</code></pre>
 <div id="40f5cb6d-e8cb-45e9-bbe1-fd633f63257d" class="cell">
 <pre class="sqlite cell-code"><code>select * from movies</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -427,9 +446,11 @@ having cnt=1</code></pre>
 </table>
 </div>
 </div>
+</div>
 <div id="57cd8cf3-113c-420b-a927-2733653ede1b" class="cell">
 <pre class="sqlite cell-code"><code>select * from userss</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -456,9 +477,11 @@ having cnt=1</code></pre>
 </table>
 </div>
 </div>
+</div>
 <div id="ff52f3f0-00c2-474b-9374-247d0b225d51" class="cell">
 <pre class="sqlite cell-code"><code>select * from movierating</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -523,12 +546,14 @@ having cnt=1</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 <p>first we <code>join</code> three tables (search online for all kinds of <code>join</code> methods!)</p>
 <div id="ee68190b-7a10-4d0d-9e08-f5b3b14e1029" class="cell">
 <pre class="sqlite cell-code"><code>select * from movierating left join userss using (user_id) left join movies using (movie_id)</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -613,6 +638,7 @@ having cnt=1</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 <p>now we define <code>t</code> as the result of joining with CTE, then find the person’s name who watched the largest number of movies, in case of a tie, choose the name that is lexicographical smaller (i.e.&nbsp;appears first in English dictionary). We would need the counts in order to find the name, this is where a subquery is required.</p>
@@ -628,6 +654,7 @@ select name as results from (
 ) 
 limit 1</code></pre>
 <div class="cell-output cell-output-display">
+<div>
 <table data-quarto-postprocess="true" class="table table-sm table-striped small">
 <tbody>
 <tr class="odd">
@@ -638,6 +665,7 @@ limit 1</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 </section>
@@ -1611,6 +1639,7 @@ font-style: inherit;">'sample_submission.csv'</span>)</span>
 <span id="cb33-2">ss.head()</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="37">
 <div>
+<div>
 
 
 <table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
@@ -1665,6 +1694,7 @@ font-style: inherit;">'sample_submission.csv'</span>)</span>
 </div>
 </div>
 </div>
+</div>
 <div id="266c32e1-a7cc-43b7-ac8b-cc0a8a5c8fa4" class="cell" data-execution_count="38">
 <div class="sourceCode cell-code" id="cb34" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1">tst <span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -1679,6 +1709,7 @@ background-color: null;
 font-style: inherit;">False</span>)</span>
 <span id="cb34-2">tst.head()</span></code></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="38">
+<div>
 <div>
 
 
@@ -1827,6 +1858,7 @@ font-style: inherit;">False</span>)</span>
 </tbody>
 </table>
 
+</div>
 </div>
 </div>
 </div>
@@ -3058,6 +3090,7 @@ font-style: inherit;">'alphas'</span>)</span></code></pre></div>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div>
+<div>
 
 
 <table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
@@ -3092,6 +3125,7 @@ font-style: inherit;">'alphas'</span>)</span></code></pre></div>
 </tbody>
 </table>
 
+</div>
 </div>
 </div>
 </div>
