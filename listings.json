@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/gist/makemore.html",
       "/posts/gist/sql101.html",
       "/posts/gist/top-fifth-kaggle.html",
       "/posts/gist/walkthrough.html",

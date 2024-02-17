@@ -208,10 +208,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#torch-stuffs" id="toc-torch-stuffs" class="nav-link" data-scroll-target="#torch-stuffs">torch stuffs</a>
   <ul class="collapse">
   <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
-  <li><a href="#x-tensor" id="toc-x-tensor" class="nav-link" data-scroll-target="#x-tensor"><code>x</code> tensor</a></li>
-  <li><a href="#y-tensor" id="toc-y-tensor" class="nav-link" data-scroll-target="#y-tensor"><code>y</code> tensor</a></li>
   <li><a href="#dataloader" id="toc-dataloader" class="nav-link" data-scroll-target="#dataloader">DataLoader</a></li>
-  <li><a href="#tensor" id="toc-tensor" class="nav-link" data-scroll-target="#tensor">Tensor</a></li>
+  <li><a href="#tensor-shape-ops" id="toc-tensor-shape-ops" class="nav-link" data-scroll-target="#tensor-shape-ops">Tensor shape ops</a></li>
   <li><a href="#module" id="toc-module" class="nav-link" data-scroll-target="#module">Module</a></li>
   </ul></li>
   <li><a href="#build-transformer" id="toc-build-transformer" class="nav-link" data-scroll-target="#build-transformer">build Transformer</a>
@@ -219,6 +217,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#attention-layer" id="toc-attention-layer" class="nav-link" data-scroll-target="#attention-layer">attention layer</a></li>
   <li><a href="#block" id="toc-block" class="nav-link" data-scroll-target="#block">block</a></li>
   <li><a href="#the-entire-thing" id="toc-the-entire-thing" class="nav-link" data-scroll-target="#the-entire-thing">the entire thing</a></li>
+  </ul></li>
+  <li><a href="#eval-helpers" id="toc-eval-helpers" class="nav-link" data-scroll-target="#eval-helpers">eval helpers</a></li>
+  <li><a href="#tie-it-all-up" id="toc-tie-it-all-up" class="nav-link" data-scroll-target="#tie-it-all-up">tie it all up</a>
+  <ul class="collapse">
+  <li><a href="#argparse" id="toc-argparse" class="nav-link" data-scroll-target="#argparse">argparse</a></li>
+  <li><a href="#inits" id="toc-inits" class="nav-link" data-scroll-target="#inits">inits</a></li>
+  <li><a href="#training-loop" id="toc-training-loop" class="nav-link" data-scroll-target="#training-loop">training loop</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -238,123 +243,136 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 - gain familiarity with <strong>transformer</strong><br>
 - summarise essential <code>torch</code> functionalities and workflow for building neural nets application<br>
 - use minimal tools e.g <code>argparse</code> to produce a command line interface for the app</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+disclaimer
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>all the code chunks in this post (including docstring) are taken from the <a href="https://github.com/karpathy/makemore">makemore</a> repository</p>
+</div>
+</div>
 </section>
 <section id="torch-stuffs" class="level2">
 <h2 class="anchored" data-anchor-id="torch-stuffs">torch stuffs</h2>
 <div id="a421b774-ac6c-48cf-b592-1d2d1a13431a" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data.dataloader <span class="im">import</span> DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> torch </span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="im">from</span> torch.utils.data.dataloader <span class="im">import</span> DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Simplistically, a neural net application is built on two major components: a dataset and a model. <code>torch</code> allows us to do both fairly easily and straightforward.</p>
 <section id="dataset" class="level3">
 <h3 class="anchored" data-anchor-id="dataset">Dataset</h3>
 <p><code>Dataset</code> class is a container like a sequence. To define a custom Dataset class, one must implement <code>__init__</code>, <code>__len__</code>, <code>__getitem__</code>, together with transformations relevant to the particular use case of the application. Exampe:</p>
 <div id="49c8b793-8053-45f1-80fe-0b631de31e99" class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CharDataset(Dataset):</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, words:<span class="bu">list</span>[<span class="bu">str</span>], chars:<span class="bu">str</span>, max_word_length:<span class="bu">int</span>):</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.words <span class="op">=</span> words</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.chars <span class="op">=</span> chars</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.max_word_length <span class="op">=</span> max_word_length</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.stoi <span class="op">=</span> {ch:i<span class="op">+</span><span class="dv">1</span> <span class="cf">for</span> i,ch <span class="kw">in</span> <span class="bu">enumerate</span>(chars)}</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.itos <span class="op">=</span> {i:s <span class="cf">for</span> s,i <span class="kw">in</span> <span class="va">self</span>.stoi.items()} <span class="co"># inverse mapping</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.words)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> contains(<span class="va">self</span>, word):</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> word <span class="kw">in</span> <span class="va">self</span>.words</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_vocab_size(<span class="va">self</span>):</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.chars) <span class="op">+</span> <span class="dv">1</span> <span class="co"># all the possible characters and special 0 token</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_output_length(<span class="va">self</span>):</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span> <span class="co"># &lt;START&gt; token followed by words</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> encode(<span class="va">self</span>, word):</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        ix <span class="op">=</span> torch.tensor([<span class="va">self</span>.stoi[w] <span class="cf">for</span> w <span class="kw">in</span> word], dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ix</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> decode(<span class="va">self</span>, ix):</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        word <span class="op">=</span> <span class="st">''</span>.join(<span class="va">self</span>.itos[i] <span class="cf">for</span> i <span class="kw">in</span> ix)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> word</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx):</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        word <span class="op">=</span> <span class="va">self</span>.words[idx]</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        ix <span class="op">=</span> <span class="va">self</span>.encode(word)</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> torch.zeros(<span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> torch.zeros(<span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        x[<span class="dv">1</span>:<span class="dv">1</span><span class="op">+</span><span class="bu">len</span>(ix)] <span class="op">=</span> ix</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>        y[:<span class="bu">len</span>(ix)] <span class="op">=</span> ix</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>        y[<span class="bu">len</span>(ix)<span class="op">+</span><span class="dv">1</span>:] <span class="op">=</span> <span class="op">-</span><span class="dv">1</span> <span class="co"># index -1 will mask the loss at the inactive locations</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x, y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">class</span> CharDataset(Dataset):</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, words:<span class="bu">list</span>[<span class="bu">str</span>], chars:<span class="bu">str</span>, max_word_length:<span class="bu">int</span>):</span>
+<span id="cb2-4"><a href="#cb2-4"></a>        <span class="va">self</span>.words <span class="op">=</span> words</span>
+<span id="cb2-5"><a href="#cb2-5"></a>        <span class="va">self</span>.chars <span class="op">=</span> chars</span>
+<span id="cb2-6"><a href="#cb2-6"></a>        <span class="va">self</span>.max_word_length <span class="op">=</span> max_word_length</span>
+<span id="cb2-7"><a href="#cb2-7"></a>        <span class="va">self</span>.stoi <span class="op">=</span> {ch:i<span class="op">+</span><span class="dv">1</span> <span class="cf">for</span> i,ch <span class="kw">in</span> <span class="bu">enumerate</span>(chars)}</span>
+<span id="cb2-8"><a href="#cb2-8"></a>        <span class="va">self</span>.itos <span class="op">=</span> {i:s <span class="cf">for</span> s,i <span class="kw">in</span> <span class="va">self</span>.stoi.items()} <span class="co"># inverse mapping</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
+<span id="cb2-11"><a href="#cb2-11"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.words)</span>
+<span id="cb2-12"><a href="#cb2-12"></a></span>
+<span id="cb2-13"><a href="#cb2-13"></a>    <span class="kw">def</span> contains(<span class="va">self</span>, word):</span>
+<span id="cb2-14"><a href="#cb2-14"></a>        <span class="cf">return</span> word <span class="kw">in</span> <span class="va">self</span>.words</span>
+<span id="cb2-15"><a href="#cb2-15"></a></span>
+<span id="cb2-16"><a href="#cb2-16"></a>    <span class="kw">def</span> get_vocab_size(<span class="va">self</span>):</span>
+<span id="cb2-17"><a href="#cb2-17"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.chars) <span class="op">+</span> <span class="dv">1</span> <span class="co"># all the possible characters and special 0 token</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a></span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="kw">def</span> get_output_length(<span class="va">self</span>):</span>
+<span id="cb2-20"><a href="#cb2-20"></a>        <span class="cf">return</span> <span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span> <span class="co"># &lt;START&gt; token followed by words</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a></span>
+<span id="cb2-22"><a href="#cb2-22"></a>    <span class="kw">def</span> encode(<span class="va">self</span>, word):</span>
+<span id="cb2-23"><a href="#cb2-23"></a>        ix <span class="op">=</span> torch.tensor([<span class="va">self</span>.stoi[w] <span class="cf">for</span> w <span class="kw">in</span> word], dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb2-24"><a href="#cb2-24"></a>        <span class="cf">return</span> ix</span>
+<span id="cb2-25"><a href="#cb2-25"></a></span>
+<span id="cb2-26"><a href="#cb2-26"></a>    <span class="kw">def</span> decode(<span class="va">self</span>, ix):</span>
+<span id="cb2-27"><a href="#cb2-27"></a>        word <span class="op">=</span> <span class="st">''</span>.join(<span class="va">self</span>.itos[i] <span class="cf">for</span> i <span class="kw">in</span> ix)</span>
+<span id="cb2-28"><a href="#cb2-28"></a>        <span class="cf">return</span> word</span>
+<span id="cb2-29"><a href="#cb2-29"></a></span>
+<span id="cb2-30"><a href="#cb2-30"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, idx):</span>
+<span id="cb2-31"><a href="#cb2-31"></a>        word <span class="op">=</span> <span class="va">self</span>.words[idx]</span>
+<span id="cb2-32"><a href="#cb2-32"></a>        ix <span class="op">=</span> <span class="va">self</span>.encode(word)</span>
+<span id="cb2-33"><a href="#cb2-33"></a>        x <span class="op">=</span> torch.zeros(<span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb2-34"><a href="#cb2-34"></a>        y <span class="op">=</span> torch.zeros(<span class="va">self</span>.max_word_length <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb2-35"><a href="#cb2-35"></a>        x[<span class="dv">1</span>:<span class="dv">1</span><span class="op">+</span><span class="bu">len</span>(ix)] <span class="op">=</span> ix</span>
+<span id="cb2-36"><a href="#cb2-36"></a>        y[:<span class="bu">len</span>(ix)] <span class="op">=</span> ix</span>
+<span id="cb2-37"><a href="#cb2-37"></a>        y[<span class="bu">len</span>(ix)<span class="op">+</span><span class="dv">1</span>:] <span class="op">=</span> <span class="op">-</span><span class="dv">1</span> <span class="co"># index -1 will mask the loss at the inactive locations</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a>        <span class="cf">return</span> x, y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The custom transformations in this example consists of mapping character to integer, aka tokenisation. There is one special token <code>0</code> representing both the start of name and end of name. We can loop through or get at index a CharDataset because we have implemented sufficient dunder methods for this.</p>
 <div id="d6ba078a-b7bf-4750-bc01-779b0f03474b" class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> string</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>examples <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>], string.ascii_letters, <span class="dv">10</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> e <span class="kw">in</span> examples:</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(e)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> string</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a>examples <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>], string.ascii_letters, <span class="dv">10</span>)</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="cf">for</span> e <span class="kw">in</span> examples:</span>
+<span id="cb3-5"><a href="#cb3-5"></a>    <span class="bu">print</span>(e)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(tensor([ 0,  5, 13, 13,  1,  0,  0,  0,  0,  0,  0]), tensor([ 5, 13, 13,  1,  0, -1, -1, -1, -1, -1, -1]))
 (tensor([ 0, 18,  9,  3,  8,  1, 18,  4,  0,  0,  0]), tensor([18,  9,  3,  8,  1, 18,  4,  0, -1, -1, -1]))</code></pre>
 </div>
 </div>
 <div id="5dc7bfcc-8842-4277-bc65-1ce40a6a3dc7" class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(examples[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="bu">print</span>(examples[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(tensor([ 0,  5, 13, 13,  1,  0,  0,  0,  0,  0,  0]), tensor([ 5, 13, 13,  1,  0, -1, -1, -1, -1, -1, -1]))</code></pre>
 </div>
 </div>
 <p>Let’s break down the output tuple <code>x,y</code>.</p>
-</section>
-<section id="x-tensor" class="level3">
-<h3 class="anchored" data-anchor-id="x-tensor"><code>x</code> tensor</h3>
+<section id="x-tensor" class="level4">
+<h4 class="anchored" data-anchor-id="x-tensor"><code>x</code> tensor</h4>
 <p>It starts with <code>0</code> token, then each input character gets mapped to an integer from 1 to 26, with trailing zeros if the length of name is less than <code>max_word_length</code> (set to be max length of names in the dataset)</p>
 </section>
-<section id="y-tensor" class="level3">
-<h3 class="anchored" data-anchor-id="y-tensor"><code>y</code> tensor</h3>
+<section id="y-tensor" class="level4">
+<h4 class="anchored" data-anchor-id="y-tensor"><code>y</code> tensor</h4>
 <p>By definition, it is the same as <code>x</code> shifted by 1 token to the left, modulo extra subtleties with the trailing -1. What is going on here? Well, in language modelling, the learning task is next token prediction, so at index <code>idx</code> such that <code>x[idx].item()!=0</code>, given <code>x[:idx+1]</code>, the goal is to predict <code>x[idx+1]</code> which by definition is nothing but <code>y[idx]</code>. If <code>x[idx].item()==0</code>, then there is nothing to predict (name finished), we set by convention <code>y[idx]=-1</code>.</p>
 <p>Our ultimate goal is to build and train a neural net which can learn from the 30k <code>x,y</code> tuples a good way of sampling next token given some context. Concetely, throw a <code>0</code> token at the model and let the model sample the next token <code>t1</code>, concatenate it with <code>0</code>, then sample next given <code>[0,t1]</code>, until a <code>0</code> token is sampled which means we have arrived at the end of a name. Repeat this to produce as many names as we want. We’ll get back to inference later.</p>
+</section>
 </section>
 <section id="dataloader" class="level3">
 <h3 class="anchored" data-anchor-id="dataloader">DataLoader</h3>
 <p>For efficiency’s sake, it is beneficial to stack multiple examples together, aka mini-batch, and process them all at once. The <code>DataLoader</code> class is meant to help us with this. Example:</p>
 <div id="7fd9a3f8-bcca-47b0-9cb8-bb632f9e85f6" class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> InfiniteDataLoader:</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">    this is really hacky and I'm not proud of it, but there doesn't seem to be</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    a better way in PyTorch to just create an infinite dataloader?</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, dataset, <span class="op">**</span>kwargs):</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        train_sampler <span class="op">=</span> torch.utils.data.RandomSampler(dataset, replacement<span class="op">=</span><span class="va">True</span>, num_samples<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e10</span>))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> DataLoader(dataset, sampler<span class="op">=</span>train_sampler, <span class="op">**</span>kwargs)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.data_iter <span class="op">=</span> <span class="bu">iter</span>(<span class="va">self</span>.train_loader)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="bu">next</span>(<span class="va">self</span>):</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            batch <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.data_iter)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">StopIteration</span>: <span class="co"># this will technically only happen after 1e10 samples... (i.e. basically never)</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.data_iter <span class="op">=</span> <span class="bu">iter</span>(<span class="va">self</span>.train_loader)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            batch <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.data_iter)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">class</span> InfiniteDataLoader:</span>
+<span id="cb7-2"><a href="#cb7-2"></a>    <span class="co">"""</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">    this is really hacky and I'm not proud of it, but there doesn't seem to be</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co">    a better way in PyTorch to just create an infinite dataloader?</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co">    """</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, dataset, <span class="op">**</span>kwargs):</span>
+<span id="cb7-8"><a href="#cb7-8"></a>        train_sampler <span class="op">=</span> torch.utils.data.RandomSampler(dataset, replacement<span class="op">=</span><span class="va">True</span>, num_samples<span class="op">=</span><span class="bu">int</span>(<span class="fl">1e10</span>))</span>
+<span id="cb7-9"><a href="#cb7-9"></a>        <span class="va">self</span>.train_loader <span class="op">=</span> DataLoader(dataset, sampler<span class="op">=</span>train_sampler, <span class="op">**</span>kwargs)</span>
+<span id="cb7-10"><a href="#cb7-10"></a>        <span class="va">self</span>.data_iter <span class="op">=</span> <span class="bu">iter</span>(<span class="va">self</span>.train_loader)</span>
+<span id="cb7-11"><a href="#cb7-11"></a></span>
+<span id="cb7-12"><a href="#cb7-12"></a>    <span class="kw">def</span> <span class="bu">next</span>(<span class="va">self</span>):</span>
+<span id="cb7-13"><a href="#cb7-13"></a>        <span class="cf">try</span>:</span>
+<span id="cb7-14"><a href="#cb7-14"></a>            batch <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.data_iter)</span>
+<span id="cb7-15"><a href="#cb7-15"></a>        <span class="cf">except</span> <span class="pp">StopIteration</span>: <span class="co"># this will technically only happen after 1e10 samples... (i.e. basically never)</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a>            <span class="va">self</span>.data_iter <span class="op">=</span> <span class="bu">iter</span>(<span class="va">self</span>.train_loader)</span>
+<span id="cb7-17"><a href="#cb7-17"></a>            batch <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.data_iter)</span>
+<span id="cb7-18"><a href="#cb7-18"></a>        <span class="cf">return</span> batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="80355603-6656-43e6-89f1-c43228bfcb30" class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dataset <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>, <span class="st">'ben'</span>, <span class="st">'steve'</span>],string.ascii_letters, <span class="dv">10</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>batch_loader <span class="op">=</span> InfiniteDataLoader(dataset, batch_size<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>dataset <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>, <span class="st">'ben'</span>, <span class="st">'steve'</span>],string.ascii_letters, <span class="dv">10</span>)</span>
+<span id="cb8-2"><a href="#cb8-2"></a>batch_loader <span class="op">=</span> InfiniteDataLoader(dataset, batch_size<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="fcbc76ef-9a1f-4ed4-871a-2ebd1df19764" class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>):</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    X,Y <span class="op">=</span> batch_loader.<span class="bu">next</span>()</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>X<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>) <span class="co"># B,T = batch_size, max_word_length+1</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'-'</span><span class="op">*</span><span class="dv">60</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>Y<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>) <span class="co"># (B,T)</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'*'</span><span class="op">*</span><span class="dv">60</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>):</span>
+<span id="cb9-2"><a href="#cb9-2"></a>    X,Y <span class="op">=</span> batch_loader.<span class="bu">next</span>()</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>X<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>) <span class="co"># B,T = batch_size, max_word_length+1</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="bu">print</span>(<span class="st">'-'</span><span class="op">*</span><span class="dv">60</span>)</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>Y<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>) <span class="co"># (B,T)</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="bu">print</span>(<span class="st">'*'</span><span class="op">*</span><span class="dv">60</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>X=tensor([[ 0, 18,  9,  3,  8,  1, 18,  4,  0,  0,  0],
         [ 0, 19, 20,  5, 22,  5,  0,  0,  0,  0,  0]])
@@ -371,13 +389,13 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 </section>
-<section id="tensor" class="level3">
-<h3 class="anchored" data-anchor-id="tensor">Tensor</h3>
+<section id="tensor-shape-ops" class="level3">
+<h3 class="anchored" data-anchor-id="tensor-shape-ops">Tensor shape ops</h3>
 <p>Most fundamental data structure for neural nets.</p>
 <p>A tensor is a collection of numbers index by tuple of non-negative integers. In the above, we’ve seen that a batch <code>X</code> is (B,T) tensor, we can index <code>X[b,t]</code> for b in range(B) and t in range(T).</p>
 <p><code>torch</code> provides optimised tensor operations and auto differentiation engine. Rather than understanding low level optimisations (parallel programming as in e.g.&nbsp;cuda kernels), we just take these optimisations for granted and see what we can build with <code>Tensor</code>.</p>
 <div id="97c1e291-6d38-413c-907b-1e87bb84aa01" class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>torch.arange(<span class="dv">24</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>torch.arange(<span class="dv">24</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>tensor([[[ 0,  1],
          [ 2,  3],
@@ -396,10 +414,10 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 <div id="991ce1da-b121-4053-803e-64736e33771b" class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.equal(torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>),torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="op">-</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="cf">assert</span> torch.equal(torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>),torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="op">-</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="3460478e-e2af-4976-9e53-7113b393df55" class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>tensor([[1., 0., 0., 0.],
         [1., 1., 0., 0.],
@@ -408,7 +426,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 <div id="fe5e7052-e605-4459-96b9-2bd91b911cd9" class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>torch.randn(<span class="dv">3</span>,<span class="dv">4</span>).split(<span class="dv">2</span>,dim<span class="op">=</span><span class="dv">1</span>)  <span class="co"># a tuple of 4/2 tensors of shape (3,2) </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>torch.randn(<span class="dv">3</span>,<span class="dv">4</span>).split(<span class="dv">2</span>,dim<span class="op">=</span><span class="dv">1</span>)  <span class="co"># a tuple of 4/2 tensors of shape (3,2) </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>(tensor([[-0.1093,  0.0426],
          [ 2.5843,  0.2994],
@@ -419,8 +437,8 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 <div id="ccb3aaa5-f92e-4580-beb4-3d7e960d1035" class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>att <span class="op">=</span> torch.arange(<span class="dv">16</span>).view(<span class="dv">4</span>,<span class="dv">4</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>att.masked_fill(torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))<span class="op">==</span><span class="dv">0</span>, <span class="op">-</span><span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>att <span class="op">=</span> torch.arange(<span class="dv">16</span>).view(<span class="dv">4</span>,<span class="dv">4</span>)</span>
+<span id="cb18-2"><a href="#cb18-2"></a>att.masked_fill(torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))<span class="op">==</span><span class="dv">0</span>, <span class="op">-</span><span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>tensor([[  0, -99, -99, -99],
         [  4,   5, -99, -99],
@@ -429,159 +447,395 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 <div id="7a960984-d5bf-4cf8-818e-235cdd14057b" class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.randn(<span class="dv">24</span>).view(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>).transpose(<span class="dv">1</span>,<span class="dv">2</span>).shape <span class="op">==</span> (<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.randn(<span class="dv">5</span>).unsqueeze(<span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">5</span>,<span class="dv">1</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.cat([torch.ones(<span class="dv">3</span>,<span class="dv">3</span>), torch.arange(<span class="dv">9</span>).view(<span class="dv">3</span>,<span class="dv">3</span>)], dim<span class="op">=</span><span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">3</span>,<span class="dv">3</span><span class="op">+</span><span class="dv">3</span>)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.stack([torch.ones(<span class="dv">3</span>,<span class="dv">3</span>), torch.arange(<span class="dv">9</span>).view(<span class="dv">3</span>,<span class="dv">3</span>)], dim<span class="op">=</span><span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="cf">assert</span> torch.randn(<span class="dv">24</span>).view(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>).transpose(<span class="dv">1</span>,<span class="dv">2</span>).shape <span class="op">==</span> (<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="cf">assert</span> torch.randn(<span class="dv">5</span>).unsqueeze(<span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">5</span>,<span class="dv">1</span>)</span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="cf">assert</span> torch.cat([torch.ones(<span class="dv">3</span>,<span class="dv">3</span>), torch.arange(<span class="dv">9</span>).view(<span class="dv">3</span>,<span class="dv">3</span>)], dim<span class="op">=</span><span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">3</span>,<span class="dv">3</span><span class="op">+</span><span class="dv">3</span>)</span>
+<span id="cb20-4"><a href="#cb20-4"></a><span class="cf">assert</span> torch.stack([torch.ones(<span class="dv">3</span>,<span class="dv">3</span>), torch.arange(<span class="dv">9</span>).view(<span class="dv">3</span>,<span class="dv">3</span>)], dim<span class="op">=</span><span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="module" class="level3">
 <h3 class="anchored" data-anchor-id="module">Module</h3>
 <p><code>nn.Module</code> is the base class for all neural nets, which, mathemtically, are just functions taking Tensor as input and compute the output as another Tensor. Just as we can compose functions, we can compose Module’s to build complicated achitechture.</p>
+<p><code>torch</code> offers built-in modules as LEGO pieces. Example:</p>
+<ul>
+<li><code>nn.Linear</code>: random linear function that takes input dim and output dim as arguments</li>
+<li><code>nn.LayerNorm</code>: standardise a tensor over shape (pass in as argument), then multiplied by weight, then add bias (default elementwise 1 and 0).</li>
+<li><code>nn.RELU</code>: a parameter-less elementwise non-linear function</li>
+<li><code>nn.Embedding</code>: just a random lookup table of shape B,T, n_embd if the input tensor is of shape B,T</li>
+</ul>
+<p>some container classes:</p>
+<ul>
+<li><code>nn.ModuleDict</code>: pass in a dictionary of name:instance pairs</li>
+<li><code>nn.ModuleList</code>: pass in a list of instances</li>
+</ul>
 <p>custom Module must implement <code>forward</code> method. Example:</p>
 <div id="9314ebbd-4a19-4bed-b5e5-1d75ff05e508" class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> NewGELU(nn.Module):</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT).</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co">    Reference: Gaussian Error Linear Units (GELU) paper: https://arxiv.org/abs/1606.08415</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="fl">0.5</span> <span class="op">*</span> x <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">+</span> torch.tanh(math.sqrt(<span class="fl">2.0</span> <span class="op">/</span> math.pi) <span class="op">*</span> (x <span class="op">+</span> <span class="fl">0.044715</span> <span class="op">*</span> torch.<span class="bu">pow</span>(x, <span class="fl">3.0</span>))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">class</span> NewGELU(nn.Module):</span>
+<span id="cb21-2"><a href="#cb21-2"></a>    <span class="co">"""</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a><span class="co">    Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT).</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a><span class="co">    Reference: Gaussian Error Linear Units (GELU) paper: https://arxiv.org/abs/1606.08415</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a><span class="co">    """</span></span>
+<span id="cb21-6"><a href="#cb21-6"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb21-7"><a href="#cb21-7"></a>        <span class="cf">return</span> <span class="fl">0.5</span> <span class="op">*</span> x <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">+</span> torch.tanh(math.sqrt(<span class="fl">2.0</span> <span class="op">/</span> math.pi) <span class="op">*</span> (x <span class="op">+</span> <span class="fl">0.044715</span> <span class="op">*</span> torch.<span class="bu">pow</span>(x, <span class="fl">3.0</span>))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="build-transformer" class="level2">
 <h2 class="anchored" data-anchor-id="build-transformer">build Transformer</h2>
-<p>the transformer is a custom module built on attention blocks, which themselves are built on multi-head masked self-attention layers.</p>
+<p>Transformer is a custom module built on attention blocks, which themselves are built on multi-head masked self-attention layers.</p>
 <p>let’s build from the layer level all the way to transformer. here is our model config.</p>
 <div id="2160e45a-b3df-4605-8c1e-2de212c917d6" class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ModelConfig:</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    block_size: <span class="bu">int</span> <span class="op">=</span> <span class="va">None</span> <span class="co"># length of the input sequences of integers</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    vocab_size: <span class="bu">int</span> <span class="op">=</span> <span class="va">None</span> <span class="co"># the input integers are in range [0 .. vocab_size -1]</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># parameters below control the sizes of each model slightly differently</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    n_layer: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    n_embd: <span class="bu">int</span> <span class="op">=</span> <span class="dv">64</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    n_embd2: <span class="bu">int</span> <span class="op">=</span> <span class="dv">64</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    n_head: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
+<span id="cb22-2"><a href="#cb22-2"></a></span>
+<span id="cb22-3"><a href="#cb22-3"></a><span class="at">@dataclass</span></span>
+<span id="cb22-4"><a href="#cb22-4"></a><span class="kw">class</span> ModelConfig:</span>
+<span id="cb22-5"><a href="#cb22-5"></a>    block_size: <span class="bu">int</span> <span class="op">=</span> <span class="va">None</span> <span class="co"># length of the input sequences of integers</span></span>
+<span id="cb22-6"><a href="#cb22-6"></a>    vocab_size: <span class="bu">int</span> <span class="op">=</span> <span class="va">None</span> <span class="co"># the input integers are in range [0 .. vocab_size -1]</span></span>
+<span id="cb22-7"><a href="#cb22-7"></a>    <span class="co"># parameters below control the sizes of each model slightly differently</span></span>
+<span id="cb22-8"><a href="#cb22-8"></a>    n_layer: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb22-9"><a href="#cb22-9"></a>    n_embd: <span class="bu">int</span> <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb22-10"><a href="#cb22-10"></a>    n_embd2: <span class="bu">int</span> <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a>    n_head: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="attention-layer" class="level3">
 <h3 class="anchored" data-anchor-id="attention-layer">attention layer</h3>
 <div id="2be828be-16cd-40ac-9090-4c9210c665bf" class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CausalSelfAttention(nn.Module):</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A vanilla multi-head masked self-attention layer with a projection at the end.</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co">    It is possible to use torch.nn.MultiheadAttention here but I am including an</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co">    explicit implementation here to show that there is nothing too scary here.</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> config.n_embd <span class="op">%</span> config.n_head <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># key, query, value projections for all heads, but in a batch</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_attn <span class="op">=</span> nn.Linear(config.n_embd, <span class="dv">3</span> <span class="op">*</span> config.n_embd)</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># output projection</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.c_proj <span class="op">=</span> nn.Linear(config.n_embd, config.n_embd)</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># causal mask to ensure that attention is only applied to the left in the input sequence</span></span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.register_buffer(<span class="st">"bias"</span>, torch.tril(torch.ones(config.block_size, config.block_size))</span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>                                     .view(<span class="dv">1</span>, <span class="dv">1</span>, config.block_size, config.block_size))</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_head <span class="op">=</span> config.n_head</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.n_embd <span class="op">=</span> config.n_embd</span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>        B, T, C <span class="op">=</span> x.size() <span class="co"># batch size, sequence length, embedding dimensionality (n_embd)</span></span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># calculate query, key, values for all heads in batch and move head forward to be the batch dim</span></span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>        q, k ,v  <span class="op">=</span> <span class="va">self</span>.c_attn(x).split(<span class="va">self</span>.n_embd, dim<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>        k <span class="op">=</span> k.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
-<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>        q <span class="op">=</span> q.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
-<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>        v <span class="op">=</span> v.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>        <span class="co"># causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -&gt; (B, nh, T, T)</span></span>
-<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>        att <span class="op">=</span> (q <span class="op">@</span> k.transpose(<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>)) <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">/</span> math.sqrt(k.size(<span class="op">-</span><span class="dv">1</span>)))</span>
-<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>        att <span class="op">=</span> att.masked_fill(<span class="va">self</span>.bias[:,:,:T,:T] <span class="op">==</span> <span class="dv">0</span>, <span class="bu">float</span>(<span class="st">'-inf'</span>))</span>
-<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>        att <span class="op">=</span> F.softmax(att, dim<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> att <span class="op">@</span> v <span class="co"># (B, nh, T, T) x (B, nh, T, hs) -&gt; (B, nh, T, hs)</span></span>
-<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> y.transpose(<span class="dv">1</span>, <span class="dv">2</span>).contiguous().view(B, T, C) <span class="co"># re-assemble all head outputs side by side</span></span>
-<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># output projection</span></span>
-<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> <span class="va">self</span>.c_proj(y)</span>
-<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">class</span> CausalSelfAttention(nn.Module):</span>
+<span id="cb23-2"><a href="#cb23-2"></a>    <span class="co">"""</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="co">    A vanilla multi-head masked self-attention layer with a projection at the end.</span></span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="co">    It is possible to use torch.nn.MultiheadAttention here but I am including an</span></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="co">    explicit implementation here to show that there is nothing too scary here.</span></span>
+<span id="cb23-6"><a href="#cb23-6"></a><span class="co">    """</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a></span>
+<span id="cb23-8"><a href="#cb23-8"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb23-9"><a href="#cb23-9"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb23-10"><a href="#cb23-10"></a>        <span class="cf">assert</span> config.n_embd <span class="op">%</span> config.n_head <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb23-11"><a href="#cb23-11"></a>        <span class="co"># key, query, value projections for all heads, but in a batch</span></span>
+<span id="cb23-12"><a href="#cb23-12"></a>        <span class="va">self</span>.c_attn <span class="op">=</span> nn.Linear(config.n_embd, <span class="dv">3</span> <span class="op">*</span> config.n_embd)</span>
+<span id="cb23-13"><a href="#cb23-13"></a>        <span class="co"># output projection</span></span>
+<span id="cb23-14"><a href="#cb23-14"></a>        <span class="va">self</span>.c_proj <span class="op">=</span> nn.Linear(config.n_embd, config.n_embd)</span>
+<span id="cb23-15"><a href="#cb23-15"></a>        <span class="co"># causal mask to ensure that attention is only applied to the left in the input sequence</span></span>
+<span id="cb23-16"><a href="#cb23-16"></a>        <span class="va">self</span>.register_buffer(<span class="st">"bias"</span>, torch.tril(torch.ones(config.block_size, config.block_size))</span>
+<span id="cb23-17"><a href="#cb23-17"></a>                                     .view(<span class="dv">1</span>, <span class="dv">1</span>, config.block_size, config.block_size))</span>
+<span id="cb23-18"><a href="#cb23-18"></a>        <span class="va">self</span>.n_head <span class="op">=</span> config.n_head</span>
+<span id="cb23-19"><a href="#cb23-19"></a>        <span class="va">self</span>.n_embd <span class="op">=</span> config.n_embd</span>
+<span id="cb23-20"><a href="#cb23-20"></a></span>
+<span id="cb23-21"><a href="#cb23-21"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb23-22"><a href="#cb23-22"></a>        B, T, C <span class="op">=</span> x.size() <span class="co"># batch size, sequence length, embedding dimensionality (n_embd)</span></span>
+<span id="cb23-23"><a href="#cb23-23"></a></span>
+<span id="cb23-24"><a href="#cb23-24"></a>        <span class="co"># calculate query, key, values for all heads in batch and move head forward to be the batch dim</span></span>
+<span id="cb23-25"><a href="#cb23-25"></a>        q, k ,v  <span class="op">=</span> <span class="va">self</span>.c_attn(x).split(<span class="va">self</span>.n_embd, dim<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb23-26"><a href="#cb23-26"></a>        k <span class="op">=</span> k.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
+<span id="cb23-27"><a href="#cb23-27"></a>        q <span class="op">=</span> q.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
+<span id="cb23-28"><a href="#cb23-28"></a>        v <span class="op">=</span> v.view(B, T, <span class="va">self</span>.n_head, C <span class="op">//</span> <span class="va">self</span>.n_head).transpose(<span class="dv">1</span>, <span class="dv">2</span>) <span class="co"># (B, nh, T, hs)</span></span>
+<span id="cb23-29"><a href="#cb23-29"></a></span>
+<span id="cb23-30"><a href="#cb23-30"></a>        <span class="co"># causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -&gt; (B, nh, T, T)</span></span>
+<span id="cb23-31"><a href="#cb23-31"></a>        att <span class="op">=</span> (q <span class="op">@</span> k.transpose(<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>)) <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">/</span> math.sqrt(k.size(<span class="op">-</span><span class="dv">1</span>)))</span>
+<span id="cb23-32"><a href="#cb23-32"></a>        att <span class="op">=</span> att.masked_fill(<span class="va">self</span>.bias[:,:,:T,:T] <span class="op">==</span> <span class="dv">0</span>, <span class="bu">float</span>(<span class="st">'-inf'</span>))</span>
+<span id="cb23-33"><a href="#cb23-33"></a>        att <span class="op">=</span> F.softmax(att, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb23-34"><a href="#cb23-34"></a>        y <span class="op">=</span> att <span class="op">@</span> v <span class="co"># (B, nh, T, T) x (B, nh, T, hs) -&gt; (B, nh, T, hs)</span></span>
+<span id="cb23-35"><a href="#cb23-35"></a>        y <span class="op">=</span> y.transpose(<span class="dv">1</span>, <span class="dv">2</span>).contiguous().view(B, T, C) <span class="co"># re-assemble all head outputs side by side</span></span>
+<span id="cb23-36"><a href="#cb23-36"></a></span>
+<span id="cb23-37"><a href="#cb23-37"></a>        <span class="co"># output projection</span></span>
+<span id="cb23-38"><a href="#cb23-38"></a>        y <span class="op">=</span> <span class="va">self</span>.c_proj(y)</span>
+<span id="cb23-39"><a href="#cb23-39"></a>        <span class="cf">return</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This is pretty self-explanatory. just don’t forget <code>super().__init__</code></p>
+<p>A bit of caution here on line 35: <code>y = y.view(B,T,C)</code> is not OK.</p>
+<div id="e0ee02b0-4698-45db-ac1e-c8603fcedea3" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">2</span>)</span>
+<span id="cb24-2"><a href="#cb24-2"></a>torch.ne(x.transpose(<span class="dv">0</span>,<span class="dv">1</span>).contiguous().view(<span class="dv">3</span>,<span class="dv">4</span>), x.view(<span class="dv">3</span>,<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>tensor([[False, False,  True,  True],
+        [ True,  True,  True,  True],
+        [ True,  True, False, False]])</code></pre>
+</div>
 </div>
 </section>
 <section id="block" class="level3">
 <h3 class="anchored" data-anchor-id="block">block</h3>
 <div id="49f7dd9e-2e11-4c90-bf0a-8b18fba0e376" class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Block(nn.Module):</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">""" an unassuming Transformer block """</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.ln_1 <span class="op">=</span> nn.LayerNorm(config.n_embd)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.attn <span class="op">=</span> CausalSelfAttention(config)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.ln_2 <span class="op">=</span> nn.LayerNorm(config.n_embd)</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.mlp <span class="op">=</span> nn.ModuleDict(<span class="bu">dict</span>(</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>            c_fc    <span class="op">=</span> nn.Linear(config.n_embd, <span class="dv">4</span> <span class="op">*</span> config.n_embd),</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>            c_proj  <span class="op">=</span> nn.Linear(<span class="dv">4</span> <span class="op">*</span> config.n_embd, config.n_embd),</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>            act     <span class="op">=</span> NewGELU(),</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        ))</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="va">self</span>.mlp</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.mlpf <span class="op">=</span> <span class="kw">lambda</span> x: m.c_proj(m.act(m.c_fc(x))) <span class="co"># MLP forward</span></span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.attn(<span class="va">self</span>.ln_1(x))</span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.mlpf(<span class="va">self</span>.ln_2(x))</span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">class</span> Block(nn.Module):</span>
+<span id="cb26-2"><a href="#cb26-2"></a>    <span class="co">""" an unassuming Transformer block """</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a></span>
+<span id="cb26-4"><a href="#cb26-4"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb26-5"><a href="#cb26-5"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb26-6"><a href="#cb26-6"></a>        <span class="va">self</span>.ln_1 <span class="op">=</span> nn.LayerNorm(config.n_embd)</span>
+<span id="cb26-7"><a href="#cb26-7"></a>        <span class="va">self</span>.attn <span class="op">=</span> CausalSelfAttention(config)</span>
+<span id="cb26-8"><a href="#cb26-8"></a>        <span class="va">self</span>.ln_2 <span class="op">=</span> nn.LayerNorm(config.n_embd)</span>
+<span id="cb26-9"><a href="#cb26-9"></a>        <span class="va">self</span>.mlp <span class="op">=</span> nn.ModuleDict(<span class="bu">dict</span>(</span>
+<span id="cb26-10"><a href="#cb26-10"></a>            c_fc    <span class="op">=</span> nn.Linear(config.n_embd, <span class="dv">4</span> <span class="op">*</span> config.n_embd),</span>
+<span id="cb26-11"><a href="#cb26-11"></a>            c_proj  <span class="op">=</span> nn.Linear(<span class="dv">4</span> <span class="op">*</span> config.n_embd, config.n_embd),</span>
+<span id="cb26-12"><a href="#cb26-12"></a>            act     <span class="op">=</span> NewGELU(),</span>
+<span id="cb26-13"><a href="#cb26-13"></a>        ))</span>
+<span id="cb26-14"><a href="#cb26-14"></a>        m <span class="op">=</span> <span class="va">self</span>.mlp</span>
+<span id="cb26-15"><a href="#cb26-15"></a>        <span class="va">self</span>.mlpf <span class="op">=</span> <span class="kw">lambda</span> x: m.c_proj(m.act(m.c_fc(x))) <span class="co"># MLP forward</span></span>
+<span id="cb26-16"><a href="#cb26-16"></a></span>
+<span id="cb26-17"><a href="#cb26-17"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb26-18"><a href="#cb26-18"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.attn(<span class="va">self</span>.ln_1(x))</span>
+<span id="cb26-19"><a href="#cb26-19"></a>        x <span class="op">=</span> x <span class="op">+</span> <span class="va">self</span>.mlpf(<span class="va">self</span>.ln_2(x))</span>
+<span id="cb26-20"><a href="#cb26-20"></a>        <span class="cf">return</span> x</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="the-entire-thing" class="level3">
 <h3 class="anchored" data-anchor-id="the-entire-thing">the entire thing</h3>
 <div id="39e9b92d-50d6-4b72-9221-3d134b7dbd2c" class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Transformer(nn.Module):</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">""" Transformer Language Model, exactly as seen in GPT-2 """</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.block_size <span class="op">=</span> config.block_size</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.transformer <span class="op">=</span> nn.ModuleDict(<span class="bu">dict</span>(</span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>            wte <span class="op">=</span> nn.Embedding(config.vocab_size, config.n_embd),</span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>            wpe <span class="op">=</span> nn.Embedding(config.block_size, config.n_embd),</span>
-<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>            h <span class="op">=</span> nn.ModuleList([Block(config) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(config.n_layer)]),</span>
-<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>            ln_f <span class="op">=</span> nn.LayerNorm(config.n_embd),</span>
-<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>        ))</span>
-<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.lm_head <span class="op">=</span> nn.Linear(config.n_embd, config.vocab_size, bias<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># report number of parameters (note we don't count the decoder parameters in lm_head)</span></span>
-<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>        n_params <span class="op">=</span> <span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> <span class="va">self</span>.transformer.parameters())</span>
-<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"number of parameters: </span><span class="sc">%.2f</span><span class="st">M"</span> <span class="op">%</span> (n_params<span class="op">/</span><span class="fl">1e6</span>,))</span>
-<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_block_size(<span class="va">self</span>):</span>
-<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.block_size</span>
-<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, idx, targets<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>        device <span class="op">=</span> idx.device</span>
-<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>        b, t <span class="op">=</span> idx.size()</span>
-<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> t <span class="op">&lt;=</span> <span class="va">self</span>.block_size, <span class="ss">f"Cannot forward sequence of length </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">, block size is only </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>block_size<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>        pos <span class="op">=</span> torch.arange(<span class="dv">0</span>, t, dtype<span class="op">=</span>torch.<span class="bu">long</span>, device<span class="op">=</span>device).unsqueeze(<span class="dv">0</span>) <span class="co"># shape (1, t)</span></span>
-<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>        <span class="co"># forward the GPT model itself</span></span>
-<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>        tok_emb <span class="op">=</span> <span class="va">self</span>.transformer.wte(idx) <span class="co"># token embeddings of shape (b, t, n_embd)</span></span>
-<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>        pos_emb <span class="op">=</span> <span class="va">self</span>.transformer.wpe(pos) <span class="co"># position embeddings of shape (1, t, n_embd)</span></span>
-<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> tok_emb <span class="op">+</span> pos_emb</span>
-<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> block <span class="kw">in</span> <span class="va">self</span>.transformer.h:</span>
-<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> block(x)</span>
-<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> <span class="va">self</span>.transformer.ln_f(x)</span>
-<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> <span class="va">self</span>.lm_head(x)</span>
-<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if we are given some desired targets also calculate the loss</span></span>
-<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb25-40"><a href="#cb25-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> targets <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
-<span id="cb25-41"><a href="#cb25-41" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> F.cross_entropy(logits.view(<span class="op">-</span><span class="dv">1</span>, logits.size(<span class="op">-</span><span class="dv">1</span>)), targets.view(<span class="op">-</span><span class="dv">1</span>), ignore_index<span class="op">=-</span><span class="dv">1</span>)</span>
-<span id="cb25-42"><a href="#cb25-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-43"><a href="#cb25-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> logits, loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">class</span> Transformer(nn.Module):</span>
+<span id="cb27-2"><a href="#cb27-2"></a>    <span class="co">""" Transformer Language Model, exactly as seen in GPT-2 """</span></span>
+<span id="cb27-3"><a href="#cb27-3"></a></span>
+<span id="cb27-4"><a href="#cb27-4"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, config):</span>
+<span id="cb27-5"><a href="#cb27-5"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb27-6"><a href="#cb27-6"></a>        <span class="va">self</span>.block_size <span class="op">=</span> config.block_size</span>
+<span id="cb27-7"><a href="#cb27-7"></a></span>
+<span id="cb27-8"><a href="#cb27-8"></a>        <span class="va">self</span>.transformer <span class="op">=</span> nn.ModuleDict(<span class="bu">dict</span>(</span>
+<span id="cb27-9"><a href="#cb27-9"></a>            wte <span class="op">=</span> nn.Embedding(config.vocab_size, config.n_embd),</span>
+<span id="cb27-10"><a href="#cb27-10"></a>            wpe <span class="op">=</span> nn.Embedding(config.block_size, config.n_embd),</span>
+<span id="cb27-11"><a href="#cb27-11"></a>            h <span class="op">=</span> nn.ModuleList([Block(config) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(config.n_layer)]),</span>
+<span id="cb27-12"><a href="#cb27-12"></a>            ln_f <span class="op">=</span> nn.LayerNorm(config.n_embd),</span>
+<span id="cb27-13"><a href="#cb27-13"></a>        ))</span>
+<span id="cb27-14"><a href="#cb27-14"></a>        <span class="va">self</span>.lm_head <span class="op">=</span> nn.Linear(config.n_embd, config.vocab_size, bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb27-15"><a href="#cb27-15"></a></span>
+<span id="cb27-16"><a href="#cb27-16"></a>        <span class="co"># report number of parameters (note we don't count the decoder parameters in lm_head)</span></span>
+<span id="cb27-17"><a href="#cb27-17"></a>        n_params <span class="op">=</span> <span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> <span class="va">self</span>.transformer.parameters())</span>
+<span id="cb27-18"><a href="#cb27-18"></a>        <span class="bu">print</span>(<span class="st">"number of parameters: </span><span class="sc">%.2f</span><span class="st">M"</span> <span class="op">%</span> (n_params<span class="op">/</span><span class="fl">1e6</span>,))</span>
+<span id="cb27-19"><a href="#cb27-19"></a></span>
+<span id="cb27-20"><a href="#cb27-20"></a>    <span class="kw">def</span> get_block_size(<span class="va">self</span>):</span>
+<span id="cb27-21"><a href="#cb27-21"></a>        <span class="cf">return</span> <span class="va">self</span>.block_size</span>
+<span id="cb27-22"><a href="#cb27-22"></a></span>
+<span id="cb27-23"><a href="#cb27-23"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, idx, targets<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb27-24"><a href="#cb27-24"></a>        device <span class="op">=</span> idx.device</span>
+<span id="cb27-25"><a href="#cb27-25"></a>        b, t <span class="op">=</span> idx.size()</span>
+<span id="cb27-26"><a href="#cb27-26"></a>        <span class="cf">assert</span> t <span class="op">&lt;=</span> <span class="va">self</span>.block_size, <span class="ss">f"Cannot forward sequence of length </span><span class="sc">{</span>t<span class="sc">}</span><span class="ss">, block size is only </span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>block_size<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb27-27"><a href="#cb27-27"></a>        pos <span class="op">=</span> torch.arange(<span class="dv">0</span>, t, dtype<span class="op">=</span>torch.<span class="bu">long</span>, device<span class="op">=</span>device).unsqueeze(<span class="dv">0</span>) <span class="co"># shape (1, t)</span></span>
+<span id="cb27-28"><a href="#cb27-28"></a></span>
+<span id="cb27-29"><a href="#cb27-29"></a>        <span class="co"># forward the GPT model itself</span></span>
+<span id="cb27-30"><a href="#cb27-30"></a>        tok_emb <span class="op">=</span> <span class="va">self</span>.transformer.wte(idx) <span class="co"># token embeddings of shape (b, t, n_embd)</span></span>
+<span id="cb27-31"><a href="#cb27-31"></a>        pos_emb <span class="op">=</span> <span class="va">self</span>.transformer.wpe(pos) <span class="co"># position embeddings of shape (1, t, n_embd)</span></span>
+<span id="cb27-32"><a href="#cb27-32"></a>        x <span class="op">=</span> tok_emb <span class="op">+</span> pos_emb</span>
+<span id="cb27-33"><a href="#cb27-33"></a>        <span class="cf">for</span> block <span class="kw">in</span> <span class="va">self</span>.transformer.h:</span>
+<span id="cb27-34"><a href="#cb27-34"></a>            x <span class="op">=</span> block(x)</span>
+<span id="cb27-35"><a href="#cb27-35"></a>        x <span class="op">=</span> <span class="va">self</span>.transformer.ln_f(x)</span>
+<span id="cb27-36"><a href="#cb27-36"></a>        logits <span class="op">=</span> <span class="va">self</span>.lm_head(x)</span>
+<span id="cb27-37"><a href="#cb27-37"></a></span>
+<span id="cb27-38"><a href="#cb27-38"></a>        <span class="co"># if we are given some desired targets also calculate the loss</span></span>
+<span id="cb27-39"><a href="#cb27-39"></a>        loss <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb27-40"><a href="#cb27-40"></a>        <span class="cf">if</span> targets <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb27-41"><a href="#cb27-41"></a>            loss <span class="op">=</span> F.cross_entropy(logits.view(<span class="op">-</span><span class="dv">1</span>, logits.size(<span class="op">-</span><span class="dv">1</span>)), targets.view(<span class="op">-</span><span class="dv">1</span>), ignore_index<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb27-42"><a href="#cb27-42"></a></span>
+<span id="cb27-43"><a href="#cb27-43"></a>        <span class="cf">return</span> logits, loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The only thing that deserves some care is <code>F.cross_entropy</code>. Here</p>
+<ul>
+<li>ground truth is a tensor of shape (D,)</li>
+<li>predictions is a tensor of shape (D,C) where C is the number of classes</li>
+<li>use <code>logtis</code> for prediction (which is one <code>F.softmax</code> away from probability)</li>
+<li><code>ignore_index=-1</code> matches <code>-1</code> in the definition of <code>y</code>in <code>CharDataset</code></li>
+</ul>
+</section>
+</section>
+<section id="eval-helpers" class="level2">
+<h2 class="anchored" data-anchor-id="eval-helpers">eval helpers</h2>
+<p>the evaluation code is standard</p>
+<ul>
+<li>DataLoader can be looped through.<br>
+</li>
+<li>batch is a tuple (X,Y) of tensors of shape batch_size, T</li>
+</ul>
+<p>I am however not sure what are the benefits of entering the inference mode, given that code has already switched on model.eval(). TODO!</p>
+<div id="b826bc25-2273-4561-8fd7-99ef14567437" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="at">@torch.inference_mode</span>()</span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="kw">def</span> evaluate(model, dataset, batch_size<span class="op">=</span><span class="dv">50</span>, max_batches<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb28-3"><a href="#cb28-3"></a>    model.<span class="bu">eval</span>()</span>
+<span id="cb28-4"><a href="#cb28-4"></a>    loader <span class="op">=</span> DataLoader(dataset, shuffle<span class="op">=</span><span class="va">True</span>, batch_size<span class="op">=</span>batch_size, num_workers<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb28-5"><a href="#cb28-5"></a>    losses <span class="op">=</span> []</span>
+<span id="cb28-6"><a href="#cb28-6"></a>    <span class="cf">for</span> i, batch <span class="kw">in</span> <span class="bu">enumerate</span>(loader):</span>
+<span id="cb28-7"><a href="#cb28-7"></a>        batch <span class="op">=</span> [t.to(args.device) <span class="cf">for</span> t <span class="kw">in</span> batch]</span>
+<span id="cb28-8"><a href="#cb28-8"></a>        X, Y <span class="op">=</span> batch</span>
+<span id="cb28-9"><a href="#cb28-9"></a>        logits, loss <span class="op">=</span> model(X, Y)</span>
+<span id="cb28-10"><a href="#cb28-10"></a>        losses.append(loss.item())</span>
+<span id="cb28-11"><a href="#cb28-11"></a>        <span class="cf">if</span> max_batches <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="kw">and</span> i <span class="op">&gt;=</span> max_batches:</span>
+<span id="cb28-12"><a href="#cb28-12"></a>            <span class="cf">break</span></span>
+<span id="cb28-13"><a href="#cb28-13"></a>    mean_loss <span class="op">=</span> torch.tensor(losses).mean().item()</span>
+<span id="cb28-14"><a href="#cb28-14"></a>    model.train() <span class="co"># reset model back to training mode</span></span>
+<span id="cb28-15"><a href="#cb28-15"></a>    <span class="cf">return</span> mean_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ac0c25f7-64d1-4a78-a055-064efd4862b1" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a><span class="at">@torch.no_grad</span>()</span>
+<span id="cb29-2"><a href="#cb29-2"></a><span class="kw">def</span> generate(model, idx, max_new_tokens, temperature<span class="op">=</span><span class="fl">1.0</span>, do_sample<span class="op">=</span><span class="va">False</span>, top_k<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb29-3"><a href="#cb29-3"></a>    <span class="co">"""</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a><span class="co">    Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete</span></span>
+<span id="cb29-5"><a href="#cb29-5"></a><span class="co">    the sequence max_new_tokens times, feeding the predictions back into the model each time.</span></span>
+<span id="cb29-6"><a href="#cb29-6"></a><span class="co">    Most likely you'll want to make sure to be in model.eval() mode of operation for this.</span></span>
+<span id="cb29-7"><a href="#cb29-7"></a><span class="co">    """</span></span>
+<span id="cb29-8"><a href="#cb29-8"></a>    block_size <span class="op">=</span> model.get_block_size()</span>
+<span id="cb29-9"><a href="#cb29-9"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(max_new_tokens):</span>
+<span id="cb29-10"><a href="#cb29-10"></a>        <span class="co"># if the sequence context is growing too long we must crop it at block_size</span></span>
+<span id="cb29-11"><a href="#cb29-11"></a>        idx_cond <span class="op">=</span> idx <span class="cf">if</span> idx.size(<span class="dv">1</span>) <span class="op">&lt;=</span> block_size <span class="cf">else</span> idx[:, <span class="op">-</span>block_size:]</span>
+<span id="cb29-12"><a href="#cb29-12"></a>        <span class="co"># forward the model to get the logits for the index in the sequence</span></span>
+<span id="cb29-13"><a href="#cb29-13"></a>        logits, _ <span class="op">=</span> model(idx_cond)</span>
+<span id="cb29-14"><a href="#cb29-14"></a>        <span class="co"># pluck the logits at the final step and scale by desired temperature</span></span>
+<span id="cb29-15"><a href="#cb29-15"></a>        logits <span class="op">=</span> logits[:, <span class="op">-</span><span class="dv">1</span>, :] <span class="op">/</span> temperature</span>
+<span id="cb29-16"><a href="#cb29-16"></a>        <span class="co"># optionally crop the logits to only the top k options</span></span>
+<span id="cb29-17"><a href="#cb29-17"></a>        <span class="cf">if</span> top_k <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb29-18"><a href="#cb29-18"></a>            v, _ <span class="op">=</span> torch.topk(logits, top_k)</span>
+<span id="cb29-19"><a href="#cb29-19"></a>            logits[logits <span class="op">&lt;</span> v[:, [<span class="op">-</span><span class="dv">1</span>]]] <span class="op">=</span> <span class="op">-</span><span class="bu">float</span>(<span class="st">'Inf'</span>)</span>
+<span id="cb29-20"><a href="#cb29-20"></a>        <span class="co"># apply softmax to convert logits to (normalized) probabilities</span></span>
+<span id="cb29-21"><a href="#cb29-21"></a>        probs <span class="op">=</span> F.softmax(logits, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb29-22"><a href="#cb29-22"></a>        <span class="co"># either sample from the distribution or take the most likely element</span></span>
+<span id="cb29-23"><a href="#cb29-23"></a>        <span class="cf">if</span> do_sample:</span>
+<span id="cb29-24"><a href="#cb29-24"></a>            idx_next <span class="op">=</span> torch.multinomial(probs, num_samples<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb29-25"><a href="#cb29-25"></a>        <span class="cf">else</span>:</span>
+<span id="cb29-26"><a href="#cb29-26"></a>            _, idx_next <span class="op">=</span> torch.topk(probs, k<span class="op">=</span><span class="dv">1</span>, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb29-27"><a href="#cb29-27"></a>        <span class="co"># append sampled index to the running sequence and continue</span></span>
+<span id="cb29-28"><a href="#cb29-28"></a>        idx <span class="op">=</span> torch.cat((idx, idx_next), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb29-29"><a href="#cb29-29"></a></span>
+<span id="cb29-30"><a href="#cb29-30"></a>    <span class="cf">return</span> idx</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="tie-it-all-up" class="level2">
+<h2 class="anchored" data-anchor-id="tie-it-all-up">tie it all up</h2>
+<div id="8e1c1f5f-90de-4d00-95ca-727d421d3cf0" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">import</span> os</span>
+<span id="cb30-2"><a href="#cb30-2"></a><span class="im">import</span> sys</span>
+<span id="cb30-3"><a href="#cb30-3"></a><span class="im">import</span> time</span>
+<span id="cb30-4"><a href="#cb30-4"></a><span class="im">import</span> math</span>
+<span id="cb30-5"><a href="#cb30-5"></a><span class="im">import</span> argparse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="argparse" class="level3">
+<h3 class="anchored" data-anchor-id="argparse">argparse</h3>
+<div id="27438b93-71c9-40fa-b5f0-9f5792123cb7" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="co"># parse command line args</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a>parser <span class="op">=</span> argparse.ArgumentParser(description<span class="op">=</span><span class="st">"Make More"</span>)</span>
+<span id="cb31-3"><a href="#cb31-3"></a><span class="co"># system/input/output</span></span>
+<span id="cb31-4"><a href="#cb31-4"></a>parser.add_argument(<span class="st">'--input-file'</span>, <span class="st">'-i'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">'names.txt'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"input file with things one per line"</span>)</span>
+<span id="cb31-5"><a href="#cb31-5"></a>parser.add_argument(<span class="st">'--work-dir'</span>, <span class="st">'-o'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">'out'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"output working directory"</span>)</span>
+<span id="cb31-6"><a href="#cb31-6"></a>parser.add_argument(<span class="st">'--resume'</span>, action<span class="op">=</span><span class="st">'store_true'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"when this flag is used, we will resume optimization from existing model in the workdir"</span>)</span>
+<span id="cb31-7"><a href="#cb31-7"></a>parser.add_argument(<span class="st">'--sample-only'</span>, action<span class="op">=</span><span class="st">'store_true'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"just sample from the model and quit, don't train"</span>)</span>
+<span id="cb31-8"><a href="#cb31-8"></a>parser.add_argument(<span class="st">'--num-workers'</span>, <span class="st">'-n'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">4</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"number of data workers for both train/test"</span>)</span>
+<span id="cb31-9"><a href="#cb31-9"></a>parser.add_argument(<span class="st">'--max-steps'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=-</span><span class="dv">1</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"max number of optimization steps to run for, or -1 for infinite."</span>)</span>
+<span id="cb31-10"><a href="#cb31-10"></a>parser.add_argument(<span class="st">'--device'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">'cpu'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"device to use for compute, examples: cpu|cuda|cuda:2|mps"</span>)</span>
+<span id="cb31-11"><a href="#cb31-11"></a>parser.add_argument(<span class="st">'--seed'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">3407</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"seed"</span>)</span>
+<span id="cb31-12"><a href="#cb31-12"></a><span class="co"># sampling</span></span>
+<span id="cb31-13"><a href="#cb31-13"></a>parser.add_argument(<span class="st">'--top-k'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=-</span><span class="dv">1</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"top-k for sampling, -1 means no top-k"</span>)</span>
+<span id="cb31-14"><a href="#cb31-14"></a><span class="co"># model</span></span>
+<span id="cb31-15"><a href="#cb31-15"></a>parser.add_argument(<span class="st">'--type'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">str</span>, default<span class="op">=</span><span class="st">'transformer'</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"model class type to use, bigram|mlp|rnn|gru|bow|transformer"</span>)</span>
+<span id="cb31-16"><a href="#cb31-16"></a>parser.add_argument(<span class="st">'--n-layer'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">4</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"number of layers"</span>)</span>
+<span id="cb31-17"><a href="#cb31-17"></a>parser.add_argument(<span class="st">'--n-head'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">4</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"number of heads (in a transformer)"</span>)</span>
+<span id="cb31-18"><a href="#cb31-18"></a>parser.add_argument(<span class="st">'--n-embd'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">64</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"number of feature channels in the model"</span>)</span>
+<span id="cb31-19"><a href="#cb31-19"></a>parser.add_argument(<span class="st">'--n-embd2'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">64</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"number of feature channels elsewhere in the model"</span>)</span>
+<span id="cb31-20"><a href="#cb31-20"></a><span class="co"># optimization</span></span>
+<span id="cb31-21"><a href="#cb31-21"></a>parser.add_argument(<span class="st">'--batch-size'</span>, <span class="st">'-b'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">32</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"batch size during optimization"</span>)</span>
+<span id="cb31-22"><a href="#cb31-22"></a>parser.add_argument(<span class="st">'--learning-rate'</span>, <span class="st">'-l'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">float</span>, default<span class="op">=</span><span class="fl">5e-4</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"learning rate"</span>)</span>
+<span id="cb31-23"><a href="#cb31-23"></a>parser.add_argument(<span class="st">'--weight-decay'</span>, <span class="st">'-w'</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">float</span>, default<span class="op">=</span><span class="fl">0.01</span>, <span class="bu">help</span><span class="op">=</span><span class="st">"weight decay"</span>)</span>
+<span id="cb31-24"><a href="#cb31-24"></a></span>
+<span id="cb31-25"><a href="#cb31-25"></a>args <span class="op">=</span> parser.parse_args()</span>
+<span id="cb31-26"><a href="#cb31-26"></a><span class="bu">print</span>(<span class="bu">vars</span>(args))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="inits" class="level3">
+<h3 class="anchored" data-anchor-id="inits">inits</h3>
+<div id="aef4b13a-58f6-4d1b-9e53-983bd8346af5" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># system inits</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a>torch.manual_seed(args.seed)</span>
+<span id="cb32-3"><a href="#cb32-3"></a>torch.cuda.manual_seed_all(args.seed)</span>
+<span id="cb32-4"><a href="#cb32-4"></a>os.makedirs(args.work_dir, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb32-5"><a href="#cb32-5"></a>writer <span class="op">=</span> SummaryWriter(log_dir<span class="op">=</span>args.work_dir)</span>
+<span id="cb32-6"><a href="#cb32-6"></a></span>
+<span id="cb32-7"><a href="#cb32-7"></a><span class="co"># init datasets</span></span>
+<span id="cb32-8"><a href="#cb32-8"></a>train_dataset, test_dataset <span class="op">=</span> create_datasets(args.input_file)</span>
+<span id="cb32-9"><a href="#cb32-9"></a>vocab_size <span class="op">=</span> train_dataset.get_vocab_size()</span>
+<span id="cb32-10"><a href="#cb32-10"></a>block_size <span class="op">=</span> train_dataset.get_output_length()</span>
+<span id="cb32-11"><a href="#cb32-11"></a><span class="bu">print</span>(<span class="ss">f"dataset determined that: </span><span class="sc">{</span>vocab_size<span class="op">=</span><span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>block_size<span class="op">=</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb32-12"><a href="#cb32-12"></a></span>
+<span id="cb32-13"><a href="#cb32-13"></a><span class="co"># init model</span></span>
+<span id="cb32-14"><a href="#cb32-14"></a>config <span class="op">=</span> ModelConfig(vocab_size<span class="op">=</span>vocab_size, block_size<span class="op">=</span>block_size,</span>
+<span id="cb32-15"><a href="#cb32-15"></a>                   n_layer<span class="op">=</span>args.n_layer, n_head<span class="op">=</span>args.n_head,</span>
+<span id="cb32-16"><a href="#cb32-16"></a>                   n_embd<span class="op">=</span>args.n_embd, n_embd2<span class="op">=</span>args.n_embd2)</span>
+<span id="cb32-17"><a href="#cb32-17"></a><span class="cf">if</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'transformer'</span>:</span>
+<span id="cb32-18"><a href="#cb32-18"></a>    model <span class="op">=</span> Transformer(config)</span>
+<span id="cb32-19"><a href="#cb32-19"></a><span class="cf">elif</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'bigram'</span>:</span>
+<span id="cb32-20"><a href="#cb32-20"></a>    model <span class="op">=</span> Bigram(config)</span>
+<span id="cb32-21"><a href="#cb32-21"></a><span class="cf">elif</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'mlp'</span>:</span>
+<span id="cb32-22"><a href="#cb32-22"></a>    model <span class="op">=</span> MLP(config)</span>
+<span id="cb32-23"><a href="#cb32-23"></a><span class="cf">elif</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'rnn'</span>:</span>
+<span id="cb32-24"><a href="#cb32-24"></a>    model <span class="op">=</span> RNN(config, cell_type<span class="op">=</span><span class="st">'rnn'</span>)</span>
+<span id="cb32-25"><a href="#cb32-25"></a><span class="cf">elif</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'gru'</span>:</span>
+<span id="cb32-26"><a href="#cb32-26"></a>    model <span class="op">=</span> RNN(config, cell_type<span class="op">=</span><span class="st">'gru'</span>)</span>
+<span id="cb32-27"><a href="#cb32-27"></a><span class="cf">elif</span> args.<span class="bu">type</span> <span class="op">==</span> <span class="st">'bow'</span>:</span>
+<span id="cb32-28"><a href="#cb32-28"></a>    model <span class="op">=</span> BoW(config)</span>
+<span id="cb32-29"><a href="#cb32-29"></a><span class="cf">else</span>:</span>
+<span id="cb32-30"><a href="#cb32-30"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f'model type </span><span class="sc">{</span>args<span class="sc">.</span><span class="bu">type</span><span class="sc">}</span><span class="ss"> is not recognized'</span>)</span>
+<span id="cb32-31"><a href="#cb32-31"></a>model.to(args.device)</span>
+<span id="cb32-32"><a href="#cb32-32"></a><span class="bu">print</span>(<span class="ss">f"model #params: </span><span class="sc">{</span><span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> model.parameters())<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb32-33"><a href="#cb32-33"></a><span class="cf">if</span> args.resume <span class="kw">or</span> args.sample_only: <span class="co"># note: if we sample-only then we also assume we are resuming</span></span>
+<span id="cb32-34"><a href="#cb32-34"></a>    <span class="bu">print</span>(<span class="st">"resuming from existing model in the workdir"</span>)</span>
+<span id="cb32-35"><a href="#cb32-35"></a>    model.load_state_dict(torch.load(os.path.join(args.work_dir, <span class="st">'model.pt'</span>)))</span>
+<span id="cb32-36"><a href="#cb32-36"></a><span class="cf">if</span> args.sample_only:</span>
+<span id="cb32-37"><a href="#cb32-37"></a>    print_samples(num<span class="op">=</span><span class="dv">50</span>)</span>
+<span id="cb32-38"><a href="#cb32-38"></a>    sys.exit()</span>
+<span id="cb32-39"><a href="#cb32-39"></a></span>
+<span id="cb32-40"><a href="#cb32-40"></a><span class="co"># init optimizer</span></span>
+<span id="cb32-41"><a href="#cb32-41"></a>optimizer <span class="op">=</span> torch.optim.AdamW(model.parameters(), lr<span class="op">=</span>args.learning_rate, weight_decay<span class="op">=</span>args.weight_decay, betas<span class="op">=</span>(<span class="fl">0.9</span>, <span class="fl">0.99</span>), eps<span class="op">=</span><span class="fl">1e-8</span>)</span>
+<span id="cb32-42"><a href="#cb32-42"></a></span>
+<span id="cb32-43"><a href="#cb32-43"></a><span class="co"># init dataloader</span></span>
+<span id="cb32-44"><a href="#cb32-44"></a>batch_loader <span class="op">=</span> InfiniteDataLoader(train_dataset, batch_size<span class="op">=</span>args.batch_size, pin_memory<span class="op">=</span><span class="va">True</span>, num_workers<span class="op">=</span>args.num_workers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="training-loop" class="level3">
+<h3 class="anchored" data-anchor-id="training-loop">training loop</h3>
+<div id="6df6dc75-1ab2-4048-a79d-2b2e43dde577" class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># training loop</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a>best_loss <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a>step <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a><span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb33-5"><a href="#cb33-5"></a></span>
+<span id="cb33-6"><a href="#cb33-6"></a>    t0 <span class="op">=</span> time.time()</span>
+<span id="cb33-7"><a href="#cb33-7"></a></span>
+<span id="cb33-8"><a href="#cb33-8"></a>    <span class="co"># get the next batch, ship to device, and unpack it to input and target</span></span>
+<span id="cb33-9"><a href="#cb33-9"></a>    batch <span class="op">=</span> batch_loader.<span class="bu">next</span>()</span>
+<span id="cb33-10"><a href="#cb33-10"></a>    batch <span class="op">=</span> [t.to(args.device) <span class="cf">for</span> t <span class="kw">in</span> batch]</span>
+<span id="cb33-11"><a href="#cb33-11"></a>    X, Y <span class="op">=</span> batch</span>
+<span id="cb33-12"><a href="#cb33-12"></a></span>
+<span id="cb33-13"><a href="#cb33-13"></a>    <span class="co"># feed into the model</span></span>
+<span id="cb33-14"><a href="#cb33-14"></a>    logits, loss <span class="op">=</span> model(X, Y)</span>
+<span id="cb33-15"><a href="#cb33-15"></a></span>
+<span id="cb33-16"><a href="#cb33-16"></a>    <span class="co"># calculate the gradient, update the weights</span></span>
+<span id="cb33-17"><a href="#cb33-17"></a>    model.zero_grad(set_to_none<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-18"><a href="#cb33-18"></a>    loss.backward()</span>
+<span id="cb33-19"><a href="#cb33-19"></a>    optimizer.step()</span>
+<span id="cb33-20"><a href="#cb33-20"></a></span>
+<span id="cb33-21"><a href="#cb33-21"></a>    <span class="co"># wait for all CUDA work on the GPU to finish then calculate iteration time taken</span></span>
+<span id="cb33-22"><a href="#cb33-22"></a>    <span class="cf">if</span> args.device.startswith(<span class="st">'cuda'</span>):</span>
+<span id="cb33-23"><a href="#cb33-23"></a>        torch.cuda.synchronize()</span>
+<span id="cb33-24"><a href="#cb33-24"></a>    t1 <span class="op">=</span> time.time()</span>
+<span id="cb33-25"><a href="#cb33-25"></a></span>
+<span id="cb33-26"><a href="#cb33-26"></a>    <span class="co"># logging</span></span>
+<span id="cb33-27"><a href="#cb33-27"></a>    <span class="cf">if</span> step <span class="op">%</span> <span class="dv">10</span> <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb33-28"><a href="#cb33-28"></a>        <span class="bu">print</span>(<span class="ss">f"step </span><span class="sc">{</span>step<span class="sc">}</span><span class="ss"> | loss </span><span class="sc">{</span>loss<span class="sc">.</span>item()<span class="sc">:.4f}</span><span class="ss"> | step time </span><span class="sc">{</span>(t1<span class="op">-</span>t0)<span class="op">*</span><span class="dv">1000</span><span class="sc">:.2f}</span><span class="ss">ms"</span>)</span>
+<span id="cb33-29"><a href="#cb33-29"></a></span>
+<span id="cb33-30"><a href="#cb33-30"></a>    <span class="co"># evaluate the model</span></span>
+<span id="cb33-31"><a href="#cb33-31"></a>    <span class="cf">if</span> step <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> step <span class="op">%</span> <span class="dv">500</span> <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb33-32"><a href="#cb33-32"></a>        train_loss <span class="op">=</span> evaluate(model, train_dataset, batch_size<span class="op">=</span><span class="dv">100</span>, max_batches<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb33-33"><a href="#cb33-33"></a>        test_loss  <span class="op">=</span> evaluate(model, test_dataset,  batch_size<span class="op">=</span><span class="dv">100</span>, max_batches<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb33-34"><a href="#cb33-34"></a>        writer.add_scalar(<span class="st">"Loss/train"</span>, train_loss, step)</span>
+<span id="cb33-35"><a href="#cb33-35"></a>        writer.add_scalar(<span class="st">"Loss/test"</span>, test_loss, step)</span>
+<span id="cb33-36"><a href="#cb33-36"></a>        writer.flush()</span>
+<span id="cb33-37"><a href="#cb33-37"></a>        <span class="bu">print</span>(<span class="ss">f"step </span><span class="sc">{</span>step<span class="sc">}</span><span class="ss"> train loss: </span><span class="sc">{</span>train_loss<span class="sc">}</span><span class="ss"> test loss: </span><span class="sc">{</span>test_loss<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb33-38"><a href="#cb33-38"></a>        <span class="co"># save the model to disk if it has improved</span></span>
+<span id="cb33-39"><a href="#cb33-39"></a>        <span class="cf">if</span> best_loss <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> test_loss <span class="op">&lt;</span> best_loss:</span>
+<span id="cb33-40"><a href="#cb33-40"></a>            out_path <span class="op">=</span> os.path.join(args.work_dir, <span class="st">"model.pt"</span>)</span>
+<span id="cb33-41"><a href="#cb33-41"></a>            <span class="bu">print</span>(<span class="ss">f"test loss </span><span class="sc">{</span>test_loss<span class="sc">}</span><span class="ss"> is the best so far, saving model to </span><span class="sc">{</span>out_path<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb33-42"><a href="#cb33-42"></a>            torch.save(model.state_dict(), out_path)</span>
+<span id="cb33-43"><a href="#cb33-43"></a>            best_loss <span class="op">=</span> test_loss</span>
+<span id="cb33-44"><a href="#cb33-44"></a></span>
+<span id="cb33-45"><a href="#cb33-45"></a>    <span class="co"># sample from the model</span></span>
+<span id="cb33-46"><a href="#cb33-46"></a>    <span class="cf">if</span> step <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> step <span class="op">%</span> <span class="dv">200</span> <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb33-47"><a href="#cb33-47"></a>        print_samples(num<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb33-48"><a href="#cb33-48"></a></span>
+<span id="cb33-49"><a href="#cb33-49"></a>    step <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb33-50"><a href="#cb33-50"></a>    <span class="co"># termination conditions</span></span>
+<span id="cb33-51"><a href="#cb33-51"></a>    <span class="cf">if</span> args.max_steps <span class="op">&gt;=</span> <span class="dv">0</span> <span class="kw">and</span> step <span class="op">&gt;=</span> args.max_steps:</span>
+<span id="cb33-52"><a href="#cb33-52"></a>        <span class="cf">break</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
