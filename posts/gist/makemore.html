@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.550">
+<meta name="generator" content="quarto-1.4.551">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -205,20 +205,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#makemore" id="toc-makemore" class="nav-link active" data-scroll-target="#makemore">makemore</a></li>
-  <li><a href="#torch-stuffs" id="toc-torch-stuffs" class="nav-link" data-scroll-target="#torch-stuffs">torch stuffs</a>
+  <li><a href="#torch-basics" id="toc-torch-basics" class="nav-link" data-scroll-target="#torch-basics">torch basics</a>
   <ul class="collapse">
   <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a></li>
   <li><a href="#dataloader" id="toc-dataloader" class="nav-link" data-scroll-target="#dataloader">DataLoader</a></li>
-  <li><a href="#tensor-shape-ops" id="toc-tensor-shape-ops" class="nav-link" data-scroll-target="#tensor-shape-ops">Tensor shape ops</a></li>
+  <li><a href="#tensor-ops-and-view" id="toc-tensor-ops-and-view" class="nav-link" data-scroll-target="#tensor-ops-and-view">Tensor ops and View</a></li>
   <li><a href="#module" id="toc-module" class="nav-link" data-scroll-target="#module">Module</a></li>
   </ul></li>
   <li><a href="#build-transformer" id="toc-build-transformer" class="nav-link" data-scroll-target="#build-transformer">build Transformer</a>
   <ul class="collapse">
-  <li><a href="#attention-layer" id="toc-attention-layer" class="nav-link" data-scroll-target="#attention-layer">attention layer</a></li>
+  <li><a href="#self-attention-layer" id="toc-self-attention-layer" class="nav-link" data-scroll-target="#self-attention-layer">self attention layer</a></li>
   <li><a href="#block" id="toc-block" class="nav-link" data-scroll-target="#block">block</a></li>
   <li><a href="#the-entire-thing" id="toc-the-entire-thing" class="nav-link" data-scroll-target="#the-entire-thing">the entire thing</a></li>
   </ul></li>
-  <li><a href="#eval-helpers" id="toc-eval-helpers" class="nav-link" data-scroll-target="#eval-helpers">eval helpers</a></li>
+  <li><a href="#evaluation" id="toc-evaluation" class="nav-link" data-scroll-target="#evaluation">evaluation</a></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">inference</a></li>
   <li><a href="#tie-it-all-up" id="toc-tie-it-all-up" class="nav-link" data-scroll-target="#tie-it-all-up">tie it all up</a>
   <ul class="collapse">
   <li><a href="#argparse" id="toc-argparse" class="nav-link" data-scroll-target="#argparse">argparse</a></li>
@@ -235,10 +236,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
+<p>[revised on 2024-03-16]</p>
 <section id="makemore" class="level2">
 <h2 class="anchored" data-anchor-id="makemore">makemore</h2>
-<p>Karpathy’s <a href="https://github.com/karpathy/makemore">makemore</a> is an end-to-end python application that takes in a pure text file, then generate new text similar to what’s given. The project <code>makemore</code> is part of his <a href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ">neural networks: zero to hero</a> series which I recommend to all.</p>
-<p>The example data in the repo is a large collection of baby names (about 30k names) and the applicaiton trains a state of the art <strong>transformer</strong> model to learn the mechanism of naming things, then sample from the learned model.</p>
+<p>Karpathy’s <a href="https://github.com/karpathy/makemore">makemore</a> is an end-to-end python application that takes in a text file, then generate new text similar to what’s given. The project <code>makemore</code> is part of his <a href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ">neural networks: zero to hero</a> lecture series which I recommend to all.</p>
+<p>The example dataset in the repo is a large collection of baby names (about 30k names) and the applicaiton trains a <strong>transformer</strong> model to learn the mechanism of naming things, then sample from the learned model.</p>
 <p>The purpose of this post is three fold:<br>
 - gain familiarity with <strong>transformer</strong><br>
 - summarise essential <code>torch</code> functionalities and workflow for building neural nets application<br>
@@ -257,20 +259,19 @@ disclaimer
 </div>
 </div>
 </section>
-<section id="torch-stuffs" class="level2">
-<h2 class="anchored" data-anchor-id="torch-stuffs">torch stuffs</h2>
-<div id="a421b774-ac6c-48cf-b592-1d2d1a13431a" class="cell">
+<section id="torch-basics" class="level2">
+<h2 class="anchored" data-anchor-id="torch-basics">torch basics</h2>
+<div id="a421b774-ac6c-48cf-b592-1d2d1a13431a" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> torch </span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset</span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="im">from</span> torch.utils.data.dataloader <span class="im">import</span> DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> Dataset, DataLoader</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Simplistically, a neural net application is built on two major components: a dataset and a model. <code>torch</code> allows us to do both fairly easily and straightforward.</p>
+<p>Simplistically, a neural net application is built on two major components: a dataset and a model. The former shapes the behaviour of the latter by optimising some objective function. torch allows us to do both fairly easily and straightforward.</p>
 <section id="dataset" class="level3">
 <h3 class="anchored" data-anchor-id="dataset">Dataset</h3>
 <p><code>Dataset</code> class is a container like a sequence. To define a custom Dataset class, one must implement <code>__init__</code>, <code>__len__</code>, <code>__getitem__</code>, together with transformations relevant to the particular use case of the application. Exampe:</p>
-<div id="49c8b793-8053-45f1-80fe-0b631de31e99" class="cell">
+<div id="49c8b793-8053-45f1-80fe-0b631de31e99" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">class</span> CharDataset(Dataset):</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, words:<span class="bu">list</span>[<span class="bu">str</span>], chars:<span class="bu">str</span>, max_word_length:<span class="bu">int</span>):</span>
@@ -311,7 +312,7 @@ disclaimer
 <span id="cb2-38"><a href="#cb2-38"></a>        <span class="cf">return</span> x, y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The custom transformations in this example consists of mapping character to integer, aka tokenisation. There is one special token <code>0</code> representing both the start of name and end of name. We can loop through or get at index a CharDataset because we have implemented sufficient dunder methods for this.</p>
-<div id="d6ba078a-b7bf-4750-bc01-779b0f03474b" class="cell">
+<div id="d6ba078a-b7bf-4750-bc01-779b0f03474b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> string</span>
 <span id="cb3-2"><a href="#cb3-2"></a></span>
 <span id="cb3-3"><a href="#cb3-3"></a>examples <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>], string.ascii_letters, <span class="dv">10</span>)</span>
@@ -322,7 +323,7 @@ disclaimer
 (tensor([ 0, 18,  9,  3,  8,  1, 18,  4,  0,  0,  0]), tensor([18,  9,  3,  8,  1, 18,  4,  0, -1, -1, -1]))</code></pre>
 </div>
 </div>
-<div id="5dc7bfcc-8842-4277-bc65-1ce40a6a3dc7" class="cell">
+<div id="5dc7bfcc-8842-4277-bc65-1ce40a6a3dc7" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="bu">print</span>(examples[<span class="dv">0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>(tensor([ 0,  5, 13, 13,  1,  0,  0,  0,  0,  0,  0]), tensor([ 5, 13, 13,  1,  0, -1, -1, -1, -1, -1, -1]))</code></pre>
@@ -342,7 +343,7 @@ disclaimer
 <section id="dataloader" class="level3">
 <h3 class="anchored" data-anchor-id="dataloader">DataLoader</h3>
 <p>For efficiency’s sake, it is beneficial to stack multiple examples together, aka mini-batch, and process them all at once. The <code>DataLoader</code> class is meant to help us with this. Example:</p>
-<div id="7fd9a3f8-bcca-47b0-9cb8-bb632f9e85f6" class="cell">
+<div id="7fd9a3f8-bcca-47b0-9cb8-bb632f9e85f6" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">class</span> InfiniteDataLoader:</span>
 <span id="cb7-2"><a href="#cb7-2"></a>    <span class="co">"""</span></span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="co">    this is really hacky and I'm not proud of it, but there doesn't seem to be</span></span>
@@ -362,11 +363,11 @@ disclaimer
 <span id="cb7-17"><a href="#cb7-17"></a>            batch <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.data_iter)</span>
 <span id="cb7-18"><a href="#cb7-18"></a>        <span class="cf">return</span> batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="80355603-6656-43e6-89f1-c43228bfcb30" class="cell">
+<div id="80355603-6656-43e6-89f1-c43228bfcb30" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1"></a>dataset <span class="op">=</span> CharDataset([<span class="st">'emma'</span>, <span class="st">'richard'</span>, <span class="st">'ben'</span>, <span class="st">'steve'</span>],string.ascii_letters, <span class="dv">10</span>)</span>
 <span id="cb8-2"><a href="#cb8-2"></a>batch_loader <span class="op">=</span> InfiniteDataLoader(dataset, batch_size<span class="op">=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="fcbc76ef-9a1f-4ed4-871a-2ebd1df19764" class="cell">
+<div id="fcbc76ef-9a1f-4ed4-871a-2ebd1df19764" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>):</span>
 <span id="cb9-2"><a href="#cb9-2"></a>    X,Y <span class="op">=</span> batch_loader.<span class="bu">next</span>()</span>
 <span id="cb9-3"><a href="#cb9-3"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>X<span class="op">=</span><span class="sc">}</span><span class="ss">'</span>) <span class="co"># B,T = batch_size, max_word_length+1</span></span>
@@ -389,12 +390,27 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 </div>
 </section>
-<section id="tensor-shape-ops" class="level3">
-<h3 class="anchored" data-anchor-id="tensor-shape-ops">Tensor shape ops</h3>
-<p>Most fundamental data structure for neural nets.</p>
-<p>A tensor is a collection of numbers index by tuple of non-negative integers. In the above, we’ve seen that a batch <code>X</code> is (B,T) tensor, we can index <code>X[b,t]</code> for b in range(B) and t in range(T).</p>
-<p><code>torch</code> provides optimised tensor operations and auto differentiation engine. Rather than understanding low level optimisations (parallel programming as in e.g.&nbsp;cuda kernels), we just take these optimisations for granted and see what we can build with <code>Tensor</code>.</p>
-<div id="97c1e291-6d38-413c-907b-1e87bb84aa01" class="cell">
+<section id="tensor-ops-and-view" class="level3">
+<h3 class="anchored" data-anchor-id="tensor-ops-and-view">Tensor ops and View</h3>
+<p>Tensor is the most fundamental data structure for neural nets.</p>
+<p>A tensor is a collection of numbers index by tuple of non-negative integers. In the above, we’ve seen that a batch <code>X</code> is 2d tensor wit shape (B,T), we can index <code>X[b,t]</code> for b in range(B) and t in range(T).</p>
+<p>torch provides optimised tensor operations and auto differentiation engine. Rather than understanding low level optimisations (parallel programming as in e.g.&nbsp;cuda kernels), we just take these optimisations for granted in this post and we only concerned with what we can build with <code>Tensor</code>.</p>
+<p>torch ops usually create new tensor as output. e.g.&nbsp;<code>torch.cat</code>, <code>torch.stack</code>.</p>
+<p>In contrast, Tensor View avoids wasteful data copy.</p>
+<p>Here are a few common view ops.</p>
+<ul>
+<li>basic slicing and indexing (following numpy)<br>
+</li>
+<li><code>view</code><br>
+</li>
+<li><code>split</code><br>
+</li>
+<li><code>unsqueeze</code><br>
+</li>
+<li><code>expand</code></li>
+</ul>
+<p>For a full list of view ops, refer to <a href="https://pytorch.org/docs/stable/tensor_view.html">docs</a>.</p>
+<div id="97c1e291-6d38-413c-907b-1e87bb84aa01" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a>torch.arange(<span class="dv">24</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>tensor([[[ 0,  1],
@@ -413,10 +429,10 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
          [22, 23]]])</code></pre>
 </div>
 </div>
-<div id="991ce1da-b121-4053-803e-64736e33771b" class="cell">
+<div id="991ce1da-b121-4053-803e-64736e33771b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="cf">assert</span> torch.equal(torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>),torch.arange(<span class="dv">60</span>).view(<span class="dv">3</span>,<span class="dv">4</span>,<span class="op">-</span><span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="3460478e-e2af-4976-9e53-7113b393df55" class="cell">
+<div id="3460478e-e2af-4976-9e53-7113b393df55" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>tensor([[1., 0., 0., 0.],
@@ -425,7 +441,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
         [1., 1., 1., 1.]])</code></pre>
 </div>
 </div>
-<div id="fe5e7052-e605-4459-96b9-2bd91b911cd9" class="cell">
+<div id="fe5e7052-e605-4459-96b9-2bd91b911cd9" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1"></a>torch.randn(<span class="dv">3</span>,<span class="dv">4</span>).split(<span class="dv">2</span>,dim<span class="op">=</span><span class="dv">1</span>)  <span class="co"># a tuple of 4/2 tensors of shape (3,2) </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>(tensor([[-0.1093,  0.0426],
@@ -436,7 +452,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
          [ 0.4124,  0.1518]]))</code></pre>
 </div>
 </div>
-<div id="ccb3aaa5-f92e-4580-beb4-3d7e960d1035" class="cell">
+<div id="ccb3aaa5-f92e-4580-beb4-3d7e960d1035" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1"></a>att <span class="op">=</span> torch.arange(<span class="dv">16</span>).view(<span class="dv">4</span>,<span class="dv">4</span>)</span>
 <span id="cb18-2"><a href="#cb18-2"></a>att.masked_fill(torch.tril(torch.ones(<span class="dv">4</span>,<span class="dv">4</span>))<span class="op">==</span><span class="dv">0</span>, <span class="op">-</span><span class="dv">99</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
@@ -446,7 +462,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
         [ 12,  13,  14,  15]])</code></pre>
 </div>
 </div>
-<div id="7a960984-d5bf-4cf8-818e-235cdd14057b" class="cell">
+<div id="7a960984-d5bf-4cf8-818e-235cdd14057b" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="cf">assert</span> torch.randn(<span class="dv">24</span>).view(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>).transpose(<span class="dv">1</span>,<span class="dv">2</span>).shape <span class="op">==</span> (<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="cf">assert</span> torch.randn(<span class="dv">5</span>).unsqueeze(<span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">5</span>,<span class="dv">1</span>)</span>
 <span id="cb20-3"><a href="#cb20-3"></a><span class="cf">assert</span> torch.cat([torch.ones(<span class="dv">3</span>,<span class="dv">3</span>), torch.arange(<span class="dv">9</span>).view(<span class="dv">3</span>,<span class="dv">3</span>)], dim<span class="op">=</span><span class="dv">1</span>).shape <span class="op">==</span> (<span class="dv">3</span>,<span class="dv">3</span><span class="op">+</span><span class="dv">3</span>)</span>
@@ -469,7 +485,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 <li><code>nn.ModuleList</code>: pass in a list of instances</li>
 </ul>
 <p>custom Module must implement <code>forward</code> method. Example:</p>
-<div id="9314ebbd-4a19-4bed-b5e5-1d75ff05e508" class="cell">
+<div id="9314ebbd-4a19-4bed-b5e5-1d75ff05e508" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">class</span> NewGELU(nn.Module):</span>
 <span id="cb21-2"><a href="#cb21-2"></a>    <span class="co">"""</span></span>
 <span id="cb21-3"><a href="#cb21-3"></a><span class="co">    Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT).</span></span>
@@ -482,9 +498,10 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="build-transformer" class="level2">
 <h2 class="anchored" data-anchor-id="build-transformer">build Transformer</h2>
-<p>Transformer is a custom module built on attention blocks, which themselves are built on multi-head masked self-attention layers.</p>
-<p>let’s build from the layer level all the way to transformer. here is our model config.</p>
-<div id="2160e45a-b3df-4605-8c1e-2de212c917d6" class="cell">
+<p>Transformer is a custom module built on attention blocks, which themselves are built on multi-head attention layers. What we have here is a decoder/GPT.</p>
+<p><a href="https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/" title="The Transformer Family Version 2.0">more variants</a></p>
+<p>let’s build from the layer level all the way to transformer. here is our model config. Notice that we should have a dataset first, infer from there the necessary config parameters for transformer. For example, the vocab_size is the size of all the possible tokens in the dataset, a value that may vary from dataset to dataset.</p>
+<div id="2160e45a-b3df-4605-8c1e-2de212c917d6" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass</span>
 <span id="cb22-2"><a href="#cb22-2"></a></span>
 <span id="cb22-3"><a href="#cb22-3"></a><span class="at">@dataclass</span></span>
@@ -497,9 +514,19 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 <span id="cb22-10"><a href="#cb22-10"></a>    n_embd2: <span class="bu">int</span> <span class="op">=</span> <span class="dv">64</span></span>
 <span id="cb22-11"><a href="#cb22-11"></a>    n_head: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="attention-layer" class="level3">
-<h3 class="anchored" data-anchor-id="attention-layer">attention layer</h3>
-<div id="2be828be-16cd-40ac-9090-4c9210c665bf" class="cell">
+<section id="self-attention-layer" class="level3">
+<h3 class="anchored" data-anchor-id="self-attention-layer">self attention layer</h3>
+<p>The input of attn is 3d tensor of shape (B,T,C). The forward step of attention undergoes a few steps</p>
+<ul>
+<li>linear C-&gt; 3C, split into qkv<br>
+</li>
+<li>view C -&gt; (nh, C/nh) as heads<br>
+</li>
+<li>compute attention matrix with qk, which is used to average v<br>
+</li>
+<li>re-assemble all heads to (B,T,C) then project</li>
+</ul>
+<div id="2be828be-16cd-40ac-9090-4c9210c665bf" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">class</span> CausalSelfAttention(nn.Module):</span>
 <span id="cb23-2"><a href="#cb23-2"></a>    <span class="co">"""</span></span>
 <span id="cb23-3"><a href="#cb23-3"></a><span class="co">    A vanilla multi-head masked self-attention layer with a projection at the end.</span></span>
@@ -540,9 +567,9 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 <span id="cb23-38"><a href="#cb23-38"></a>        y <span class="op">=</span> <span class="va">self</span>.c_proj(y)</span>
 <span id="cb23-39"><a href="#cb23-39"></a>        <span class="cf">return</span> y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This is pretty self-explanatory. just don’t forget <code>super().__init__</code></p>
-<p>A bit of caution here on line 35: <code>y = y.view(B,T,C)</code> is not OK.</p>
-<div id="e0ee02b0-4698-45db-ac1e-c8603fcedea3" class="cell">
+<p>This is pretty self-explanatory. don’t forget <code>super().__init__()</code></p>
+<p>A bit of caution here in line 35: <code>transpose</code> is a non-contiguous view op of the base tensor, which has performance penalty if not making it <code>contingous</code>. Also:</p>
+<div id="e0ee02b0-4698-45db-ac1e-c8603fcedea3" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">2</span>)</span>
 <span id="cb24-2"><a href="#cb24-2"></a>torch.ne(x.transpose(<span class="dv">0</span>,<span class="dv">1</span>).contiguous().view(<span class="dv">3</span>,<span class="dv">4</span>), x.view(<span class="dv">3</span>,<span class="dv">4</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
@@ -554,7 +581,8 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="block" class="level3">
 <h3 class="anchored" data-anchor-id="block">block</h3>
-<div id="49f7dd9e-2e11-4c90-bf0a-8b18fba0e376" class="cell">
+<p>Stack attention layer and mlp, with layer normalization as well as residual connections to <a href="https://www.youtube.com/watch?v=D_jt-xO_RmI&amp;t=3814s" title="Kaiming He - deep learning bootcamp MIT">facilitate training</a>.</p>
+<div id="49f7dd9e-2e11-4c90-bf0a-8b18fba0e376" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">class</span> Block(nn.Module):</span>
 <span id="cb26-2"><a href="#cb26-2"></a>    <span class="co">""" an unassuming Transformer block """</span></span>
 <span id="cb26-3"><a href="#cb26-3"></a></span>
@@ -579,7 +607,8 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="the-entire-thing" class="level3">
 <h3 class="anchored" data-anchor-id="the-entire-thing">the entire thing</h3>
-<div id="39e9b92d-50d6-4b72-9221-3d134b7dbd2c" class="cell">
+<p>token embedding + potitional embedding, then pass through layers of blocks, layer normalization, finally projection.</p>
+<div id="39e9b92d-50d6-4b72-9221-3d134b7dbd2c" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">class</span> Transformer(nn.Module):</span>
 <span id="cb27-2"><a href="#cb27-2"></a>    <span class="co">""" Transformer Language Model, exactly as seen in GPT-2 """</span></span>
 <span id="cb27-3"><a href="#cb27-3"></a></span>
@@ -624,25 +653,28 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 <span id="cb27-42"><a href="#cb27-42"></a></span>
 <span id="cb27-43"><a href="#cb27-43"></a>        <span class="cf">return</span> logits, loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The only thing that deserves some care is <code>F.cross_entropy</code>. Here</p>
+<p>Note: <code>F.cross_entropy</code> caveats</p>
 <ul>
-<li>ground truth is a tensor of shape (D,)</li>
-<li>predictions is a tensor of shape (D,C) where C is the number of classes</li>
-<li>use <code>logtis</code> for prediction (which is one <code>F.softmax</code> away from probability)</li>
+<li>expect ground truth of shape (D,)<br>
+</li>
+<li>expect predictions of shape (D,C) where C is the number of classes<br>
+</li>
+<li>use <code>logtis</code> for prediction (which is one <code>F.softmax</code> away from probability)<br>
+</li>
 <li><code>ignore_index=-1</code> matches <code>-1</code> in the definition of <code>y</code>in <code>CharDataset</code></li>
 </ul>
 </section>
 </section>
-<section id="eval-helpers" class="level2">
-<h2 class="anchored" data-anchor-id="eval-helpers">eval helpers</h2>
-<p>the evaluation code is standard</p>
+<section id="evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="evaluation">evaluation</h2>
+<p>the evaluation code is standard. Note:</p>
 <ul>
 <li>DataLoader can be looped through.<br>
 </li>
-<li>batch is a tuple (X,Y) of tensors of shape batch_size, T</li>
+<li>batch is a tuple of tensors each of shape (B, T)</li>
 </ul>
 <p>I am however not sure what are the benefits of entering the inference mode, given that code has already switched on model.eval(). TODO!</p>
-<div id="b826bc25-2273-4561-8fd7-99ef14567437" class="cell">
+<div id="b826bc25-2273-4561-8fd7-99ef14567437" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1"></a><span class="at">@torch.inference_mode</span>()</span>
 <span id="cb28-2"><a href="#cb28-2"></a><span class="kw">def</span> evaluate(model, dataset, batch_size<span class="op">=</span><span class="dv">50</span>, max_batches<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb28-3"><a href="#cb28-3"></a>    model.<span class="bu">eval</span>()</span>
@@ -659,7 +691,11 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 <span id="cb28-14"><a href="#cb28-14"></a>    model.train() <span class="co"># reset model back to training mode</span></span>
 <span id="cb28-15"><a href="#cb28-15"></a>    <span class="cf">return</span> mean_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="ac0c25f7-64d1-4a78-a055-064efd4862b1" class="cell">
+</section>
+<section id="inference" class="level2">
+<h2 class="anchored" data-anchor-id="inference">inference</h2>
+<p>Given some context, generate things with trained model (no gradient update) one token at a time. This involves concat a generated token with the context, then pass the combined new context back into the model to get the next token, and so on …</p>
+<div id="ac0c25f7-64d1-4a78-a055-064efd4862b1" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1"></a><span class="at">@torch.no_grad</span>()</span>
 <span id="cb29-2"><a href="#cb29-2"></a><span class="kw">def</span> generate(model, idx, max_new_tokens, temperature<span class="op">=</span><span class="fl">1.0</span>, do_sample<span class="op">=</span><span class="va">False</span>, top_k<span class="op">=</span><span class="va">None</span>):</span>
 <span id="cb29-3"><a href="#cb29-3"></a>    <span class="co">"""</span></span>
@@ -694,7 +730,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="tie-it-all-up" class="level2">
 <h2 class="anchored" data-anchor-id="tie-it-all-up">tie it all up</h2>
-<div id="8e1c1f5f-90de-4d00-95ca-727d421d3cf0" class="cell">
+<div id="8e1c1f5f-90de-4d00-95ca-727d421d3cf0" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1"></a><span class="im">import</span> os</span>
 <span id="cb30-2"><a href="#cb30-2"></a><span class="im">import</span> sys</span>
 <span id="cb30-3"><a href="#cb30-3"></a><span class="im">import</span> time</span>
@@ -703,7 +739,7 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 <section id="argparse" class="level3">
 <h3 class="anchored" data-anchor-id="argparse">argparse</h3>
-<div id="27438b93-71c9-40fa-b5f0-9f5792123cb7" class="cell">
+<div id="27438b93-71c9-40fa-b5f0-9f5792123cb7" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="co"># parse command line args</span></span>
 <span id="cb31-2"><a href="#cb31-2"></a>parser <span class="op">=</span> argparse.ArgumentParser(description<span class="op">=</span><span class="st">"Make More"</span>)</span>
 <span id="cb31-3"><a href="#cb31-3"></a><span class="co"># system/input/output</span></span>
@@ -734,7 +770,15 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="inits" class="level3">
 <h3 class="anchored" data-anchor-id="inits">inits</h3>
-<div id="aef4b13a-58f6-4d1b-9e53-983bd8346af5" class="cell">
+<p>we run things in order</p>
+<ul>
+<li>init a dataset and let it determine part of model config<br>
+</li>
+<li>init model with config<br>
+</li>
+<li>init optimiser and dataloader</li>
+</ul>
+<div id="aef4b13a-58f6-4d1b-9e53-983bd8346af5" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># system inits</span></span>
 <span id="cb32-2"><a href="#cb32-2"></a>torch.manual_seed(args.seed)</span>
 <span id="cb32-3"><a href="#cb32-3"></a>torch.cuda.manual_seed_all(args.seed)</span>
@@ -783,7 +827,8 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </section>
 <section id="training-loop" class="level3">
 <h3 class="anchored" data-anchor-id="training-loop">training loop</h3>
-<div id="6df6dc75-1ab2-4048-a79d-2b2e43dde577" class="cell">
+<p>runs forever, save the <code>model.state_dict()</code> when a lower test loss is achieved</p>
+<div id="6df6dc75-1ab2-4048-a79d-2b2e43dde577" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># training loop</span></span>
 <span id="cb33-2"><a href="#cb33-2"></a>best_loss <span class="op">=</span> <span class="va">None</span></span>
 <span id="cb33-3"><a href="#cb33-3"></a>step <span class="op">=</span> <span class="dv">0</span></span>
@@ -1066,6 +1111,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/xiaochuany\.github\.io\/1principle");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1100,7 +1163,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
