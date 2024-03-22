@@ -236,7 +236,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p>[revised on 2024-03-16]</p>
+<p>[last modified on 2024-03-22]</p>
 <section id="makemore" class="level2">
 <h2 class="anchored" data-anchor-id="makemore">makemore</h2>
 <p>Karpathy’s <a href="https://github.com/karpathy/makemore">makemore</a> is an end-to-end python application that takes in a text file, then generate new text similar to what’s given. The project <code>makemore</code> is part of his <a href="https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ">neural networks: zero to hero</a> lecture series which I recommend to all.</p>
@@ -739,6 +739,10 @@ Y=tensor([[ 2,  5, 14,  0, -1, -1, -1, -1, -1, -1, -1],
 </div>
 <section id="argparse" class="level3">
 <h3 class="anchored" data-anchor-id="argparse">argparse</h3>
+<p><a href="https://docs.python.org/3/library/argparse.html#module-argparse">argparse</a> module is in the python standard library centring around the <code>ArgumentParser</code> class, which has the <code>add_argument()</code> method and <code>parse_args()</code> method.</p>
+<p>When no specific value is given for a flag, the parser will use the default value. Alternatively, one can use <code>action</code> to store some specific value for instance a boolean. If neither exists, then the value of the flag is <code>None</code>.</p>
+<p>Calling <code>parse_args()</code> returns a <code>Namespace</code> object which stores arguments and values.</p>
+<p>Recall that the python built-in <code>vars</code> calls the <code>__dict__</code> of a class.</p>
 <div id="27438b93-71c9-40fa-b5f0-9f5792123cb7" class="cell" data-vscode="{&quot;languageId&quot;:&quot;python&quot;}">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1"></a><span class="co"># parse command line args</span></span>
 <span id="cb31-2"><a href="#cb31-2"></a>parser <span class="op">=</span> argparse.ArgumentParser(description<span class="op">=</span><span class="st">"Make More"</span>)</span>
