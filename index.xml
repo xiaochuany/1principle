@@ -9,8 +9,134 @@
 <link>https://xiaochuany.github.io/1principle/</link>
 <atom:link href="https://xiaochuany.github.io/1principle/index.xml" rel="self" type="application/rss+xml"/>
 <description>Xiaochuan&#39;s blog: first principles first</description>
-<generator>quarto-1.4.551</generator>
-<lastBuildDate>Fri, 16 Feb 2024 00:00:00 GMT</lastBuildDate>
+<generator>quarto-1.4.553</generator>
+<lastBuildDate>Sat, 13 Apr 2024 00:00:00 GMT</lastBuildDate>
+<item>
+  <title>Git 101</title>
+  <dc:creator>Xiaochuan Yang</dc:creator>
+  <link>https://xiaochuany.github.io/1principle/posts/gist/git101.html</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<p>Using git to manage text files (e.g.&nbsp;code files) is inevitable for keeping track of all changes while developing and maintaining a project.</p>
+<section id="work-solo" class="level2">
+<h2 class="anchored" data-anchor-id="work-solo">Work solo</h2>
+<p>Assume that we have cloned a GitHub repo on the disk. For solo project, one might get away with three commands</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> add .</span>
+<span id="cb1-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"MESSAGE"</span></span>
+<span id="cb1-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> push origin main</span></code></pre></div>
+<p>To break down these commands,</p>
+<ul>
+<li><code>git add .</code> moves all modified and untracked files in the current directory to the staged area, a temporary place for files before incorporating changes.<br>
+</li>
+<li><code>git commit</code> incorporates changes (locally).</li>
+<li><code>git push origin main</code> pushes the commits to remote (GitHub) <code>main</code> branch</li>
+</ul>
+<p>This is simple enough for beginners to get started. However, when it comes to collaboration within an organization or maintaining/participating non-solo open source project, one needs to learn a few more commands.</p>
+</section>
+<section id="branching-out" class="level2">
+<h2 class="anchored" data-anchor-id="branching-out">Branching out</h2>
+<p>the first thing to do is to <code>checkout</code> a new branch when working on a new feature/task</p>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> checkout <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-b</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"new-feature"</span></span></code></pre></div>
+<p>edit as usual then</p>
+<div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> add . </span>
+<span id="cb3-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> commit <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">-m</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'MESSAGE'</span></span>
+<span id="cb3-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> push origin new-feature</span></code></pre></div>
+<p>notice that we push back to the <code>new-feature</code> branch, which will be automatically created in the remote repo.</p>
+<p>At this point, we have finished the task at hand and want the main branch to incorporate our edits. We do so by create a pull request, aka PR. The maintainer (could be ourselves) can squash and merge our branch like so</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> merge <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--squash</span> new-feature</span></code></pre></div>
+</section>
+<section id="handling-conflicts" class="level2">
+<h2 class="anchored" data-anchor-id="handling-conflicts">Handling Conflicts</h2>
+<p>the assumption we make in the last section is that there are no conflicts between the main branch and our feature branch. Such conflicts can happen if main branch has been updated while we work on the feature branch, and the same code has been touched both our feature branch and the main.</p>
+<p>One can rely on the maintainer to handle merge conflict but it may not be easy because the maintainer couldn’t know all the details/changes in the feature branch. A common practice is to delegate the handling of conflicts to the owner of the feature branch.</p>
+<p>More precisely, the feature branch owner should do</p>
+<div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> checkout main</span>
+<span id="cb5-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> pull</span>
+<span id="cb5-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> cehckout new-feature</span>
+<span id="cb5-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> rebase main</span></code></pre></div>
+<p>let me break this down. We first get the update of main branch. Then we <code>git rebase main</code> to rebase the feature branch on top of the main branch. This means that our changes are treated as if we are branching out from the updated main branch. Conflicts may arise at this stage, and the terminal will let us know. We now manually resolve the conflicts by opening the file in question, remove/keep code chunks as appropriate, then</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> add FILE</span>
+<span id="cb6-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">git</span> rebase <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">--continue</span></span></code></pre></div>
+<p>Repeat this until the conflicts are resolved</p>
+<p>Now we can push the feature branch back to remote and ask for a PR as before.</p>
+</section>
+<section id="github-cli" class="level2">
+<h2 class="anchored" data-anchor-id="github-cli">GitHub CLI</h2>
+<p>GitHub has a delightful CLI which extends git in the context of remote workflow such as creating issues, reviewing PR etc.</p>
+<p>For instance, to see the README.md of the repo</p>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">gh</span> repo view </span></code></pre></div>
+<p>To create an issue,</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><span class="ex" style="color: null;
+background-color: null;
+font-style: inherit;">gh</span> issue create</span></code></pre></div>
+<p>Remembering a few commonly used commands can streamline the workflow, thus lead to some productivity boost.</p>
+</section>
+<section id="last-word" class="level2">
+<h2 class="anchored" data-anchor-id="last-word">Last word</h2>
+<p>This post discuss a small subset of the commands git and gh have to offer. If something is not clear or you need more than what are discussed here, check out the official documentations:</p>
+<ul>
+<li>git: https://git-scm.com/</li>
+<li>gh: https://cli.github.com/</li>
+</ul>
+
+
+</section>
+
+ ]]></description>
+  <category>hacks</category>
+  <guid>https://xiaochuany.github.io/1principle/posts/gist/git101.html</guid>
+  <pubDate>Sat, 13 Apr 2024 00:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Learn transformer with makemore and torch</title>
   <dc:creator>Xiaochuan Yang</dc:creator>
