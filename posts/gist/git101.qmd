@@ -1,0 +1,97 @@
+---
+title: "Git 101"
+author: "Xiaochuan Yang"
+date: "2024-04-13"
+categories: [hacks]
+# toc: true
+---
+
+Using git to manage text files (e.g. code files) is inevitable for keeping track of all changes while developing and maintaining a project.   
+
+## Work solo
+
+Assume that we have cloned a GitHub repo on the disk. For solo project, one might get away with three commands  
+```bash
+git add .
+git commit -m "MESSAGE"
+git push origin main
+```
+To break down these commands,  
+
+- `git add .`  moves all modified and untracked files in the current directory to the staged area, a temporary place for files before incorporating changes.  
+- `git commit` incorporates changes (locally). 
+- `git push origin main` pushes the commits to remote (GitHub) `main` branch 
+
+This is simple enough for beginners to get started. However, when it comes to collaboration within an  organization or maintaining/participating non-solo open source project, one needs to learn a few more commands. 
+
+## Branching out
+
+the first thing to do is to `checkout` a new branch when working on a new feature/task
+```bash
+git checkout -b "new-feature"
+```
+edit as usual then     
+```bash
+git add . 
+git commit -m 'MESSAGE'
+git push origin new-feature
+```
+notice that we push back to the `new-feature` branch, which will be automatically created in the remote repo. 
+
+At this point, we have finished the task at hand and want the main branch to incorporate our edits. We do so by create a pull request, aka PR. The maintainer (could be ourselves) can squash and merge our branch like so
+
+```bash
+git merge --squash new-feature
+```
+
+
+## Handling Conflicts
+
+the assumption we make in the last section is that there are no conflicts between the main branch and our feature branch. Such conflicts can happen if main branch has been updated while we work on the feature branch, and the same code has been touched both our feature branch and the main.  
+
+One can rely on the maintainer to handle merge conflict but it may not be easy because the maintainer couldn't know all the details/changes  in the feature branch.  A common practice is to delegate the handling of conflicts to the owner of the feature branch.  
+
+More precisely, the feature branch owner should do
+```bash
+git checkout main
+git pull
+git cehckout new-feature
+git rebase main
+```
+let me break this down.  We first get the update of main branch. Then we `git rebase main` to rebase the feature branch on top of the main branch. This  means that our changes are treated as if we are branching out from the updated main branch.  Conflicts may arise at this stage, and the terminal will let us know. We now manually resolve the conflicts by opening the file in question,  remove/keep code chunks as appropriate, then 
+
+```bash
+git add FILE
+git rebase --continue
+```
+
+Repeat this until the conflicts are resolved 
+
+Now we can push the feature branch back to remote and ask for a PR as before. 
+
+
+## GitHub CLI
+
+GitHub has a delightful CLI which extends git in the context of remote workflow such as creating issues, reviewing PR etc.
+
+For instance, to see the README.md of the repo
+
+```bash
+gh repo view 
+```
+
+To create an issue, 
+```bash
+gh issue create
+```
+Remembering a few commonly used commands can streamline the workflow, thus lead to some  productivity boost. 
+
+
+
+## Last word
+
+This post discuss a small subset of the commands git and gh have to offer. If something is not clear or you need more than what are discussed here, check out the official documentations:
+
+- git: https://git-scm.com/
+- gh:  https://cli.github.com/
+
