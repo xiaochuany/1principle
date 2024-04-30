@@ -55,7 +55,7 @@ More precisely, the feature branch owner should do
 ```bash
 git checkout main
 git pull
-git cehckout new-feature
+git checkout new-feature
 git rebase main
 ```
 let me break this down.  We first get the update of main branch. Then we `git rebase main` to rebase the feature branch on top of the main branch. This  means that our changes are treated as if we are branching out from the updated main branch.  Conflicts may arise at this stage, and the terminal will let us know. We now manually resolve the conflicts by opening the file in question,  remove/keep code chunks as appropriate, then 
