@@ -92,7 +92,7 @@ background-color: null;
 font-style: inherit;">git</span> pull</span>
 <span id="cb5-3"><span class="fu" style="color: #4758AB;
 background-color: null;
-font-style: inherit;">git</span> cehckout new-feature</span>
+font-style: inherit;">git</span> checkout new-feature</span>
 <span id="cb5-4"><span class="fu" style="color: #4758AB;
 background-color: null;
 font-style: inherit;">git</span> rebase main</span></code></pre></div>
