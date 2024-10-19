@@ -1577,6 +1577,7 @@ font-style: inherit;">1</span>:].std()</span></code></pre></div>
 </ul>
 <p>The API is simple: states are maintained in the instances of the main class rahter than delegated to separate container classes, hopefully reducing some mental overhead for users.</p>
 <p>Here is how one can fit a model and inspect the fitted parameters and the corresponding negative log likelihood.</p>
+<p>(see how to install: https://xiaochuany.github.io/archette/ )</p>
 <div id="cell-23" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><span class="im" style="color: #00769E;
 background-color: null;
